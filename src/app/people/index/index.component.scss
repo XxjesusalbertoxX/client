@@ -1,0 +1,47 @@
+/* src/app/people/index/index.component.scss */
+.dashboard-content {
+  padding: 2rem;
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+
+  .people-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    thead {
+      background-color: #f3f3f3;
+    }
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    button {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+  }
+}
+
+/* index.component.scss */
+.fade-leave {
+  opacity: 1;
+  height: 60px;
+  transition: opacity 0.3s ease, height 0.3s ease;
+}
+.fade-leave.fade-leave-active {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}

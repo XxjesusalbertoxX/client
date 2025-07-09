@@ -1,0 +1,25 @@
+.input-label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.input-field {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  outline-color: #3b82f6; /* azul */
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+  border-color: #2563eb; /* azul más oscuro */
+}
+
+.error-message {
+  color: #dc2626; /* rojo */
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}

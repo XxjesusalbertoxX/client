@@ -1,0 +1,85 @@
+<div class="layout relative min-h-screen bg-gray-50 overflow-hidden">
+  <!-- Fondo SVG -->
+  <img src="assets/svg/circles.svg" alt="circles" class="absolute top-0 left-0 w-full h-auto z-0 opacity-60 pointer-events-none" />
+
+  <app-sidebar class="z-10"></app-sidebar>
+
+  <div class="dashboard-content relative z-10 flex-1 p-8">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Listado de Personas</h2>
+
+    <!-- Botón agregar persona -->
+    <div class="mb-4 flex justify-end">
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+        (click)="goToCreate()"
+      >
+        Agregar Persona
+      </button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="overflow-auto rounded-xl bg-white/30 backdrop-blur-lg shadow-lg p-4">
+      <table *ngIf="!loading && people.length > 0" class="min-w-full text-left text-sm text-gray-800">
+        <thead class="text-gray-700 uppercase tracking-wide border-b border-gray-300">
+          <tr>
+            <th class="py-2 px-4">Nombre</th>
+            <th class="py-2 px-4">Apellido</th>
+            <th class="py-2 px-4">Edad</th>
+            <th class="py-2 px-4">Género</th>
+            <th class="py-2 px-4">Registrado</th>
+            <th class="py-2 px-4 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let person of people"
+            [class.fade-leave]="deletingId === person.id"
+            [class.fade-leave-active]="deletingId === person.id"
+            class="border-b border-gray-200 hover:bg-white/50 transition">
+            <td class="py-2 px-4">{{ person.firstName }}</td>
+            <td class="py-2 px-4">{{ person.lastName }}</td>
+            <td class="py-2 px-4">{{ person.age }}</td>
+            <td class="py-2 px-4">{{ person.genre }}</td>
+            <td class="py-2 px-4">{{ person.createdAt | date: 'short' }}</td>
+            <td class="py-2 px-4 text-center space-x-2">
+              <button
+                class="px-3 py-1 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 transition"
+                (click)="edit(person)"
+              >
+                ✏️
+              </button>
+              <button
+                class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                (click)="delete(person.id)"
+              >
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="text-gray-600 mt-4" *ngIf="!loading && people.length === 0">
+        No hay personas registradas.
+      </p>
+    </div>
+
+    <!-- Paginación -->
+    <div class="flex justify-center items-center gap-4 mt-6">
+      <button
+        class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+        (click)="changePage(page - 1)"
+        [disabled]="page === 1"
+      >
+        Anterior
+      </button>
+      <span class="text-gray-700">Página {{ page }} de {{ pages }}</span>
+      <button
+        class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+        (click)="changePage(page + 1)"
+        [disabled]="page === pages"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+</div>
