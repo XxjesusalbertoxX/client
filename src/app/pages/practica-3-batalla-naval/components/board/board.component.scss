@@ -1,0 +1,57 @@
+.board {
+  display: grid;
+  grid-template-rows: repeat(10, 1fr); /* 10x10 tablero por defecto */
+  gap: 2px;
+  border: 2px solid white;
+  width: 300px;
+  aspect-ratio: 1;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+}
+
+.cell {
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: #3d3d3d;
+  border: 1px solid #1a1a1a;
+  cursor: pointer;
+}
+
+.cell.ship {
+  background-color: #0074d9;
+}
+
+.cell.hit {
+  background-color: red;
+}
+
+.cell.miss {
+  background-color: #cccccc;
+}
+
+.cell.empty:hover {
+  background-color: #666;
+}
+
+.board-container {
+  display: inline-block;
+}
+
+.column-labels {
+  display: flex;
+}
+
+.row {
+  display: flex;
+}
+
+.cell.label {
+  background: transparent;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  padding: 2px;
+}

@@ -1,0 +1,39 @@
+<div class="flex flex-col items-center justify-center min-h-screen px-4 py-8 animate-fade-in">
+  <h2 class="text-2xl font-bold mb-4">Lobby de la Partida</h2>
+
+  <div class="mb-4">
+    <p>Código de la partida:</p>
+    <div class="flex items-center gap-2">
+      <strong class="text-lg">{{ gameCode() }}</strong>
+      <button (click)="copyGameCode()" class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Copiar</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
+    <app-card-player
+  *ngFor="let player of players()"
+  [player]="player"
+  [isCurrent]="false"
+  [canReady]="players().length === 2"
+  (ready)="handleReady()"
+></app-card-player>
+
+    <app-card-player
+  *ngIf="players().length === 1"
+  [player]="null"
+  [isCurrent]="false"
+  [canReady]="false"
+></app-card-player>
+  </div>
+</div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-in-out both;
+}
+</style>

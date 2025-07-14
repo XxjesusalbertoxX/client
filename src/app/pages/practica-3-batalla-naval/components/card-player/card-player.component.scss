@@ -1,0 +1,38 @@
+.card {
+  width: 200px;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.card.current {
+  border: 2px solid green;
+}
+
+.card.disconnected {
+  border: 2px solid red;
+  opacity: 0.7;
+}
+
+.stats {
+  margin: 1rem 0;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #0074d9;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #005fa3;
+}

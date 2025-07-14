@@ -3,9 +3,9 @@ import { FormBuilder, Validators, ReactiveFormsModule, FormControl } from '@angu
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { InputComponent } from '../../shared/components/input/input.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
-import { AuthService } from '../../services/auth.service';
+import { InputComponent } from '../../../shared/components/input/input.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   standalone: true,
@@ -31,38 +31,42 @@ export class LoginComponent {
     });
   }
 
-  submit() {
-  if (this.form.invalid) {
-    this.form.markAllAsTouched()
-    return
+  goToRegister() {
+    this.router.navigate(['/register']);
   }
 
-  this.submitting = true
-  this.errorMsg = ''
-
-  const email = this.form.get('email')?.value ?? ''
-  const password = this.form.get('password')?.value ?? ''
-
-  this.auth.login(email, password).subscribe({
-    next: (res) => {
-      this.submitting = false
-
-      const access = res?.accessToken
-      const refresh = res?.refreshToken
-
-      if (access && refresh) {
-        this.auth.saveTokens(access, refresh)
-        this.router.navigate(['/people'])
-      } else {
-        this.errorMsg = 'Login response incompleto'
-      }
-    },
-    error: (err) => {
-      this.submitting = false
-      this.errorMsg = err?.error?.message || 'Login failed'
-      console.error(err)
+  submit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched()
+      return
     }
-  })
+
+    this.submitting = true
+    this.errorMsg = ''
+
+    const email = this.form.get('email')?.value ?? ''
+    const password = this.form.get('password')?.value ?? ''
+
+    this.auth.login(email, password).subscribe({
+      next: (res) => {
+        this.submitting = false
+
+        const access = res?.accessToken
+        const refresh = res?.refreshToken
+
+        if (access && refresh) {
+          this.auth.saveTokens(access, refresh)
+          this.router.navigate(['/people'])
+        } else {
+          this.errorMsg = 'Login response incompleto'
+        }
+      },
+      error: (err) => {
+        this.submitting = false
+        this.errorMsg = err?.error?.message || 'Login failed'
+        console.error(err)
+      }
+    })
   }
 
 

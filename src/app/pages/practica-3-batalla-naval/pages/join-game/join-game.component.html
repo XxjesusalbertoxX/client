@@ -1,0 +1,24 @@
+<div class="flex flex-col items-center justify-center min-h-screen px-4">
+  <h2 class="text-2xl font-bold mb-6">Unirse a una Partida</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="w-full max-w-sm flex flex-col gap-4">
+    <label for="code" class="font-medium">Código de la partida</label>
+    <input
+      id="code"
+      type="text"
+      formControlName="code"
+      class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      [class.border-red-500]="form.get('code')?.invalid && form.get('code')?.touched"
+    />
+
+    <button
+      type="submit"
+      [disabled]="form.invalid || isLoading"
+      class="px-6 py-3 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+    >
+      {{ isLoading ? 'Uniendo...' : 'Unirse' }}
+    </button>
+  </form>
+
+  <p *ngIf="errorMessage" class="text-red-500 mt-4">{{ errorMessage }}</p>
+</div>

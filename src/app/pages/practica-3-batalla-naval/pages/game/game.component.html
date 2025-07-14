@@ -1,0 +1,11 @@
+<div class="game-view">
+  <h2>Tu Tablero</h2>
+  <app-board [board]="myBoard()" [isOwnBoard]="true"></app-board>
+
+  <h2>Tablero Enemigo</h2>
+  <app-board
+    [board]="enemyBoard()"
+    [isOwnBoard]="false"
+    (attack)="onAttack($event)"
+  ></app-board>
+</div>

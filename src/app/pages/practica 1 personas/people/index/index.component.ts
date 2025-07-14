@@ -1,8 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core'
 import { CommonModule } from '@angular/common'
-import { PeopleService } from '../../services/people.service'
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component'
-import { SessionGuardService } from '../../services/guards/session.guard.service'
+import { PeopleService } from '../../../../services/people.service'
+import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component'
+import { SessionGuardService } from '../../../../services/guards/session.guard.service'
 import { Router } from '@angular/router'
 import is from '@angular/common/locales/extra/is'
 

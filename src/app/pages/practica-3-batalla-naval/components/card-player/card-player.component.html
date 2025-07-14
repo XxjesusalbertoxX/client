@@ -1,0 +1,30 @@
+<div
+  class="card rounded-lg p-4 bg-gray-800 text-white transition-all"
+  [ngClass]="{ 'border-green-500 border-2': isCurrent, 'opacity-60': !player }"
+>
+  <ng-container *ngIf="player; else placeholder">
+    <h3 class="text-lg font-semibold">{{ player.user.name }}</h3>
+    <div class="stats mt-2">
+      <p>Victorias: {{ player.user.wins }}</p>
+      <p>Derrotas: {{ player.user.losses }}</p>
+      <p>Nivel: {{ player.user.level }}</p>
+    </div>
+  </ng-container>
+
+  <ng-template #placeholder>
+    <h3 class="text-lg font-semibold">?</h3>
+    <div class="stats mt-2">
+      <p>Victorias: 0</p>
+      <p>Derrotas: 0</p>
+      <p>Nivel: 0</p>
+    </div>
+  </ng-template>
+
+  <button
+    *ngIf="canReady"
+    (click)="handleReady()"
+    class="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
+  >
+    Ready
+  </button>
+</div>

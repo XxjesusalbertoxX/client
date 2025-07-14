@@ -8,65 +8,64 @@ export class AuthWatcherService {
   private router = inject(Router)
   private authService = inject(AuthService)
 
+  private timeoutId: any = null
+
   constructor() {
-    this.watchToken()
+    this.scheduleTokenCheck()
   }
 
-  private watchToken() {
-    setInterval(() => {
-      const accessToken = this.authService.getAccessToken()
+  private scheduleTokenCheck() {
+    const accessToken = this.authService.getAccessToken()
 
-      if (!accessToken) {
-        const refreshToken = this.authService.getRefreshToken()
-        if (refreshToken) {
-          this.authService.refreshAccessToken().subscribe({
-            next: () => console.log('[Watcher] Access token renovado'),
-            error: () => this.forceLogout('[Watcher] No se pudo renovar access token'),
-          })
-        } else {
-          this.forceLogout('[Watcher] No hay tokens. Cerrando sesión.')
-        }
+    if (!accessToken) {
+      this.tryRefreshOrLogout()
+      return
+    }
+
+    try {
+      const decoded: any = jwtDecode(accessToken)
+      const now = Math.floor(Date.now() / 1000)
+
+      if (!decoded.exp || typeof decoded.exp !== 'number') {
+        this.forceLogout('[Watcher] Token sin expiración válida')
         return
       }
 
-      try {
-        const decoded: any = jwtDecode(accessToken)
-        const now = Math.floor(Date.now() / 1000)
-
-        if (!decoded || typeof decoded.exp !== 'number') {
-          this.forceLogout('[Watcher] Access token sin expiración válida.')
-          return
-        }
-
-        if (decoded.exp < now) {
-          const refreshToken = this.authService.getRefreshToken()
-          if (refreshToken) {
-            this.authService.refreshAccessToken().subscribe({
-              next: () => console.log('[Watcher] Access token renovado'),
-              error: () => this.forceLogout('[Watcher] Falló renovación'),
-            })
-          } else {
-            this.forceLogout('[Watcher] Token expirado sin refresh.')
-          }
-          return
-        }
-
-        // 🔒 Verifica con backend que el token no haya sido alterado
-        this.authService.verifyToken().subscribe({
-          next: () => {}, // Token válido, todo bien
-          error: () => {
-            this.forceLogout('[Watcher] Token inválido según backend.')
-          }
-        })
-
-      } catch (e) {
-        this.forceLogout('[Watcher] Token corrupto.')
+      const expiresIn = decoded.exp - now
+      if (expiresIn <= 0) {
+        this.tryRefreshOrLogout()
+        return
       }
-    }, 5000)
+
+      // 🔁 Renueva el token 10 segundos antes de que expire
+      const checkIn = (expiresIn - 10) * 1000
+
+      this.timeoutId = setTimeout(() => this.tryRefreshOrLogout(), checkIn)
+
+      console.log(`[Watcher] Token válido. Se revisará en ${checkIn / 1000}s`)
+    } catch (e) {
+      this.forceLogout('[Watcher] Token corrupto')
+    }
+  }
+
+  private tryRefreshOrLogout() {
+    const refreshToken = this.authService.getRefreshToken()
+    if (refreshToken) {
+      this.authService.refreshAccessToken().subscribe({
+        next: () => {
+          console.log('[Watcher] Access token renovado')
+          this.scheduleTokenCheck()
+        },
+        error: () => this.forceLogout('[Watcher] Falló renovación de token')
+      })
+    } else {
+      this.forceLogout('[Watcher] No hay refresh token')
+    }
   }
 
   private forceLogout(msg: string) {
     console.warn(msg)
+    clearTimeout(this.timeoutId)
     this.authService.logout()
     this.router.navigate(['/login'])
   }

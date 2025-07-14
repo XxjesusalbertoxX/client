@@ -1,0 +1,18 @@
+<div class="board-container">
+  <div class="column-labels">
+    <div class="cell label"></div>
+    <div *ngFor="let x of board[0]; let i = index" class="cell label">
+      {{ getLetter(i) }}
+    </div>
+  </div>
+
+  <div *ngFor="let row of board; let y = index" class="row">
+    <div class="cell label">{{ y + 1 }}</div>
+    <div
+      *ngFor="let cell of row; let x = index"
+      class="cell"
+      [ngClass]="getCellClass(cell)"
+      (click)="handleCellClick(x, y)"
+    ></div>
+  </div>
+</div>

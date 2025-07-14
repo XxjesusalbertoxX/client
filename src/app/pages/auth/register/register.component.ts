@@ -6,12 +6,12 @@ import {
   ReactiveFormsModule
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { InputComponent } from '../../shared/components/input/input.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
-import { onlyLetters, passwordStrength, uniqueEmailValidator } from '../../shared/validators/validators'
+import { InputComponent } from '../../../shared/components/input/input.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { onlyLetters, passwordStrength, uniqueEmailValidator } from '../../../shared/validators/validators'
 
-import { AuthService } from '../../services/auth.service';
-import { UserRegister } from '../../models/user.model';
+import { AuthService } from '../../../services/auth.service';
+import { UserRegister } from '../../../models/user.model';
 
 @Component({
   standalone: true,

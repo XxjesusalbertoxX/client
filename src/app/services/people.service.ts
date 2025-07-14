@@ -1,6 +1,6 @@
 // src/app/services/people.service.ts
 import { Injectable } from '@angular/core'
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http'
 import { Observable, throwError } from 'rxjs'
 import { catchError } from 'rxjs/operators'
 import { StatsResponse } from '../models/stats.model'
