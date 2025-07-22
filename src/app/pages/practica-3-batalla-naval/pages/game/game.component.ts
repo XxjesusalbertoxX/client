@@ -1,7 +1,13 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { BoardComponent } from '../../components/board/board.component';
-import { HttpClient } from '@angular/common/http';
+import { BattleShipService } from '../../../../services/battle-ship.service';
+import { GameViewModel } from '../../view-models/game-view-model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { interval, Subscription } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -11,59 +17,87 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./game.component.scss']
 })
 export class GameComponent implements OnInit, OnDestroy {
-  myBoard = signal<number[][]>([]);
-  enemyBoard = signal<number[][]>([]);
-  gameId = signal<number | null>(null);
-  currentTurnId = signal<number | null>(null);
-  myUserId = signal<number | null>(null);
+  private battleShipService = inject(BattleShipService);
+  private route = inject(ActivatedRoute);
 
-  intervalId?: ReturnType<typeof setInterval>;
+  // ViewModel para cada instancia de juego
+  viewModel = new GameViewModel();
 
-  constructor(private http: HttpClient) {}
+  private pollingSubscription?: Subscription;
+  private readonly POLLING_INTERVAL = 2000; // 2 segundos
 
   ngOnInit() {
-    const id = this.extractGameId();
+    this.setupGame();
+  }
+  /**
+   * Configura el juego obteniendo el ID de la ruta o del localStorage.
+   * Inicia el polling para obtener actualizaciones del estado del juego.
+   */
+  public setupGame() {
+    // Obtener gameId de la ruta o localStorage
+    const gameIdParam = this.route.snapshot.paramMap.get('id');
+    const gameIdStorage = localStorage.getItem('currentGameId');
 
-    this.gameId.set(id);
-    this.startPolling();
+    const gameId = gameIdParam || gameIdStorage;
+
+    if (!gameId) {
+      this.viewModel.setError('No se encontró ID del juego');
+      return;
+    }
+
+    // Guardar el ID en el ViewModel y en el servicio
+    this.viewModel.setGameId(gameId);
+    this.battleShipService.setGameId(gameId);
+
+    // Iniciar el polling para actualizaciones del juego
+    this.startGamePolling(gameId);
   }
 
-  extractGameId(): number {
-    return Number(localStorage.getItem('currentGameId'));
-  }
-
-  startPolling() {
-    const id = this.gameId();
-    if (!id) return;
-
-    this.intervalId = setInterval(() => {
-      this.http.get<any>(`/game/${id}/status`).subscribe({
-        next: (status) => {
-          this.myBoard.set(status.my_board);
-          this.enemyBoard.set(status.enemy_board);
-          this.currentTurnId.set(status.current_turn_user_id);
-          this.myUserId.set(
-            status.players.find((p: any) => p.is_self)?.id || null
-          );
+  private startGamePolling(gameId: string) {
+    this.pollingSubscription = interval(this.POLLING_INTERVAL)
+      .pipe(
+        switchMap(() => this.battleShipService.getGameStatus(gameId)),
+        catchError(error => {
+          this.viewModel.setError(`Error al obtener estado: ${error.message}`);
+          return of(null); // Continuar el observable
+        }),
+        takeUntilDestroyed() // Se desuscribe automáticamente cuando el componente se destruye
+      )
+      .subscribe(gameData => {
+        if (gameData) {
+          this.viewModel.setGameData(gameData);
         }
       });
-    }, 2000);
   }
 
-  onAttack(event: { x: number; y: number }) {
-    if (this.currentTurnId() !== this.myUserId()) {
+  onAttack(coords: { x: number; y: number }) {
+    if (!this.viewModel.isMyTurn()) {
       console.warn('No es tu turno');
       return;
     }
 
-    const id = this.gameId();
-    this.http.post(`/game/${event.x}/${event.y}/attack`, {}).subscribe({
-      next: (res) => console.log('Ataque enviado'),
-      error: (err) => console.error('Error al atacar', err)
-    });
+    const gameId = this.viewModel.getGameId();
+    if (!gameId) return;
+
+    this.battleShipService.attack(gameId, coords)
+      .pipe(
+        catchError(error => {
+          this.viewModel.setError(`Error al atacar: ${error.message}`);
+          return of(null);
+        })
+      )
+      .subscribe(result => {
+        if (result) {
+          console.log(`Ataque a (${coords.x},${coords.y}): ${result.status}`);
+        }
+        // El estado actualizado llegará en el siguiente polling
+      });
   }
 
   ngOnDestroy() {
-    if (this.intervalId) clearInterval(this.intervalId);
+    // La desuscripción ahora es manejada por takeUntilDestroyed()
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+    }
   }
 }

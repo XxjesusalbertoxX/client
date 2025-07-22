@@ -1,4 +1,4 @@
-<div class="board-container">
+<div class="board-container" [class.disabled-board]="disabled && !isOwnBoard">
   <div class="column-labels">
     <div class="cell label"></div>
     <div *ngFor="let x of board[0]; let i = index" class="cell label">

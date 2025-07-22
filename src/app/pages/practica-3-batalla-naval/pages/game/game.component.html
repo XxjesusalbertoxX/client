@@ -1,11 +1,36 @@
-<div class="game-view">
-  <h2>Tu Tablero</h2>
-  <app-board [board]="myBoard()" [isOwnBoard]="true"></app-board>
+<div class="game-container">
+  <!-- Mensaje de carga -->
+  <div *ngIf="viewModel.isLoading()" class="loading-container">
+    <p>Cargando tableros...</p>
+  </div>
 
-  <h2>Tablero Enemigo</h2>
-  <app-board
-    [board]="enemyBoard()"
-    [isOwnBoard]="false"
-    (attack)="onAttack($event)"
-  ></app-board>
+  <!-- Mensaje de error -->
+  <div *ngIf="viewModel.errorMessage()" class="error-container">
+    <p class="error-message">{{ viewModel.errorMessage() }}</p>
+    <button (click)="setupGame()">Reintentar</button>
+  </div>
+
+  <!-- Información de turno -->
+  <div *ngIf="!viewModel.isLoading() && !viewModel.errorMessage()" class="turn-info">
+    <p *ngIf="viewModel.isMyTurn()" class="my-turn">Es tu turno</p>
+    <p *ngIf="!viewModel.isMyTurn()" class="waiting-turn">Esperando al oponente...</p>
+  </div>
+
+  <!-- Tableros de juego -->
+  <div class="game-view" *ngIf="viewModel.myBoard().length > 0 && viewModel.enemyBoard().length > 0">
+    <div class="board-wrapper">
+      <h2>Tu Tablero</h2>
+      <app-board [board]="viewModel.myBoard()" [isOwnBoard]="true"></app-board>
+    </div>
+
+    <div class="board-wrapper">
+      <h2>Tablero Enemigo</h2>
+      <app-board
+        [board]="viewModel.enemyBoard()"
+        [isOwnBoard]="false"
+        [disabled]="!viewModel.isMyTurn()"
+        (attack)="onAttack($event)"
+      ></app-board>
+    </div>
+  </div>
 </div>

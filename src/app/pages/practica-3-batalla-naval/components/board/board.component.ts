@@ -11,26 +11,33 @@ import { CommonModule } from '@angular/common';
 export class BoardComponent {
   @Input() board: number[][] = [];
   @Input() isOwnBoard: boolean = false;    // true = defensa, false = ataque
+  @Input() disabled: boolean = false;      // deshabilitar interacción
 
   @Output() attack = new EventEmitter<{ x: number, y: number }>();
 
   handleCellClick(x: number, y: number) {
-    if (this.isOwnBoard) return; // No puedes atacar tu propio tablero
+    // No permitir ataques en tablero propio o si está deshabilitado
+    if (this.isOwnBoard || this.disabled) return;
+
+    // No permitir ataques en celdas ya atacadas (2=agua, 3=barco hundido)
+    const cellValue = this.board[y][x];
+    if (cellValue === 2 || cellValue === 3) return;
+
     this.attack.emit({ x, y });
   }
 
   getCellClass(value: number): string {
+    const baseClass = this.disabled && !this.isOwnBoard ? 'disabled ' : '';
+
     switch (value) {
-      case 1: return this.isOwnBoard ? 'ship' : 'empty'; // ocultar barcos enemigos
-      case 2: return 'miss';
-      case 3: return 'hit';
-      default: return 'empty'; // case 0
+      case 1: return baseClass + (this.isOwnBoard ? 'ship' : 'empty'); // ocultar barcos enemigos
+      case 2: return baseClass + 'miss';
+      case 3: return baseClass + 'hit';
+      default: return baseClass + 'empty'; // case 0
     }
   }
 
   getLetter(index: number): string {
     return String.fromCharCode(65 + index); // A, B, C, ...
   }
-
-
 }
