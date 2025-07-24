@@ -1,0 +1,257 @@
+<div class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+  
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+  
+  <!-- Partículas de fondo -->
+  <div class="absolute inset-0">
+    <div class="absolute w-2 h-2 bg-white rounded-full animate-pulse" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="absolute w-1 h-1 bg-blue-300 rounded-full animate-pulse" style="top: 40%; left: 80%; animation-delay: 1s;"></div>
+    <div class="absolute w-3 h-3 bg-purple-300 rounded-full animate-pulse" style="top: 60%; left: 20%; animation-delay: 2s;"></div>
+    <div class="absolute w-1 h-1 bg-pink-300 rounded-full animate-pulse" style="top: 80%; left: 70%; animation-delay: 0.5s;"></div>
+  </div>
+
+  <div class="relative z-10 p-4 pt-20">
+    
+    <!-- Header -->
+    <div class="text-center mb-12 animate-fade-in">
+      <h1 class="text-6xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        📊 Estadísticas
+      </h1>
+      <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+        Revisa tu historial de batallas navales y analiza tu rendimiento
+      </p>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="flex items-center justify-center min-h-96">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p class="text-white text-xl">Cargando estadísticas...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error()) {
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-red-500/20 border border-red-400 rounded-2xl p-6 text-center">
+          <p class="text-red-300 text-lg">{{ error() }}</p>
+          <button 
+            (click)="loadStats()"
+            class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            Reintentar
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Stats Content -->
+    @if (stats() && !loading()) {
+      <div class="max-w-6xl mx-auto">
+        
+        <!-- Cards de resumen -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div class="bg-gradient-to-br from-green-600/20 to-emerald-600/20 backdrop-blur-xl rounded-2xl p-6 border border-green-400/30">
+            <div class="text-center">
+              <div class="text-4xl mb-2">🏆</div>
+              <div class="text-3xl font-bold text-green-400">{{ stats()!.wins }}</div>
+              <div class="text-gray-300">Victorias</div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-red-600/20 to-pink-600/20 backdrop-blur-xl rounded-2xl p-6 border border-red-400/30">
+            <div class="text-center">
+              <div class="text-4xl mb-2">💔</div>
+              <div class="text-3xl font-bold text-red-400">{{ stats()!.losses }}</div>
+              <div class="text-gray-300">Derrotas</div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 backdrop-blur-xl rounded-2xl p-6 border border-blue-400/30">
+            <div class="text-center">
+              <div class="text-4xl mb-2">⚔️</div>
+              <div class="text-3xl font-bold text-blue-400">{{ stats()!.wins + stats()!.losses }}</div>
+              <div class="text-gray-300">Total Partidas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfica -->
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 mb-8">
+          <h2 class="text-2xl font-bold text-white mb-6 text-center">
+            📈 Historial de Partidas
+          </h2>
+          <div class="relative h-96">
+            <canvas id="statsChart" class="w-full h-full"></canvas>
+          </div>
+          <p class="text-gray-300 text-center mt-4">
+            Haz clic en una barra para ver el detalle de las partidas
+          </p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Modal de Lista de Partidas -->
+  @if (showGamesModal()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 max-w-4xl w-full max-h-[80vh] overflow-hidden border border-white/20">
+        
+        <!-- Header del modal -->
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-white">{{ modalTitle() }}</h2>
+          <button 
+            (click)="closeModals()"
+            class="text-gray-400 hover:text-white text-2xl">
+            ✕
+          </button>
+        </div>
+
+        <!-- Lista de partidas -->
+        <div class="overflow-y-auto max-h-96 space-y-4">
+          @for (game of selectedGames(); track game.gameId) {
+            <div 
+              (click)="viewGameDetails(game)"
+              class="bg-white/10 rounded-2xl p-4 border border-white/20 hover:border-white/40 cursor-pointer transition-all duration-300 hover:scale-105">
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-white font-semibold">Código: {{ game.code }}</div>
+                  <div class="text-gray-300 text-sm">{{ game.date | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-green-400">⚓ {{ game.shipsSunk }} hundidos</div>
+                  <div class="text-red-400">💥 {{ game.shipsLost }} perdidos</div>
+                </div>
+              </div>
+            </div>
+          }
+          
+          @if (selectedGames().length === 0) {
+            <div class="text-center text-gray-400 py-8">
+              <div class="text-4xl mb-2">🎯</div>
+              <p>No hay partidas en esta categoría</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Detalles del Juego -->
+  @if (showGameDetails()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 max-w-6xl w-full max-h-[90vh] overflow-hidden border border-white/20">
+        
+        <!-- Header del modal -->
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-white">🎯 Detalles de la Partida</h2>
+          <button 
+            (click)="closeModals()"
+            class="text-gray-400 hover:text-white text-2xl">
+            ✕
+          </button>
+        </div>
+
+        @if (loadingDetails()) {
+          <div class="text-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p class="text-white">Cargando detalles...</p>
+          </div>
+        } @else if (gameDetails()) {
+          
+          <!-- Info de la partida -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white/10 rounded-2xl p-4 text-center border border-white/20">
+              <div class="text-2xl mb-1">
+                @if (gameDetails()!.result === 'win') { 🏆 } 
+                @else if (gameDetails()!.result === 'lose') { 💔 }
+                @else { 🤝 }
+              </div>
+              <div class="text-white font-semibold">
+                @if (gameDetails()!.result === 'win') { Victoria }
+                @else if (gameDetails()!.result === 'lose') { Derrota }
+                @else { Empate }
+              </div>
+            </div>
+            
+            <div class="bg-white/10 rounded-2xl p-4 text-center border border-white/20">
+              <div class="text-2xl mb-1">⚓</div>
+              <div class="text-green-400 font-semibold">{{ gameDetails()!.shipsSunk }}</div>
+              <div class="text-gray-300 text-sm">Barcos hundidos</div>
+            </div>
+            
+            <div class="bg-white/10 rounded-2xl p-4 text-center border border-white/20">
+              <div class="text-2xl mb-1">💥</div>
+              <div class="text-red-400 font-semibold">{{ gameDetails()!.shipsLost }}</div>
+              <div class="text-gray-300 text-sm">Barcos perdidos</div>
+            </div>
+          </div>
+
+          <!-- Boards -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-y-auto max-h-96">
+            
+            <!-- Mi tablero -->
+            <div>
+              <h3 class="text-xl font-bold text-white mb-4 text-center">🛡️ Tu Tablero</h3>
+              <div class="grid grid-cols-10 gap-1 max-w-sm mx-auto">
+                @for (row of gameDetails()!.board; track $index; let i = $index) {
+                  @for (cell of row; track $index; let j = $index) {
+                    <div class="w-8 h-8 border {{ getCellClass(cell) }} rounded"></div>
+                  }
+                }
+              </div>
+            </div>
+            
+            <!-- Tablero enemigo -->
+            @if (gameDetails()!.opponentBoard) {
+              <div>
+                <h3 class="text-xl font-bold text-white mb-4 text-center">🎯 Tablero Enemigo</h3>
+                <div class="grid grid-cols-10 gap-1 max-w-sm mx-auto">
+                  @for (row of gameDetails()!.opponentBoard!; track $index; let i = $index) {
+                    @for (cell of row; track $index; let j = $index) {
+                      <div class="w-8 h-8 border {{ getCellClass(cell) }} rounded"></div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Leyenda -->
+          <div class="mt-6 flex items-center justify-center space-x-6 text-sm">
+            <div class="flex items-center space-x-2">
+              <div class="w-4 h-4 bg-blue-500/30 border border-blue-400 rounded"></div>
+              <span class="text-gray-300">Agua</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-4 h-4 bg-gray-600 border border-gray-500 rounded"></div>
+              <span class="text-gray-300">Barco</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-4 h-4 bg-red-500 border border-red-400 rounded"></div>
+              <span class="text-gray-300">Hundido</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-4 h-4 bg-yellow-500 border border-yellow-400 rounded"></div>
+              <span class="text-gray-300">Fallaste</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+</style>

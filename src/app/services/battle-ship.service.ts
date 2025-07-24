@@ -9,111 +9,80 @@ import {
   GameStatusResponse,
   JoinGameResponse,
   StartGameResponse,
+  RematchResponse,
 } from '../pages/practica-3-batalla-naval/models/battle-ship.model';
 
 @Injectable({ providedIn: 'root' })
 export class BattleShipService {
   private _gameId = signal<string | null>(null);
-  private readonly baseURL = 'http://localhost:3333';
-  private readonly prefixGames = `${this.baseURL}/game`;
-  private readonly prefixBattleShip = `${this.baseURL}/battleship`;
+  // private readonly baseURL = 'http://localhost:3333';
+  private readonly baseURL = 'http://192.168.1.30:3333';
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Inicia una partida de Battleship
-   * @param gameId ID de la partida
-   * @returns Observable con la respuesta del inicio de la partida
-   */
-  startGame(gameId: string): Observable<StartGameResponse> {
-    return this.http.post<StartGameResponse>(`${this.prefixBattleShip}/${gameId}/start`, {});
+  // --- GAME ROUTES ---
+  createGame(gameType: string): Observable<CreateGameResponse> {
+    // POST /game/:gameType/create
+    return this.http.post<CreateGameResponse>(`${this.baseURL}/game/${gameType}/create`, {});
   }
 
-  /**
-   * Crea una nueva partida
-   * @param data Datos para crear la partida
-   * @returns Observable con la respuesta de la creación
-   */
-  createGame(data: { gameTypeId: number }): Observable<CreateGameResponse> {
-    return this.http.post<CreateGameResponse>(`${this.prefixGames}/create`, data);
-  }
-
-  /**
-   * Une a un jugador a una partida existente
-   * @param code Código de la partida
-   * @returns Observable con la respuesta de unirse a la partida
-   */
   joinGame(code: string): Observable<JoinGameResponse> {
-    return this.http.post<JoinGameResponse>(`${this.prefixGames}/join`, { code });
+    // POST /game/join
+    return this.http.post<JoinGameResponse>(`${this.baseURL}/game/join`, { code });
   }
 
-  /**
-   * Marca al jugador como listo
-   * @param gameId ID de la partida
-   * @returns Observable con un mensaje de confirmación
-   */
-  markReady(gameId: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.prefixGames}/${gameId}/ready`, {});
+  setReady(gameId: string): Observable<MessageResponse> {
+    // POST /game/:id/ready
+    return this.http.post<MessageResponse>(`${this.baseURL}/game/${gameId}/ready`, {});
   }
 
-  /**
-   * Realiza un ataque en la partida
-   * @param gameId ID de la partida
-   * @param data Coordenadas del ataque
-   * @returns Observable con la respuesta del ataque
-   */
-  attack(gameId: string, data: { x: number; y: number }): Observable<AttackResponse> {
-    return this.http.post<AttackResponse>(`${this.prefixBattleShip}/${gameId}/attack/${data.x}/${data.y}`, {});
-  }
-
-  /**
-   * Obtiene el estado actual de la partida
-   * @param gameId ID de la partida
-   * @returns Observable con el estado de la partida
-   */
-  getGameStatus(gameId: string): Observable<GameStatusResponse> {
-    return this.http.get<GameStatusResponse>(`${this.prefixGames}/${gameId}/status`);
-  }
-
-  /**
-   * Obtiene el estado del lobby de la partida
-   * @param gameId ID de la partida
-   * @returns Observable con el estado del lobby
-   */
   getLobbyStatus(gameId: string): Observable<LobbyStatusResponse> {
-    return this.http.get<LobbyStatusResponse>(`${this.prefixGames}/${gameId}/lobby-status`);
+    // GET /game/:id/lobby-status
+    return this.http.get<LobbyStatusResponse>(`${this.baseURL}/game/${gameId}/lobby-status`);
   }
 
-  /**
-   * Marca la rendición del jugador
-   * @param gameId ID de la partida
-   * @returns Observable con un mensaje de confirmación
-   */
+  getGameStatus(gameId: string): Observable<GameStatusResponse> {
+    // GET /game/:id/status
+    return this.http.get<GameStatusResponse>(`${this.baseURL}/game/${gameId}/status`);
+  }
+
+  startGame(gameId: string): Observable<StartGameResponse> {
+    // POST /game/:id/start
+    console.log('Iniciando partida:', gameId);
+    return this.http.post<StartGameResponse>(`${this.baseURL}/game/${gameId}/start`, {});
+  }
+
+  leaveGame(gameId: string): Observable<MessageResponse> {
+    // POST /game/:id/leave
+    return this.http.post<MessageResponse>(`${this.baseURL}/game/${gameId}/leave`, {});
+  }
+
+  // --- BATTLESHIP ROUTES ---
+  attack(gameId: string, x: number, y: number): Observable<AttackResponse> {
+    // POST /battleship/:id/attack/:x/:y
+    return this.http.post<AttackResponse>(`${this.baseURL}/battleship/${gameId}/attack/${x}/${y}`, {});
+  }
+
   surrender(gameId: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.prefixBattleShip}/${gameId}/surrender`, {});
+    // POST /battleship/:id/surrender
+    return this.http.post<MessageResponse>(`${this.baseURL}/battleship/${gameId}/surrender`, {});
   }
 
-  /**
-   * Envía un latido (heartbeat) para mantener la conexión activa
-   * @param gameId ID de la partida
-   * @returns Observable con un mensaje de confirmación
-   */
   heartbeat(gameId: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.prefixBattleShip}/${gameId}/heartbeat`, {});
+    // POST /battleship/:id/heartbeat
+    return this.http.patch<MessageResponse>(`${this.baseURL}/game/${gameId}/heartbeat`, {});
   }
 
-  /**
-   * Establece el ID de la partida actual
-   * @param id ID de la partida
-   */
+  requestRematch(gameId: string): Observable<RematchResponse> {
+    // POST /game/:id/rematch
+    return this.http.post<RematchResponse>(`${this.baseURL}/game/${gameId}/rematch`, {});
+  }
+
+  // --- UTILS ---
   setGameId(id: string) {
     this._gameId.set(id);
   }
 
-  /**
-   * Obtiene el ID de la partida actual
-   * @returns ID de la partida
-   */
   get gameId() {
     return this._gameId();
   }

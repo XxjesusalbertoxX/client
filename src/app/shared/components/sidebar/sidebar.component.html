@@ -1,73 +1,108 @@
 <!-- Botón de menú hamburguesa -->
 <button
-  class="fixed top-4 left-4 z-50 w-10 h-10 bg-white/80 hover:bg-white text-gray-800 rounded-lg shadow-lg flex items-center justify-center transition duration-300"
+  class="fixed top-4 left-4 z-50 w-12 h-12 bg-gradient-to-br from-purple-600/90 to-blue-600/90 backdrop-blur-lg hover:from-purple-700 hover:to-blue-700 text-white rounded-2xl shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 border border-white/20"
   (click)="toggleSidebar()"
 >
-  ☰
+  <span class="text-lg">☰</span>
 </button>
 
 <!-- Sidebar deslizante -->
 <div
-  class="sidebar fixed top-0 left-0 h-full w-64 bg-white/90 backdrop-blur-lg shadow-xl z-40 flex flex-col transition-transform duration-300"
+  class="sidebar fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-slate-900/95 to-purple-900/95 backdrop-blur-xl shadow-2xl z-40 flex flex-col transition-transform duration-300 border-r border-white/10"
   [@slideInOut]="isOpen ? 'in' : 'out'"
 >
-  <div class="header flex items-center justify-between px-4 py-3 border-b border-gray-200">
-    <h2 class="text-lg font-semibold text-gray-800">Menú</h2>
+  <!-- Header del sidebar -->
+  <div class="header flex items-center justify-between px-6 py-4 border-b border-white/10">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold">🎮</span>
+      </div>
+      <h2 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        GameHub
+      </h2>
+    </div>
     <button
-      class="close-btn text-xl text-gray-600 hover:text-red-500 transition"
+      class="close-btn text-xl text-gray-400 hover:text-red-400 transition-colors duration-300 hover:scale-110"
       (click)="toggleSidebar()"
     >
       ✕
     </button>
   </div>
 
-  <ul class="nav-links flex flex-col gap-2 px-4 py-4">
+  <!-- Navigation Links -->
+  <ul class="nav-links flex flex-col gap-2 px-4 py-6 flex-1">
     <li>
       <a
         routerLink="/people"
-        routerLinkActive="bg-blue-100 text-blue-600 font-medium"
-        class="block px-3 py-2 rounded-md hover:bg-blue-50 transition"
-        >Usuarios</a
+        routerLinkActive="bg-gradient-to-r from-blue-600/50 to-purple-600/50 text-white shadow-lg scale-105"
+        class="group flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-105"
       >
+        <span class="text-xl group-hover:animate-pulse">👥</span>
+        <span class="font-medium">Usuarios</span>
+      </a>
     </li>
-    <li>
-      <a
-        routerLink="/settings"
-        routerLinkActive="bg-blue-100 text-blue-600 font-medium"
-        class="block px-3 py-2 rounded-md hover:bg-blue-50 transition"
-        >Configuración</a
-      >
-    </li>
+    
     <li>
       <a
         routerLink="/games"
-        routerLinkActive="bg-blue-100 text-blue-600 font-medium"
-        class="block px-3 py-2 rounded-md hover:bg-blue-50 transition"
-        >Games</a
+        routerLinkActive="bg-gradient-to-r from-blue-600/50 to-purple-600/50 text-white shadow-lg scale-105"
+        class="group flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-105"
       >
+        <span class="text-xl group-hover:animate-pulse">🎮</span>
+        <span class="font-medium">Juegos</span>
+      </a>
     </li>
+    
+    <li>
+      <a
+        routerLink="/games/battleship/stats"
+        routerLinkActive="bg-gradient-to-r from-blue-600/50 to-purple-600/50 text-white shadow-lg scale-105"
+        class="group flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-105"
+      >
+        <span class="text-xl group-hover:animate-pulse">📊</span>
+        <span class="font-medium">Estadísticas</span>
+      </a>
+    </li>
+    
     <li>
       <a
         routerLink="/settings"
-        routerLinkActive="bg-blue-100 text-blue-600 font-medium"
-        class="block px-3 py-2 rounded-md hover:bg-blue-50 transition"
-        >Reloj coming soon</a
+        routerLinkActive="bg-gradient-to-r from-blue-600/50 to-purple-600/50 text-white shadow-lg scale-105"
+        class="group flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-105"
       >
+        <span class="text-xl group-hover:animate-pulse">⚙️</span>
+        <span class="font-medium">Configuración</span>
+      </a>
     </li>
-    <li>
-      <button
-        (click)="logout()"
-        class="w-full text-left px-3 py-2 rounded-md hover:bg-red-100 text-red-600 transition"
-      >
-        Cerrar sesión
-      </button>
+    
+    <li class="opacity-60">
+      <div class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-500">
+        <span class="text-xl">⏰</span>
+        <div>
+          <span class="font-medium">Reloj</span>
+          <div class="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full inline-block ml-2">
+            Próximamente
+          </div>
+        </div>
+      </div>
     </li>
   </ul>
+
+  <!-- Footer del sidebar -->
+  <div class="px-4 py-4 border-t border-white/10">
+    <button
+      (click)="logout()"
+      class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-gradient-to-r from-red-600/20 to-pink-600/20 hover:from-red-600/30 hover:to-pink-600/30 text-red-300 hover:text-red-200 transition-all duration-300 hover:scale-105 border border-red-500/20"
+    >
+      <span class="text-xl">🚪</span>
+      <span class="font-medium">Cerrar sesión</span>
+    </button>
+  </div>
 </div>
 
 <!-- Sombra de fondo cuando sidebar está abierto -->
 <div
-  class="backdrop fixed inset-0 bg-black/50 z-30"
+  class="backdrop fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
   *ngIf="isOpen"
   (click)="toggleSidebar()"
 ></div>

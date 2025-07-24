@@ -1,52 +1,160 @@
-<div class="relative min-h-screen flex items-center justify-center bg-gray-50 overflow-hidden">
-  <!-- SVG Wave arriba -->
-  <div class="absolute bottom-0 left-0 w-full">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-      <path
-        fill="#00cba9"
-        fill-opacity="1"
-        d="M0,256L15,218.7C30,181,60,107,90,74.7C120,43,150,53,180,101.3C210,149,240,235,270,229.3C300,224,330,128,360,74.7C390,21,420,11,450,53.3C480,96,510,192,540,218.7C570,245,600,203,630,192C660,181,690,203,720,202.7C750,203,780,181,810,192C840,203,870,245,900,234.7C930,224,960,160,990,128C1020,96,1050,96,1080,133.3C1110,171,1140,245,1170,277.3C1200,309,1230,299,1260,266.7C1290,235,1320,181,1350,170.7C1380,160,1410,192,1425,208L1440,224L1440,320L1425,320C1410,320,1380,320,1350,320C1320,320,1290,320,1260,320C1230,320,1200,320,1170,320C1140,320,1110,320,1080,320C1050,320,1020,320,990,320C960,320,930,320,900,320C870,320,840,320,810,320C780,320,750,320,720,320C690,320,660,320,630,320C600,320,570,320,540,320C510,320,480,320,450,320C420,320,390,320,360,320C330,320,300,320,270,320C240,320,210,320,180,320C150,320,120,320,90,320C60,320,30,320,15,320L0,320Z"
-      ></path>
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+  
+  <!-- Partículas animadas de fondo -->
+  <div class="absolute inset-0">
+    <div class="absolute w-2 h-2 bg-purple-400 rounded-full animate-ping" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="absolute w-1 h-1 bg-blue-400 rounded-full animate-ping" style="top: 40%; left: 80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400 rounded-full animate-ping" style="top: 60%; left: 20%; animation-delay: 1s;"></div>
+    <div class="absolute w-2 h-2 bg-cyan-400 rounded-full animate-ping" style="top: 80%; left: 70%; animation-delay: 1.5s;"></div>
+  </div>
+
+  <!-- Ondas de fondo -->
+  <div class="absolute bottom-0 left-0 w-full opacity-20">
+    <svg class="w-full h-64" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#0099ff" fill-opacity="0.4" d="M0,160L90,0L180,160L270,224L360,96L450,128L540,192L630,64L720,288L810,320L900,96L990,160L1080,160L1170,64L1260,32L1350,256L1440,0L1440,320L1350,320L1260,320L1170,320L1080,320L990,320L900,320L810,320L720,320L630,320L540,320L450,320L360,320L270,320L180,320L90,320L0,320Z"></path>
     </svg>
   </div>
 
-  <!-- Login Form -->
-  <form
-    [formGroup]="form"
-    (ngSubmit)="submit()"
-    class="relative z-10 w-full max-w-sm p-8 bg-white/30 backdrop-blur-xl rounded-2xl shadow-lg space-y-6"
-  >
-    <app-input
-      label="Email"
-      type="email"
-      placeholder="you@example.com"
-      formControlName="email"
-    ></app-input>
+  <!-- Contenido principal -->
+  <div class="relative z-10 w-full max-w-md">
+    
+    <!-- Logo/Header -->
+    <div class="text-center mb-8 animate-fade-in">
+      <div class="text-7xl mb-4 animate-bounce">🎮</div>
+      <h1 class="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        GameHub
+      </h1>
+      <p class="text-gray-300 text-lg">Inicia sesión para continuar tu aventura</p>
+      <div class="mt-4 flex justify-center space-x-1">
+        <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0s;"></div>
+        <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+        <div class="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+      </div>
+    </div>
 
-    <app-input
-      label="Password"
-      type="password"
-      placeholder="••••••••"
-      formControlName="password"
-    ></app-input>
+    <!-- Formulario -->
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 animate-slide-up space-y-6">
+      
+      <!-- Email usando app-input -->
+      <div class="transform transition-all duration-300 hover:scale-105">
+        <app-input
+          label="Email"
+          type="email"
+          placeholder="tu@email.com"
+          formControlName="email">
+        </app-input>
+      </div>
 
-    <app-button
-      type="submit"
-      [disabled]="form.invalid || submitting"
-      class="w-full"
-    >
-      {{ submitting ? 'Logging in...' : 'Login' }}
-    </app-button>
+      <!-- Password usando app-input -->
+      <div class="transform transition-all duration-300 hover:scale-105">
+        <app-input
+          label="Contraseña"
+          type="password"
+          placeholder="••••••••"
+          formControlName="password">
+        </app-input>
+      </div>
 
-    <!-- Botón para ir a Register -->
-    <button
-      type="button"
-      class="w-full mt-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded"
-      (click)="goToRegister()"
-    >
-      Register
-    </button>
+      <!-- Botón Login usando app-button -->
+      <div class="pt-2">
+        <app-button
+          type="submit"
+          [disabled]="form.invalid || submitting"
+          class="w-full transform transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl">
+          
+          <span *ngIf="!submitting" class="flex items-center justify-center text-lg font-semibold">
+            <span class="mr-2 text-xl">🚀</span>
+            Iniciar Sesión
+          </span>
+          
+          <span *ngIf="submitting" class="flex items-center justify-center">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Iniciando sesión...
+          </span>
+        </app-button>
+      </div>
 
-    <p class="text-red-500 text-sm" *ngIf="errorMsg">{{ errorMsg }}</p>
-  </form>
+      <!-- Separador elegante -->
+      <div class="relative my-8">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-4 bg-transparent text-gray-400 font-medium">¿Primera vez aquí?</span>
+        </div>
+      </div>
+
+      <!-- Botón Register -->
+      <button
+        type="button"
+        (click)="goToRegister()"
+        class="w-full py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-300 hover:scale-105 transform">
+        
+        <span class="flex items-center justify-center text-lg">
+          <span class="mr-2 text-xl">✨</span>
+          Crear cuenta nueva
+        </span>
+      </button>
+
+      <!-- Error -->
+      <div *ngIf="errorMsg" 
+           class="p-4 bg-red-500/20 border-2 border-red-400 rounded-2xl text-red-300 text-center animate-pulse backdrop-blur-sm">
+        <div class="flex items-center justify-center">
+          <span class="mr-2">⚠️</span>
+          {{ errorMsg }}
+        </div>
+      </div>
+    </form>
+
+    <!-- Footer con enlaces -->
+    <div class="text-center mt-8 animate-fade-in-delay">
+      <div class="space-y-3">
+        <p class="text-gray-400 text-sm">
+          ¿Olvidaste tu contraseña? 
+          <span class="text-purple-400 hover:text-purple-300 cursor-pointer underline underline-offset-2">
+            Recupérala aquí
+          </span>
+        </p>
+        <div class="flex items-center justify-center space-x-6 text-gray-500">
+          <span class="text-xs">Términos</span>
+          <span class="text-xs">•</span>
+          <span class="text-xs">Privacidad</span>
+          <span class="text-xs">•</span>
+          <span class="text-xs">Ayuda</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-delay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 1s ease-out 0.3s both;
+}
+
+.animate-fade-in-delay {
+  animation: fade-in-delay 1s ease-out 1.5s both;
+}
+</style>

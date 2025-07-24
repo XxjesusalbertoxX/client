@@ -1,53 +1,56 @@
-// src/app/pages/practica-3-battalla-naval/pages/join-game/join-game.component.ts
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { BattleShipService } from '../../../../services/battle-ship.service';
-import { JoinGameResponse } from '../../models/battle-ship.model';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   standalone: true,
   selector: 'app-join-game',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './join-game.component.html',
   styleUrls: ['./join-game.component.scss']
 })
 export class JoinGameComponent {
-  form: FormGroup;
+  private fb = inject(FormBuilder);
+
+  form = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8)]]
+  });
+
   isLoading = false;
   errorMessage = '';
 
   constructor(
-    private fb: FormBuilder,
+    private formBuilder: FormBuilder,
     private battleShipService: BattleShipService,
-    private router: Router
-  ) {
-    this.form = this.fb.group({
-      code: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8)]]
-    });
-  }
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
 
   onSubmit() {
-    if (this.form.invalid) return;
-    this.isLoading = true;
-    this.errorMessage = '';
+    if (this.form.valid && !this.isLoading) {
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      const code = this.form.value.code!.toUpperCase();
+      
+      this.battleShipService.joinGame(code).subscribe({
+        next: (response) => {
+          this.router.navigate(['/games/battleship/lobby'], { 
+            queryParams: { id: response.gameId } 
+          });
+        },
+        error: (error) => {
+          this.errorMessage = error.error?.message || 'Error al unirse a la partida';
+          this.isLoading = false;
+        }
+      });
+    }
+  }
 
-    const gameCode = this.form.value.code.toUpperCase();
-
-    this.battleShipService.joinGame(gameCode).subscribe({
-      next: (res: JoinGameResponse) => {
-        console.log('Unido a partida:', res.gameId);
-        this.router.navigate(['games/battleship/lobby'], { queryParams: { id: res.gameId } });
-      },
-      error: (err: any) => {
-        console.error('Error al unirse a la partida:', err);
-        this.errorMessage = 'No se pudo unir a la partida. Verifique el código e intente de nuevo.';
-        this.isLoading = false;
-      },
-      complete: () => {
-        this.isLoading = false;
-      }
-    });
+  goBack() {
+    this.router.navigate(['/games/battleship']);
   }
 }

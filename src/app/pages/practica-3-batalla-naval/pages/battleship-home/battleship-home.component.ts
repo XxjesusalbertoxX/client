@@ -18,11 +18,11 @@ export class BattleshipHomeComponent {
 
   goToCreate() {
     this.battleShipService
-      .createGame({ gameTypeId: 1 })
+      .createGame('battleship')
       .subscribe({
         next: (res) => {
           this.router.navigate(['games/battleship/lobby'], {
-            queryParams: { id: res.id, code: res.code },
+            queryParams: { id: res.gameId, code: res.code },
           });
         },
         error: (err) => {
@@ -33,5 +33,9 @@ export class BattleshipHomeComponent {
 
   goToJoin() {
     this.router.navigateByUrl('games/battleship/join');
+  }
+
+  goBack() {
+    this.router.navigate(['/games']);
   }
 }

@@ -8,7 +8,8 @@ import { StatsResponse } from '../models/stats.model'
 
 @Injectable({ providedIn: 'root' })
 export class PeopleService {
-  private baseUrl = 'http://localhost:3333'
+  // private baseUrl = 'http://localhost:3333'
+  private baseUrl = 'http://192.168.1.30:3333'
 
   constructor(private http: HttpClient) {}
 

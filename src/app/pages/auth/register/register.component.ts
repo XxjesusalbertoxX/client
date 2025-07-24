@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { onlyLetters, passwordStrength, uniqueEmailValidator } from '../../../shared/validators/validators'
-
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { UserRegister } from '../../../models/user.model';
 
@@ -23,6 +23,8 @@ import { UserRegister } from '../../../models/user.model';
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
+  private router = inject(Router); // Agregar esta línea
+
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), onlyLetters()]],
@@ -71,5 +73,9 @@ export class RegisterComponent {
 
   get password(): FormControl {
     return this.form.get('password') as FormControl;
+  }
+
+  goToLogin() {
+    this.router.navigate(['/login']);
   }
 }

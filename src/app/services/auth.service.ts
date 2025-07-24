@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
+import { jwtDecode } from 'jwt-decode';
 import { Observable, map } from 'rxjs'
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private baseUrl = 'http://localhost:3333'
+  // private baseUrl = 'http://localhost:3333'
+  private baseUrl = 'http://192.168.1.30:3333'
 
   constructor(private http: HttpClient) {}
 
@@ -42,7 +44,12 @@ export class AuthService {
     })
   }
 
-
+  getUser(): Observable<any> {
+    const token = this.getAccessToken()
+    return this.http.get(`${this.baseUrl}/auth/user`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+  }
 
   refreshAccessToken(): Observable<string> {
     const refreshToken = this.getRefreshToken()
@@ -69,5 +76,16 @@ export class AuthService {
     return this.http.get<{ exists: boolean }>(`/api/check-email/${email}`).pipe(
       map(response => response.exists)
     )
+  }
+
+  getUserId(): number | null {
+    const token = this.getAccessToken();
+    if (!token) return null;
+    try {
+      const payload: any = jwtDecode(token);
+      return payload.id || payload.userId || null;
+    } catch {
+      return null;
+    }
   }
 }

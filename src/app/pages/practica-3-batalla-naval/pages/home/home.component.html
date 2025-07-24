@@ -1,16 +1,115 @@
-// src/app/pages/practica-3-battalla-naval/pages/home/home.component.html
-<div class="flex flex-col items-center justify-center min-h-screen gap-6">
-  <button
-    (click)="goToBattleship()"
-    class="px-6 py-3 rounded-2xl font-semibold transition-colors duration-200 bg-blue-600 hover:bg-blue-700 text-white"
-  >
-    Battleship
-  </button>
+<div class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+  
+  <!-- Partículas de fondo -->
+  <div class="absolute inset-0">
+    <div class="absolute w-2 h-2 bg-white rounded-full animate-pulse" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="absolute w-1 h-1 bg-blue-300 rounded-full animate-pulse" style="top: 40%; left: 80%; animation-delay: 1s;"></div>
+    <div class="absolute w-3 h-3 bg-purple-300 rounded-full animate-pulse" style="top: 60%; left: 20%; animation-delay: 2s;"></div>
+    <div class="absolute w-1 h-1 bg-pink-300 rounded-full animate-pulse" style="top: 80%; left: 70%; animation-delay: 0.5s;"></div>
+  </div>
 
-  <button
-    (click)="goToSimon()"
-    class="px-6 py-3 rounded-2xl font-semibold transition-colors duration-200 bg-gray-200 hover:bg-gray-300 text-black"
-  >
-    Simón Dice
-  </button>
+  <div class="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
+    
+    <!-- Header -->
+    <div class="text-center mb-12 animate-fade-in">
+      <h1 class="text-7xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        GameHub
+      </h1>
+      <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+        Descubre un mundo de juegos épicos. Elige tu aventura y demuestra tus habilidades.
+      </p>
+    </div>
+
+    <!-- Juegos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+      
+      <!-- Battleship -->
+      <div class="group relative">
+        <button
+          (click)="goToBattleship()"
+          class="w-full p-8 bg-gradient-to-br from-blue-600/20 to-cyan-600/20 backdrop-blur-xl rounded-3xl border border-blue-400/30 hover:border-blue-400/60 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25">
+          
+          <div class="text-6xl mb-4 group-hover:animate-bounce">⚓</div>
+          
+          <h2 class="text-3xl font-bold text-white mb-3">Batalla Naval</h2>
+          <p class="text-gray-300 mb-4">Estrategia clásica en alta mar. Hunde la flota enemiga antes de que hundan la tuya.</p>
+          
+          <div class="flex items-center justify-center space-x-4 text-sm text-gray-400">
+            <span class="flex items-center">
+              <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+              Disponible
+            </span>
+            <span>👥 2 Jugadores</span>
+          </div>
+          
+          <!-- Indicador de hover -->
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </button>
+      </div>
+
+      <!-- Simón Dice -->
+      <div class="group relative">
+        <button
+          (click)="goToSimon()"
+          class="w-full p-8 bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-xl rounded-3xl border border-purple-400/30 hover:border-purple-400/60 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 opacity-75">
+          
+          <div class="text-6xl mb-4 group-hover:animate-pulse">🎵</div>
+          
+          <h2 class="text-3xl font-bold text-white mb-3">Simón Dice</h2>
+          <p class="text-gray-300 mb-4">Pon a prueba tu memoria con este clásico juego de secuencias. ¿Puedes seguir el ritmo?</p>
+          
+          <div class="flex items-center justify-center space-x-4 text-sm text-gray-400">
+            <span class="flex items-center">
+              <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+              Próximamente
+            </span>
+            <span>👤 1 Jugador</span>
+          </div>
+          
+          <!-- Badge de "Coming Soon" -->
+          <div class="absolute top-4 right-4 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+            SOON
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer stats -->
+    <div class="mt-16 text-center animate-fade-in-delay">
+      <div class="flex items-center justify-center space-x-8 text-gray-400">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-white">1</div>
+          <div class="text-sm">Juegos disponibles</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-white">∞</div>
+          <div class="text-sm">Diversión garantizada</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-white">🎮</div>
+          <div class="text-sm">Para todos</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-delay {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+
+.animate-fade-in-delay {
+  animation: fade-in-delay 1s ease-out 0.5s both;
+}
+</style>

@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LobbyPlayer } from '../../models/battle-ship.model';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   standalone: true,
@@ -11,12 +12,19 @@ import { LobbyPlayer } from '../../models/battle-ship.model';
 })
 export class CardPlayerComponent {
   @Input() player!: LobbyPlayer | null;
-  @Input() isCurrent: boolean = false;
   @Input() canReady: boolean = false;
-
   @Output() ready = new EventEmitter<void>();
 
+  private authService = inject(AuthService);
+
+  get isCurrent(): boolean {
+    if (!this.player) return false;
+    return Number(this.authService.getUserId()) === this.player.userId;
+  }
+
   handleReady() {
-    this.ready.emit();
+    if (this.isCurrent && !this.player?.ready) {
+      this.ready.emit();
+    }
   }
 }

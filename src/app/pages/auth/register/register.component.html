@@ -1,70 +1,207 @@
-<div class="relative min-h-screen flex items-center justify-center bg-gray-50 overflow-hidden">
-  <!-- SVG Wave arriba -->
-  <div class="absolute bottom-0 left-0 w-full">
+<div class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 relative overflow-hidden">
+  
+  <!-- Elementos decorativos animados -->
+  <div class="absolute inset-0">
+    <div class="absolute w-64 h-64 bg-purple-600/20 rounded-full blur-3xl animate-pulse" style="top: 10%; left: 80%; animation-delay: 0s;"></div>
+    <div class="absolute w-96 h-96 bg-blue-600/15 rounded-full blur-3xl animate-pulse" style="bottom: 10%; right: 80%; animation-delay: 2s;"></div>
+    <div class="absolute w-48 h-48 bg-pink-600/20 rounded-full blur-3xl animate-pulse" style="top: 50%; left: 10%; animation-delay: 1s;"></div>
+    <div class="absolute w-32 h-32 bg-cyan-600/25 rounded-full blur-2xl animate-pulse" style="top: 70%; right: 20%; animation-delay: 1.5s;"></div>
+  </div>
+
+  <!-- Ondas de fondo -->
+  <div class="absolute bottom-0 left-0 w-full opacity-30">
     <svg class="w-full h-auto" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
       <path
         fill="#0099ff"
-        fill-opacity="1"
-        d="M0,160L90,0L180,160L270,224L360,96L450,128L540,192L630,64L720,288L810,320L900,96L990,160L1080,160L1170,64L1260,32L1350,256L1440,0L1440,320L1350,320L1260,320L1170,320L1080,320L990,320L900,320L810,320L720,320L630,320L540,320L450,320L360,320L270,320L180,320L90,320L0,320Z"
-      ></path>
+        fill-opacity="0.3"
+        d="M0,160L90,0L180,160L270,224L360,96L450,128L540,192L630,64L720,288L810,320L900,96L990,160L1080,160L1170,64L1260,32L1350,256L1440,0L1440,320L1350,320L1260,320L1170,320L1080,320L990,320L900,320L810,320L720,320L630,320L540,320L450,320L360,320L270,320L180,320L90,320L0,320Z">
+      </path>
     </svg>
   </div>
 
-  <!-- Formulario de Registro -->
-  <form
-    [formGroup]="form"
-    (ngSubmit)="submit()"
-    class="relative z-10 w-full max-w-md p-8 bg-white/30 backdrop-blur-xl rounded-2xl shadow-xl space-y-6"
-  >
-    <!-- Nombre -->
-    <app-input
-      label="Nombre de usuario"
-      placeholder="Tu nombre"
-      type="text"
-      formControlName="name"
-    ></app-input>
-    <div class="text-red-500 text-sm" *ngIf="name.invalid && (name.dirty || name.touched)">
-      <div *ngIf="name.errors?.['required']">El nombre es requerido</div>
-      <div *ngIf="name.errors?.['minlength']">Mínimo 2 caracteres</div>
-      <div *ngIf="name.errors?.['onlyLetters']">Solo letras permitidas</div>
+  <!-- Contenido principal -->
+  <div class="relative z-10 w-full max-w-md">
+    
+    <!-- Header -->
+    <div class="text-center mb-8 animate-fade-in">
+      <div class="text-7xl mb-4 animate-bounce">✨</div>
+      <h1 class="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+        Únete a GameHub
+      </h1>
+      <p class="text-gray-300 text-lg">Crea tu cuenta y comienza a jugar</p>
+      <div class="mt-4 flex justify-center space-x-1">
+        <div class="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style="animation-delay: 0s;"></div>
+        <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+        <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+      </div>
     </div>
 
-    <!-- Email -->
-    <app-input
-      label="Correo electrónico"
-      placeholder="ejemplo@correo.com"
-      type="email"
-      formControlName="email"
-    ></app-input>
-    <div class="text-red-500 text-sm" *ngIf="email.invalid && (email.dirty || email.touched)">
-      <div *ngIf="email.errors?.['required']">El correo es requerido</div>
-      <div *ngIf="email.errors?.['email']">Formato inválido</div>
-      <div *ngIf="email.errors?.['uniqueEmail']">Correo ya registrado</div>
+    <!-- Formulario -->
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 animate-slide-up space-y-6">
+      
+      <!-- Nombre usando app-input -->
+      <div class="transform transition-all duration-300 hover:scale-105">
+        <app-input
+          label="Nombre de usuario"
+          placeholder="Tu nombre épico"
+          type="text"
+          formControlName="name">
+        </app-input>
+        <div class="text-red-300 text-sm mt-2 animate-pulse" *ngIf="name.invalid && (name.dirty || name.touched)">
+          <div *ngIf="name.errors?.['required']" class="flex items-center">
+            <span class="mr-1">⚠️</span> El nombre es requerido
+          </div>
+          <div *ngIf="name.errors?.['minlength']" class="flex items-center">
+            <span class="mr-1">⚠️</span> Mínimo 2 caracteres
+          </div>
+          <div *ngIf="name.errors?.['onlyLetters']" class="flex items-center">
+            <span class="mr-1">⚠️</span> Solo letras permitidas
+          </div>
+        </div>
+      </div>
+
+      <!-- Email usando app-input -->
+      <div class="transform transition-all duration-300 hover:scale-105">
+        <app-input
+          label="Correo electrónico"
+          placeholder="tu@email.com"
+          type="email"
+          formControlName="email">
+        </app-input>
+        <div class="text-red-300 text-sm mt-2 animate-pulse" *ngIf="email.invalid && (email.dirty || email.touched)">
+          <div *ngIf="email.errors?.['required']" class="flex items-center">
+            <span class="mr-1">⚠️</span> El correo es requerido
+          </div>
+          <div *ngIf="email.errors?.['email']" class="flex items-center">
+            <span class="mr-1">⚠️</span> Formato inválido
+          </div>
+          <div *ngIf="email.errors?.['uniqueEmail']" class="flex items-center">
+            <span class="mr-1">⚠️</span> Correo ya registrado
+          </div>
+        </div>
+      </div>
+
+      <!-- Contraseña usando app-input -->
+      <div class="transform transition-all duration-300 hover:scale-105">
+        <app-input
+          label="Contraseña"
+          placeholder="••••••••"
+          type="password"
+          formControlName="password">
+        </app-input>
+        <div class="text-red-300 text-sm mt-2 animate-pulse" *ngIf="password.invalid && (password.dirty || password.touched)">
+          <div *ngIf="password.errors?.['required']" class="flex items-center">
+            <span class="mr-1">⚠️</span> La contraseña es requerida
+          </div>
+          <div *ngIf="password.errors?.['minlength']" class="flex items-center">
+            <span class="mr-1">⚠️</span> Mínimo 6 caracteres
+          </div>
+          <div *ngIf="password.errors?.['passwordStrength']" class="flex items-center">
+            <span class="mr-1">⚠️</span> Contraseña débil
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Register usando app-button -->
+      <div class="pt-2">
+        <app-button
+          type="submit"
+          [disabled]="form.invalid || submitting"
+          class="w-full transform transition-all duration-300 hover:scale-105 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 shadow-lg hover:shadow-xl">
+          
+          <span *ngIf="!submitting" class="flex items-center justify-center text-lg font-semibold">
+            <span class="mr-2 text-xl">🎯</span>
+            Crear mi cuenta
+          </span>
+          
+          <span *ngIf="submitting" class="flex items-center justify-center">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Creando cuenta...
+          </span>
+        </app-button>
+      </div>
+
+      <!-- Separador elegante -->
+      <div class="relative my-8">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-4 bg-transparent text-gray-400 font-medium">¿Ya tienes cuenta?</span>
+        </div>
+      </div>
+
+      <!-- Botón Login -->
+      <button
+        type="button"
+        (click)="goToLogin()"
+        class="w-full py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-300 hover:scale-105 transform">
+        
+        <span class="flex items-center justify-center text-lg">
+          <span class="mr-2 text-xl">🚀</span>
+          Iniciar sesión
+        </span>
+      </button>
+
+      <!-- Error general -->
+      <div *ngIf="errorMsg" 
+           class="p-4 bg-red-500/20 border-2 border-red-400 rounded-2xl text-red-300 text-center animate-pulse backdrop-blur-sm">
+        <div class="flex items-center justify-center">
+          <span class="mr-2">⚠️</span>
+          {{ errorMsg }}
+        </div>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="text-center mt-8 animate-fade-in-delay">
+      <div class="space-y-3">
+        <p class="text-gray-400 text-sm">
+          Al registrarte, aceptas nuestros 
+          <span class="text-purple-400 hover:text-purple-300 cursor-pointer underline underline-offset-2">
+            términos y condiciones
+          </span>
+        </p>
+        <div class="flex items-center justify-center space-x-6 text-gray-500">
+          <span class="text-xs">Términos</span>
+          <span class="text-xs">•</span>
+          <span class="text-xs">Privacidad</span>
+          <span class="text-xs">•</span>
+          <span class="text-xs">Ayuda</span>
+        </div>
+      </div>
     </div>
-
-    <!-- Contraseña -->
-    <app-input
-      label="Contraseña"
-      placeholder="••••••••"
-      type="password"
-      formControlName="password"
-    ></app-input>
-    <div class="text-red-500 text-sm" *ngIf="password.invalid && (password.dirty || password.touched)">
-      <div *ngIf="password.errors?.['required']">La contraseña es requerida</div>
-      <div *ngIf="password.errors?.['minlength']">Mínimo 6 caracteres</div>
-      <div *ngIf="password.errors?.['passwordStrength']">Contraseña débil</div>
-    </div>
-
-    <!-- Botón -->
-    <app-button
-      type="submit"
-      [disabled]="form.invalid || submitting"
-      class="w-full"
-    >
-      {{ submitting ? 'Registrando...' : 'Registrar' }}
-    </app-button>
-
-    <!-- Error general -->
-    <p class="text-red-500 text-sm" *ngIf="errorMsg">{{ errorMsg }}</p>
-  </form>
+  </div>
 </div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-delay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 1s ease-out 0.3s both;
+}
+
+.animate-fade-in-delay {
+  animation: fade-in-delay 1s ease-out 1.5s both;
+}
+</style>

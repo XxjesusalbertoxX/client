@@ -1,18 +1,80 @@
-<div class="board-container" [class.disabled-board]="disabled && !isOwnBoard">
-  <div class="column-labels">
-    <div class="cell label"></div>
-    <div *ngFor="let x of board[0]; let i = index" class="cell label">
-      {{ getLetter(i) }}
+<div class="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
+  <!-- Header del tablero -->
+    <div class="mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-lg font-semibold text-gray-800">
+        {{ playerName }}
+      </h3>
+      <div class="flex items-center space-x-2">
+        <div class="text-sm text-gray-600">
+          <span class="font-medium">Barcos:</span> 
+          <span class="text-blue-600 font-bold">{{ shipsRemaining }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Avatar del jugador -->
+    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+      <div class="w-10 h-10 bg-gradient-to-r {{ isOwnBoard ? 'from-green-500 to-teal-600' : 'from-blue-500 to-purple-600' }} rounded-full flex items-center justify-center text-white font-bold">
+        {{ (playerName || '?').charAt(0).toUpperCase() }}
+      </div>
+      <div>
+        <p class="font-medium text-gray-800">{{ playerName }}</p>
+        <p class="text-sm text-gray-500">{{ isOwnBoard ? 'Tú' : 'Oponente' }}</p>
+      </div>
     </div>
   </div>
+  <!-- Tablero -->
+  <div class="bg-gray-50 p-3 rounded-lg border-2 border-gray-300"
+     [class.opacity-70]="disabled && !isOwnBoard"
+     [class.cursor-not-allowed]="disabled && !isOwnBoard">
 
-  <div *ngFor="let row of board; let y = index" class="row">
-    <div class="cell label">{{ y + 1 }}</div>
-    <div
-      *ngFor="let cell of row; let x = index"
-      class="cell"
-      [ngClass]="getCellClass(cell)"
-      (click)="handleCellClick(x, y)"
-    ></div>
+    <!-- Encabezado de columnas -->
+    @if (board && board[0]) {
+      <div class="grid" [ngStyle]="{'grid-template-columns': 'repeat(' + (board[0].length + 1) + ', minmax(0, 1fr))'}">
+        <div class="w-8 h-8"></div> <!-- Esquina vacía -->
+        @for (colIndex of columnIndexes; track colIndex) {
+          <div class="w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-700">
+            {{ getLetter(colIndex) }}
+          </div>
+        }
+      </div>
+    }
+    
+    <!-- Filas del tablero -->
+    @for (rowIndex of rowIndexes; track rowIndex) {
+      <div class="grid" [ngStyle]="{'grid-template-columns': 'repeat(' + (board[rowIndex].length + 1) + ', minmax(0, 1fr))'}">
+        <!-- Etiqueta de fila -->
+        <div class="w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-700">
+          {{ rowIndex + 1 }}
+        </div>
+        @for (colIndex of columnIndexes; track colIndex) {
+          <div class="w-8 h-8 border border-gray-300 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md"
+               [ngClass]="getCellClasses(board[rowIndex][colIndex])"
+               (click)="handleCellClick(rowIndex, colIndex)">
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Leyenda -->
+  <div class="mt-4 flex flex-wrap gap-4 text-xs">
+    <div class="flex items-center space-x-1">
+      <div class="w-3 h-3 bg-blue-500 border border-gray-300"></div>
+      <span class="text-gray-600">Barco</span>
+    </div>
+    <div class="flex items-center space-x-1">
+      <div class="w-3 h-3 bg-red-500 border border-gray-300"></div>
+      <span class="text-gray-600">Tocado</span>
+    </div>
+    <div class="flex items-center space-x-1">
+      <div class="w-3 h-3 bg-gray-300 border border-gray-300"></div>
+      <span class="text-gray-600">Agua</span>
+    </div>
+    <div class="flex items-center space-x-1">
+      <div class="w-3 h-3 bg-gray-100 border border-gray-300"></div>
+      <span class="text-gray-600">Sin atacar</span>
+    </div>
   </div>
 </div>

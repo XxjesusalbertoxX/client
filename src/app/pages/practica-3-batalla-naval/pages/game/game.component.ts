@@ -1,44 +1,69 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
 import { BoardComponent } from '../../components/board/board.component';
 import { BattleShipService } from '../../../../services/battle-ship.service';
 import { GameViewModel } from '../../view-models/game-view-model';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval, Subscription } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Subject, of, interval, Subscription, takeUntil } from 'rxjs';
+import { AuthService } from '../../../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GameEndModalComponent } from '../../../../shared/components/game-end-modal/game-end-modal.component';
+import { switchMap, catchError, finalize } from 'rxjs/operators';
+
+
 
 @Component({
   standalone: true,
   selector: 'app-game',
-  imports: [CommonModule, BoardComponent],
+  imports: [CommonModule, BoardComponent, GameEndModalComponent], // Añade GameEndModalComponent aquí
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']
 })
 export class GameComponent implements OnInit, OnDestroy {
   private battleShipService = inject(BattleShipService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private destroy$ = new Subject<void>();
+  private authService = inject(AuthService);
+  
+  initialLoadComplete = false;
+  showConfirmLeaveModal = false;
+  isProcessing = false;
+  showEndModal = false;
+  winnerName = '';
+  loserName = '';
+  isWinner = false;
+  rematchRequested = false;
+  opponentLeft = false;
+  currentUserName = '';
+  constructor(private toastr: ToastrService, /* otros servicios */) {}
 
   // ViewModel para cada instancia de juego
-  viewModel = new GameViewModel();
+  viewModel = new GameViewModel(this.authService);
 
   private pollingSubscription?: Subscription;
   private readonly POLLING_INTERVAL = 2000; // 2 segundos
 
   ngOnInit() {
-    this.setupGame();
+    // Obtener el nombre del usuario
+    this.authService.getUser().subscribe(user => {
+      if (user) {
+        this.currentUserName = user.name;
+      }
+      // Configurar el juego después de obtener el usuario
+      this.setupGame();
+    });
   }
   /**
    * Configura el juego obteniendo el ID de la ruta o del localStorage.
    * Inicia el polling para obtener actualizaciones del estado del juego.
    */
   public setupGame() {
-    // Obtener gameId de la ruta o localStorage
-    const gameIdParam = this.route.snapshot.paramMap.get('id');
+    // Obtener gameId de los query params o localStorage
+    const gameIdQuery = this.route.snapshot.queryParamMap.get('id');
     const gameIdStorage = localStorage.getItem('currentGameId');
 
-    const gameId = gameIdParam || gameIdStorage;
+    const gameId = gameIdQuery || gameIdStorage;
 
     if (!gameId) {
       this.viewModel.setError('No se encontró ID del juego');
@@ -53,49 +78,159 @@ export class GameComponent implements OnInit, OnDestroy {
     this.startGamePolling(gameId);
   }
 
+  handleGameEnd(gameData: any) {
+    if (gameData.status === 'finished') {
+      this.showEndModal = true;
+      this.winnerName = gameData.winnerName;
+      this.loserName = gameData.loserName;
+      this.isWinner = this.currentUserName === gameData.winnerName;
+      
+      // Si el backend envía estos datos, úsalos
+      this.rematchRequested = gameData.rematchRequested || false;
+      this.opponentLeft = gameData.opponentLeft || false;
+    }
+  }
+
   private startGamePolling(gameId: string) {
     this.pollingSubscription = interval(this.POLLING_INTERVAL)
       .pipe(
         switchMap(() => this.battleShipService.getGameStatus(gameId)),
         catchError(error => {
           this.viewModel.setError(`Error al obtener estado: ${error.message}`);
-          return of(null); // Continuar el observable
+          return of(null);
         }),
-        takeUntilDestroyed() // Se desuscribe automáticamente cuando el componente se destruye
+        takeUntil(this.destroy$)
       )
       .subscribe(gameData => {
+        console.log('Estado del juego actualizado:', gameData);
         if (gameData) {
+          // Solo mostrar la UI después de la primera carga exitosa
+          if (!this.initialLoadComplete) {
+            this.initialLoadComplete = true;
+          }
+          
           this.viewModel.setGameData(gameData);
+          
+          // Verificar si el juego ha terminado
+          if (gameData.status === 'finished') {
+            this.handleGameEnd(gameData);
+          }
         }
       });
   }
 
   onAttack(coords: { x: number; y: number }) {
-    if (!this.viewModel.isMyTurn()) {
-      console.warn('No es tu turno');
+    if (!this.viewModel.isMyTurn() || this.isProcessing) {
       return;
     }
 
     const gameId = this.viewModel.getGameId();
     if (!gameId) return;
 
-    this.battleShipService.attack(gameId, coords)
+    this.isProcessing = true; // Deshabilitar botones
+    
+    this.battleShipService.attack(gameId, coords.x, coords.y)
       .pipe(
         catchError(error => {
           this.viewModel.setError(`Error al atacar: ${error.message}`);
           return of(null);
+        }),
+        finalize(() => {
+          setTimeout(() => {
+            this.isProcessing = false; // Habilitar botones después de un breve retraso
+          }, 500);
         })
       )
       .subscribe(result => {
         if (result) {
-          console.log(`Ataque a (${coords.x},${coords.y}): ${result.status}`);
+          if (result.status === 'win' && result.message) {
+            this.toastr.success(result.message, 'Victoria');
+          }
         }
-        // El estado actualizado llegará en el siguiente polling
+      });
+  }
+
+  onLeaveGame() {
+    if (this.isProcessing) return;
+    
+    this.isProcessing = true;
+    const gameId = this.viewModel.getGameId();
+    
+    if (gameId) {
+      // Si el juego no ha terminado, llama al método surrender
+      if (this.viewModel.gameStatus() !== 'finished') {
+        this.battleShipService.surrender(gameId).subscribe({
+          next: (_result) => {
+            this.toastr.info('Has abandonado la partida. Tu oponente ha sido declarado ganador.', 'Partida finalizada');
+            this.router.navigate(['/games']);
+          },
+          error: (error) => {
+            console.error('Error al rendirse:', error);
+            this.router.navigate(['/games']);
+          },
+          complete: () => this.isProcessing = false
+        });
+      } else {
+        // Si ya terminó, simplemente usa leaveGame
+        this.battleShipService.leaveGame(gameId).subscribe({
+          next: () => this.router.navigate(['/games']),
+          error: () => this.router.navigate(['/games']),
+          complete: () => this.isProcessing = false
+        });
+      }
+    } else {
+      this.router.navigate(['/games']);
+      this.isProcessing = false;
+    }
+  }
+
+  confirmLeaveGame() {
+    // Si el juego ya terminó, no necesitamos confirmación
+    if (this.viewModel.gameStatus() === 'finished') {
+      this.onLeaveGame();
+      return;
+    }
+    
+    // Si el juego está en progreso, pedimos confirmación
+    this.showConfirmLeaveModal = true;
+  }
+
+  onRequestRematch() {
+    const gameId = this.viewModel.getGameId();
+    if (gameId) {
+      this.battleShipService.requestRematch(gameId).subscribe({
+        next: (result) => {
+          if ('rematchStarted' in result && result.rematchStarted && result.gameId) {
+            // Redirige a la nueva partida y reinicia todo
+            this.router.navigate(['/games/battleship/game'], { queryParams: { id: result.gameId } });
+          } else if ('rematchAcceptedBy' in result) {
+            this.rematchRequested = true;
+            this.toastr.info('Solicitud de revancha enviada. Esperando al oponente...');
+          }
+        },
+        error: () => this.toastr.error('No se pudo solicitar la revancha')
+      });
+    }
+  }
+
+  onCreateNewGame() {
+    this.battleShipService
+      .createGame('battleship')
+      .subscribe({
+        next: (res) => {
+          this.router.navigate(['games/battleship/lobby'], {
+            queryParams: { id: res.gameId, code: res.code },
+          });
+        },
+        error: (err) => {
+          console.error('Error creando partida', err);
+        },
       });
   }
 
   ngOnDestroy() {
-    // La desuscripción ahora es manejada por takeUntilDestroyed()
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.pollingSubscription) {
       this.pollingSubscription.unsubscribe();
     }
