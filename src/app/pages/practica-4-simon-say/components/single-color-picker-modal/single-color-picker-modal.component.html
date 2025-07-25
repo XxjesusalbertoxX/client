@@ -1,0 +1,69 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-in border border-white/20">
+    
+    <!-- Header más compacto -->
+    <div class="text-center mb-4">
+      <div class="text-4xl mb-2">🎨</div>
+      <h2 class="text-xl font-bold text-white mb-1">{{ title }}</h2>
+      <p class="text-gray-300 text-sm">{{ subtitle }}</p>
+    </div>
+
+    <!-- Color seleccionado preview más pequeño -->
+    <div class="text-center mb-4" *ngIf="selectedColor">
+      <p class="text-white/80 text-xs mb-1">Color seleccionado:</p>
+      <div
+        class="w-12 h-12 rounded-full border-2 border-white/70 shadow-lg mx-auto"
+        [ngStyle]="{ 'background-color': selectedColor }">
+      </div>
+    </div>
+    
+    <!-- Paleta más compacta -->
+    <div class="bg-white/10 rounded-2xl p-3 mb-4">
+      <h3 class="text-white font-medium mb-2 text-center text-sm">Escoge un color</h3>
+      <div class="grid grid-cols-3 gap-3 justify-items-center max-h-48 overflow-y-auto">
+        <div
+          *ngFor="let color of availableColors; trackBy: trackByColor"
+          class="w-12 h-12 rounded-full border-2 cursor-pointer transform transition-all duration-200 hover:scale-110 relative"
+          [ngStyle]="{ 'background-color': color }"
+          [ngClass]="{
+            'border-white': isSelected(color),
+            'border-white/30': !isSelected(color),
+            'shadow-lg': isSelected(color)
+          }"
+          (click)="selectColor(color)">
+
+          <div
+            *ngIf="isSelected(color)"
+            class="absolute inset-0 rounded-full bg-white/30 flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información más compacta -->
+    <div class="bg-blue-500/20 border border-blue-400/50 rounded-xl p-2 mb-4">
+      <p class="text-blue-300 text-xs text-center">
+        💡 Este color se agregará a la secuencia que tu oponente debe repetir
+      </p>
+    </div>
+
+    <!-- Botones más pequeños -->
+    <div class="flex gap-2">
+      <button
+        (click)="cancel()"
+        class="flex-1 py-2 bg-red-600/20 text-red-300 rounded-xl hover:bg-red-600/30 transition-colors duration-200 border border-red-500/30 text-sm">
+        ❌ Cancelar
+      </button>
+      
+      <button
+        (click)="confirmSelection()"
+        [disabled]="!canConfirm()"
+        class="flex-1 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+        ✅ Confirmar
+      </button>
+    </div>
+  </div>
+</div>
