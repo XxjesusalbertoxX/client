@@ -1,0 +1,77 @@
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 max-w-2xl w-full animate-slide-in">
+    
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-white mb-2">🎨 Selecciona tus colores</h2>
+      <p class="text-gray-300">Escoge 6 colores que aparecerán en la secuencia de tu oponente</p>
+    </div>
+
+    <!-- Colores seleccionados -->
+    <div class="flex justify-center space-x-2 min-h-[3rem] items-center mb-6">
+      <div 
+        *ngFor="let color of selectedColors; let i = index"
+        class="w-12 h-12 rounded-full border-2 border-white/50 shadow-lg cursor-pointer transform transition-all duration-200 hover:scale-110"
+        [ngStyle]="{ 'background-color': color }"
+        (click)="toggleColor(color)">
+      </div>
+      <div 
+        *ngFor="let _ of placeholderSlots"
+        class="w-12 h-12 rounded-full border-2 border-dashed border-white/30 bg-white/10">
+      </div>
+    </div>
+    
+    <!-- Paleta de colores disponibles -->
+    <div class="grid grid-cols-6 gap-3 max-h-48 overflow-y-auto mb-6">
+      <div 
+        *ngFor="let color of availableColors; trackBy: trackByColor"
+        class="w-12 h-12 rounded-full border-2 cursor-pointer transform transition-all duration-200 hover:scale-110 relative"
+        [ngStyle]="{ 'background-color': color }"
+        [ngClass]="{
+          'border-white': isSelected(color),
+          'border-white/30': !isSelected(color),
+          'shadow-lg': isSelected(color),
+          'opacity-50': selectedColors.length >= 6 && !isSelected(color)
+        }"
+        (click)="toggleColor(color)">
+        
+        <div 
+          *ngIf="isSelected(color)"
+          class="absolute inset-0 rounded-full bg-white/20 flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información -->
+    <div class="bg-yellow-500/20 border border-yellow-400/50 rounded-xl p-3 mb-6">
+      <p class="text-yellow-300 text-sm text-center">
+        💡 Estos colores aparecerán en la secuencia que tu oponente debe repetir. ¡Escoge colores que sean fáciles de distinguir!
+      </p>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button
+        (click)="resetToDefault()"
+        class="flex-1 py-3 bg-gray-600/20 text-gray-300 rounded-xl hover:bg-gray-600/30 transition-colors duration-200 border border-gray-500/30">
+        🔄 Usar colores por defecto
+      </button>
+      
+      <button
+        (click)="cancel()"
+        class="flex-1 py-3 bg-red-600/20 text-red-300 rounded-xl hover:bg-red-600/30 transition-colors duration-200 border border-red-500/30">
+        ❌ Cancelar
+      </button>
+      
+      <button
+        (click)="confirmSelection()"
+        [disabled]="!canConfirm()"
+        class="flex-1 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600">
+        ✅ Confirmar colores
+      </button>
+    </div>
+  </div>
+</div>

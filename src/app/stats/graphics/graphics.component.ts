@@ -11,7 +11,7 @@ import { StatsResponse } from '../../models/stats.model' // ajusta la ruta segú
   templateUrl: './graphics.component.html',
   styleUrls: ['./graphics.component.scss']
 })
-export class StatsComponent implements AfterViewInit {
+export class StatComponent implements AfterViewInit {
   private peopleService = inject(PeopleService)
 
   ngAfterViewInit() {

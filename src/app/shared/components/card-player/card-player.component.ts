@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LobbyPlayer } from '../../models/battle-ship.model';
-import { AuthService } from '../../../../services/auth.service';
+import { LobbyPlayer } from '../../../models/game.model';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   standalone: true,
@@ -13,6 +13,7 @@ import { AuthService } from '../../../../services/auth.service';
 export class CardPlayerComponent {
   @Input() player!: LobbyPlayer | null;
   @Input() canReady: boolean = false;
+  @Input() gameType: string = 'battleship'; // ← Agregar esta línea
   @Output() ready = new EventEmitter<void>();
 
   private authService = inject(AuthService);

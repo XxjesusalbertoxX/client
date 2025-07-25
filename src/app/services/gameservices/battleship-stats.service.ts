@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import {
   BattleshipStatsResponse,
   BattleshipGameDetails,
-} from '../pages/practica-3-batalla-naval/models/battle-ship.model';
+} from '../../pages/practica-3-batalla-naval/models/battle-ship.model';
 
 @Injectable({ providedIn: 'root' })
 export class BattleshipStatsService {

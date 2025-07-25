@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BattleshipStatsService } from '../../../../services/battleship-stats.service';
+import { BattleshipStatsService } from '../../../../services/gameservices/battleship-stats.service';
 import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
+import { BoardComponent } from '../../components/board/board.component'; // Importar el BoardComponent
 import { 
   BattleshipStatsResponse, 
   BattleshipGameSummary, 
@@ -14,7 +15,7 @@ Chart.register(...registerables);
 @Component({
   standalone: true,
   selector: 'app-stats',
-  imports: [CommonModule, SidebarComponent],
+  imports: [CommonModule, SidebarComponent, BoardComponent],
   templateUrl: './stats.component.html',
   styleUrls: ['./stats.component.scss']
 })

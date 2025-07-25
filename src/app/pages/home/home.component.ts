@@ -2,11 +2,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component'
 
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, SidebarComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
@@ -18,7 +19,7 @@ export class HomeComponent {
   }
 
   goToSimon() {
-    alert('Simón Dice próximamente...');
+    this.router.navigateByUrl('games/simonsay');
   }
 }
 

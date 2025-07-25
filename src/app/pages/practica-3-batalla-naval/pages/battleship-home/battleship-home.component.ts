@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { BattleShipService } from '../../../../services/battle-ship.service';
+import { GameApiService } from '../../../../services/gameservices/game-api.service';
 
 @Component({
   standalone: true,
@@ -13,11 +13,11 @@ import { BattleShipService } from '../../../../services/battle-ship.service';
 export class BattleshipHomeComponent {
   constructor(
     private router: Router,
-    private battleShipService: BattleShipService
+    private gameApiService: GameApiService
   ) {}
 
   goToCreate() {
-    this.battleShipService
+    this.gameApiService
       .createGame('battleship')
       .subscribe({
         next: (res) => {

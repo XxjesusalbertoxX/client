@@ -1,14 +1,16 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BoardComponent } from '../../components/board/board.component';
-import { BattleShipService } from '../../../../services/battle-ship.service';
-import { GameViewModel } from '../../view-models/game-view-model';
-import { Subject, of, interval, Subscription, takeUntil } from 'rxjs';
-import { AuthService } from '../../../../services/auth.service';
-import { ToastrService } from 'ngx-toastr';
-import { ActivatedRoute, Router } from '@angular/router';
-import { GameEndModalComponent } from '../../../../shared/components/game-end-modal/game-end-modal.component';
-import { switchMap, catchError, finalize } from 'rxjs/operators';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { BoardComponent } from '../../components/board/board.component'
+import { GameViewModel } from '../../view-models/game-view-model'
+import { BattleShipService } from '../../../../services/gameservices/battle-ship.service'
+import { GameApiService } from '../../../../services/gameservices/game-api.service'
+import { Subject, of, interval, Subscription, takeUntil } from 'rxjs'
+import { AuthService } from '../../../../services/auth.service'
+import { ToastrService } from 'ngx-toastr'
+import { ActivatedRoute, Router } from '@angular/router'
+import { GameEndModalComponent } from '../../../../shared/components/game-end-modal/game-end-modal.component'
+import { switchMap, catchError, finalize } from 'rxjs/operators'
+
 
 
 
@@ -21,6 +23,7 @@ import { switchMap, catchError, finalize } from 'rxjs/operators';
 })
 export class GameComponent implements OnInit, OnDestroy {
   private battleShipService = inject(BattleShipService);
+  private gameApiService = inject(GameApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private destroy$ = new Subject<void>();
@@ -172,7 +175,7 @@ export class GameComponent implements OnInit, OnDestroy {
         });
       } else {
         // Si ya terminó, simplemente usa leaveGame
-        this.battleShipService.leaveGame(gameId).subscribe({
+        this.gameApiService.leaveGame(gameId).subscribe({
           next: () => this.router.navigate(['/games']),
           error: () => this.router.navigate(['/games']),
           complete: () => this.isProcessing = false
@@ -198,7 +201,7 @@ export class GameComponent implements OnInit, OnDestroy {
   onRequestRematch() {
     const gameId = this.viewModel.getGameId();
     if (gameId) {
-      this.battleShipService.requestRematch(gameId).subscribe({
+      this.gameApiService.requestRematch(gameId).subscribe({
         next: (result) => {
           if ('rematchStarted' in result && result.rematchStarted && result.gameId) {
             // Redirige a la nueva partida y reinicia todo
@@ -214,7 +217,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   onCreateNewGame() {
-    this.battleShipService
+    this.gameApiService
       .createGame('battleship')
       .subscribe({
         next: (res) => {

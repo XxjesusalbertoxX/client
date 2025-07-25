@@ -1,33 +1,36 @@
-// src/app/pages/practica-3-battalla-naval/pages/lobby/lobby.component.ts
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { BattleShipService } from '../../../../services/battle-ship.service';
-import { CardPlayerComponent } from '../../components/card-player/card-player.component';
-import { LobbyPlayer, LobbyStatusResponse } from '../../models/battle-ship.model';
-import { AuthService } from '../../../../services/auth.service';
-
+import { SimonSayService } from '../../services/gameservices/simonsay.services';
+import { CardPlayerComponent } from '../../shared/components/card-player/card-player.component';
+import { LobbyPlayer, LobbyStatusResponse } from '../../models/game.model';
+import { AuthService } from '../../services/auth.service';
+import { ColorPickerModalComponent } from '../practica-4-simon-say/components/color-picker-modal/color-picker-modal.component';
 
 @Component({
   standalone: true,
-  selector: 'app-lobby',
-  imports: [CommonModule, CardPlayerComponent, RouterModule],
-  templateUrl: './lobby.component.html',
-  styleUrls: ['./lobby.component.scss'],
+  selector: 'app-lobby-simonsay',
+  imports: [CommonModule, CardPlayerComponent, RouterModule, ColorPickerModalComponent],
+  templateUrl: './lobby-simonsay.component.html',
+  styleUrls: ['./lobby-simonsay.component.scss'],
 })
-export class LobbyComponent implements OnInit, OnDestroy {
+export class LobbySimonsayComponent implements OnInit, OnDestroy {
   gameId = signal<string | null>(null);
   gameCode = signal<string | null>(null);
   players = signal<LobbyPlayer[]>([]);
-  isHost = false; // propiedad: ¿soy el host según el query param?
+  isHost = false;
   isLoading = true;
   intervalId?: ReturnType<typeof setInterval>;
   heartbeatInterval?: ReturnType<typeof setInterval>;
+  
+  // SimonSay específico
+  showColorPicker = false;
+  myColors: string[] = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private gameService: BattleShipService,
+    private simonSayService: SimonSayService,
     private authService: AuthService
   ) {}
 
@@ -40,7 +43,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       this.gameId.set(id);
       this.gameCode.set(code ?? id);
 
-      this.isHost = !!code; // true si viene el código (host), false si solo id (invitado)
+      this.isHost = !!code;
 
       this.startPolling();
       this.startHeartbeat();
@@ -56,10 +59,35 @@ export class LobbyComponent implements OnInit, OnDestroy {
     return this.players().length === 2;
   }
 
+  get canSetReady(): boolean {
+    const myUserId = Number(this.authService.getUserId());
+    const me = this.players().find(p => p.userId === myUserId);
+    return this.twoPlayers && me?.customColors?.length === 6;
+  }
+
   copyGameCode() {
     const code = this.gameCode();
     if (!code) return;
     navigator.clipboard.writeText(code);
+  }
+
+  openColorPicker() {
+    this.showColorPicker = true;
+  }
+
+  onColorsSelected(colors: string[]) {
+    const gameId = this.gameId();
+    if (!gameId) return;
+
+    this.simonSayService.setColors(gameId, colors).subscribe({
+      next: () => {
+        this.myColors = colors;
+        this.showColorPicker = false;
+      },
+      error: (err) => {
+        console.error('Error setting colors:', err);
+      }
+    });
   }
 
   startPolling() {
@@ -68,30 +96,27 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (!id) return;
 
     this.intervalId = setInterval(() => {
-      this.gameService.getLobbyStatus(id).subscribe({
+      this.simonSayService.getLobbyStatus(id).subscribe({
         next: (status: LobbyStatusResponse) => {
           this.isLoading = false;
 
-          // Si el juego está en progreso, navega todos
-          if (status.status === 'in_progress') {
-            this.router.navigate(['games/battleship/game'], { queryParams: { id } });
+          if ((status as any).status === 'in_progress' || (status as any).status === 'waiting_first_color') {
+            this.router.navigate(['games/simonsay/game'], { queryParams: { id } });
             return;
           }
 
           if (status.started) {
-            // Solo el host inicia la partida
             if (this.isHostPlayer(status.players)) {
-              this.gameService.startGame(id).subscribe({
+              this.simonSayService.startGame(id).subscribe({
                 next: () => {
-                  this.router.navigate(['games/battleship/game'], { queryParams: { id } });
+                  this.router.navigate(['games/simonsay/game'], { queryParams: { id } });
                 },
                 error: () => {
-                  this.router.navigate(['games/battleship/game'], { queryParams: { id } });
+                  this.router.navigate(['games/simonsay/game'], { queryParams: { id } });
                 },
               });
             } else {
-              // Los demás solo navegan cuando el juego ya está iniciado
-              this.router.navigate(['games/battleship/game'], { queryParams: { id } });
+              this.router.navigate(['games/simonsay/game'], { queryParams: { id } });
             }
             return;
           }
@@ -104,7 +129,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
     }, 2000);
   }
 
-  // Renombrado para evitar conflicto
   isHostPlayer(players: LobbyPlayer[]): boolean {
     const myUserId = Number(this.authService.getUserId());
     const hostId = Number(players.length > 0 ? players[0].userId : null);
@@ -117,7 +141,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (!id) return;
 
     this.heartbeatInterval = setInterval(() => {
-      this.gameService.heartbeat(id).subscribe({
+      this.simonSayService.heartbeat(id).subscribe({
         next: (res) => console.log('Heartbeat:', res.message),
         error: (err) => console.error('Error en heartbeat:', err),
       });
@@ -126,9 +150,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
   handleReady() {
     const id = this.gameId();
-    if (!id) return;
+    if (!id || !this.canSetReady) return;
 
-    this.gameService.setReady(id).subscribe({
+    this.simonSayService.setReady(id).subscribe({
       next: () => console.log('Jugador listo'),
       error: (err: any) => console.error('Error al marcar ready', err),
     });

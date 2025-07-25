@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BattleShipService } from '../../../../services/battle-ship.service';
+import { GameApiService } from '../../services/gameservices/game-api.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -24,7 +24,7 @@ export class JoinGameComponent {
 
   constructor(
     private formBuilder: FormBuilder,
-    private battleShipService: BattleShipService,
+    private gameApiService: GameApiService,
     private router: Router,
     private toastr: ToastrService
   ) {}
@@ -33,13 +33,13 @@ export class JoinGameComponent {
     if (this.form.valid && !this.isLoading) {
       this.isLoading = true;
       this.errorMessage = '';
-      
+
       const code = this.form.value.code!.toUpperCase();
-      
-      this.battleShipService.joinGame(code).subscribe({
+
+      this.gameApiService.joinGame(code).subscribe({
         next: (response) => {
-          this.router.navigate(['/games/battleship/lobby'], { 
-            queryParams: { id: response.gameId } 
+          this.router.navigate(['/games/battleship/lobby'], {
+            queryParams: { id: response.gameId }
           });
         },
         error: (error) => {
