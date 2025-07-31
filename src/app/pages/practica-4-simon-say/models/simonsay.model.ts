@@ -16,8 +16,10 @@ export interface SimonSayGameStatusResponse {
   currentTurnUserId: number;
   players: SimonSayLobbyPlayer[];
   myColors: string[];
+  myCustomColors?: string[]; // <-- Agrega esto
   opponentColors: string[];
   isMyTurn: boolean;
+  opponentName?: string; // <-- Agrega esto
   mySequenceLength: number;
   opponentSequenceLength: number;
   myCurrentProgress: number;
@@ -28,6 +30,7 @@ export interface SimonSayGameStatusResponse {
   loserName?: string;
   mySequence?: string[];
   opponentSequence?: string[];
+  lastColorAdded?: string | null; // Solo el último color agregado
 }
 
 export interface SimonSayLobbyPlayer {

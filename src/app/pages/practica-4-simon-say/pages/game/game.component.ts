@@ -105,24 +105,50 @@ export class GameComponent implements OnInit, OnDestroy {
 
   // === MANEJO DEL ESTADO DEL JUEGO ===
 
-  handleGameStatus(status: SimonSayGameStatusResponse) {
-    this.vm.setGameStatus(status);
+handleGameStatus(status: SimonSayGameStatusResponse) {
+  const previousMyLength = this.vm.myLocalSequence().length;
+  
+  this.vm.setGameStatus(status);
 
-    if (status.status === 'finished') {
-      this.handleGameEnd(status);
-      return;
-    }
-
-    // Actualizar secuencias locales si han cambiado
-    this.updateLocalSequences(status);
-
-    // Manejar diferentes fases del juego
-    if (status.isMyTurn) {
-      this.handleMyTurn(status);
-    } else {
-      this.handleOpponentTurn(status);
-    }
+  if (status.status === 'finished') {
+    this.handleGameEnd(status);
+    return;
   }
+
+  // CAMBIO: Detectar si hay un nuevo color agregado por longitud
+  if (status.mySequenceLength > previousMyLength) {
+    // Obtener el último color desde localStorage o pedirlo al backend solo una vez
+    this.requestLastColorAdded(status.mySequenceLength);
+  }
+
+  // Solo actualizar longitud, no secuencias completas
+  this.vm.setCurrentProgress(status.myCurrentProgress || 0);
+
+  // Manejar fases
+  if (status.isMyTurn) {
+    this.handleMyTurn(status);
+  } else {
+    this.handleOpponentTurn(status);
+  }
+}
+
+requestLastColorAdded(newLength: number) {
+  // Si el backend puede mandar solo el último color agregado:
+  if (this.vm.gameStatus()?.lastColorAdded) {
+    const newColor = this.vm.gameStatus()!.lastColorAdded;
+    
+    // Agregar al localStorage
+    const currentSequence = this.vm.myLocalSequence();
+const newSequence = [...currentSequence, newColor].filter((c): c is string => !!c);
+    
+    this.vm.setMyLocalSequence(newSequence);
+    this.saveSequenceToStorage('my', newSequence);
+    
+    // Mostrar notificación
+    this.toastr.info(`🎯 ${this.vm.gameStatus()?.opponentName} agregó ${newColor!.toUpperCase()} a tu secuencia`, 'Nuevo color');
+  }
+}
+
 
   updateLocalSequences(status: SimonSayGameStatusResponse) {
     // Si mi secuencia cambió de longitud, actualizar desde el localStorage
@@ -185,15 +211,14 @@ export class GameComponent implements OnInit, OnDestroy {
   // === ANIMACIÓN DE SECUENCIA ===
 
   startSequenceAnimation() {
-    const sequence = this.vm.myLocalSequence();
-    if (sequence.length === 0) return;
-    
-    this.vm.setShowingSequence(true);
-    this.vm.setCanInteract(false);
-    
-    this.toastr.info(`Mostrando secuencia de ${sequence.length} colores`);
-    this.animateSequence(sequence, 0);
-  }
+  const sequence = this.vm.myLocalSequence(); // Solo desde localStorage
+  
+  this.vm.setShowingSequence(true);
+  this.vm.setCanInteract(false);
+  
+  this.toastr.info(`Mostrando secuencia de ${sequence.length} colores`);
+  this.animateSequence(sequence, 0);
+}
 
   animateSequence(sequence: string[], index: number) {
     if (index >= sequence.length) {
@@ -224,89 +249,107 @@ export class GameComponent implements OnInit, OnDestroy {
 
   // === INTERACCIONES DEL JUGADOR ===
 
+    // Ya está correcto, pero verificar que mande al backend:
   onColorClick(color: string) {
     if (!this.vm.canInteract() || this.vm.showingSequence() || this.isProcessingColor) return;
-
+  
     const expectedColor = this.vm.getExpectedColor();
+    if (!expectedColor) return;
     
-    if (color === expectedColor) {
-      // Color correcto
-      this.isProcessingColor = true;
-      this.vm.setCanInteract(false); // Deshabilitar mientras procesa
-      
-      const newProgress = this.vm.currentProgress() + 1;
-      this.vm.setCurrentProgress(newProgress);
-      this.illuminateColor(color);
-      
-      // Enviar al backend
-      this.simonSayService.playColor(this.vm.gameId(), color).subscribe({
-        next: (response: any) => {
-          this.isProcessingColor = false;
+    // Bloquear interacción inmediatamente
+    this.isProcessingColor = true;
+    this.vm.setCanInteract(false);
+    
+    console.log(color)
+    // IMPORTANTE: Siempre mandar al backend, sin importar si es correcto o no
+    this.simonSayService.playColor(this.vm.gameId(), color).subscribe({
+      next: (response: any) => {
+        this.isProcessingColor = false;
+        
+        if (color === expectedColor) {
+          // Color correcto
+          const newProgress = this.vm.currentProgress() + 1;
+          this.vm.setCurrentProgress(newProgress);
+          this.illuminateColorSuccess(color);
+          
+          this.toastr.success(`✅ Correcto! ${newProgress}/${this.vm.mySequenceLength()}`);
           
           if (response.sequenceCompleted) {
-            // Completé mi secuencia, ahora puedo escoger color para el oponente
-            this.toastr.success('¡Secuencia completada! Ahora escoge un color para tu oponente');
-            this.vm.setCanInteract(false);
-            
-            // El estado se actualizará en el próximo polling, que mostrará el modal
+            this.toastr.success('🎉 ¡Secuencia completada!');
+            // El modal se mostrará cuando cambie la fase en el próximo polling
           } else {
-            // Continúo con la secuencia
-            this.vm.setCanInteract(true);
+            // Continuar con la secuencia
+            setTimeout(() => {
+              this.vm.setCanInteract(true);
+            }, 500);
           }
-        },
-        error: (error) => {
-          this.isProcessingColor = false;
-          this.toastr.error('Error al validar color');
-          console.error('Error:', error);
-          // El juego terminó por error
         }
-      });
-    } else {
-      // Color incorrecto - el backend manejará el fin del juego
-      this.isProcessingColor = true;
-      this.vm.setCanInteract(false);
-      
-      this.simonSayService.playColor(this.vm.gameId(), color).subscribe({
-        error: (error) => {
-          this.isProcessingColor = false;
-          console.error('Game over:', error);
-          // El estado se actualizará y mostrará el fin del juego
-        }
-      });
-    }
+        // Si es incorrecto, el backend terminará el juego y se manejará en el próximo polling
+      },
+      error: (error) => {
+        this.isProcessingColor = false;
+        
+        // Color incorrecto o error del servidor
+        this.illuminateColorError(color);
+        this.toastr.error(`❌ ¡Incorrecto! Era ${expectedColor.toUpperCase()}`, 'Game Over');
+        
+        // El fin del juego se manejará en el próximo polling
+      }
+    });
   }
 
+// Nuevas animaciones para feedback visual:
+illuminateColorSuccess(color: string) {
+  const colorElement = document.querySelector(`[data-color="${color}"]`);
+  if (colorElement) {
+    colorElement.classList.add('correct-flash');
+    setTimeout(() => {
+      colorElement.classList.remove('correct-flash');
+    }, 800);
+  }
+}
+
+illuminateColorError(color: string) {
+  const colorElement = document.querySelector(`[data-color="${color}"]`);
+  if (colorElement) {
+    colorElement.classList.add('error-flash');
+    setTimeout(() => {
+      colorElement.classList.remove('error-flash');
+    }, 800);
+  }
+}
+
   onColorChosenForOpponent(chosenColor: string) {
-    const isFirstColor = this.vm.currentPhase() === 'choose_first_color';
+  const isFirstColor = this.vm.currentPhase() === 'choose_first_color';
   
-  console.log('Color elegido:', chosenColor);
-  console.log('Mis colores disponibles:', this.vm.myColors()); // Usar MIS colores, no los del oponente
+  console.log('Color elegido para oponente:', chosenColor);
+  console.log('Mis colores disponibles para elegir:', this.vm.myCustomColors()); // Los que YO elegí en el lobby
 
   const endpoint = isFirstColor 
     ? this.simonSayService.chooseFirstColor(this.vm.gameId(), chosenColor)
     : this.simonSayService.chooseColor(this.vm.gameId(), chosenColor);
 
-    endpoint.subscribe({
-      next: (response) => {
-        this.vm.setShowColorPicker(false);
-        
-        // Agregar color a la secuencia del oponente localmente
-        const newOpponentSequence = [...this.vm.opponentLocalSequence(), chosenColor];
-        this.vm.setOpponentLocalSequence(newOpponentSequence);
-        this.saveSequenceToStorage('opponent', newOpponentSequence);
-        
-        if (isFirstColor) {
-          this.toastr.success(`Primer color elegido: ${chosenColor.toUpperCase()}`);
-        } else {
-          this.toastr.success(`Color agregado a la secuencia del oponente`);
-        }
-      },
-      error: (error) => {
-        this.toastr.error('Error al escoger color');
-        console.error('Error:', error);
+  endpoint.subscribe({
+    next: (response) => {
+      this.vm.setShowColorPicker(false);
+      
+      // Agregar color a la secuencia del oponente localmente
+      const newOpponentSequence = [...this.vm.opponentLocalSequence(), chosenColor];
+      this.vm.setOpponentLocalSequence(newOpponentSequence);
+      this.saveSequenceToStorage('opponent', newOpponentSequence);
+      
+      if (isFirstColor) {
+        this.toastr.success(`✨ Primer color elegido: ${chosenColor.toUpperCase()}`);
+      } else {
+        this.toastr.success(`🎨 Color agregado a la secuencia del oponente`);
       }
-    });
-  }
+    },
+    error: (error) => {
+      this.toastr.error('❌ Error al escoger color');
+      console.error('Error:', error);
+    }
+  });
+}
 
   // === LOCAL STORAGE ===
 

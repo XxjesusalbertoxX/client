@@ -16,6 +16,14 @@ export class SimonSayGameViewModel {
   private _showColorPicker = signal<boolean>(false);
 
   // Estado público (computed)
+  myColors = computed(() => this.gameStatus()?.myColors || []);
+  
+  // Los colores que YO elegí (para escoger colores para el oponente)
+  myCustomColors = computed(() => this.gameStatus()?.myCustomColors || []);
+  
+  // Los colores del tablero del oponente (los que yo elegí para él)
+  opponentColors = computed(() => this.gameStatus()?.opponentColors || []);
+
   readonly gameStatus: Signal<SimonSayGameStatusResponse | null> = computed(() => this._gameStatus());
   readonly gameId: Signal<string> = computed(() => this._gameId());
   readonly isLoading: Signal<boolean> = computed(() => this._isLoading());
@@ -27,6 +35,7 @@ export class SimonSayGameViewModel {
   readonly canInteract: Signal<boolean> = computed(() => this._canInteract());
   readonly showColorPicker: Signal<boolean> = computed(() => this._showColorPicker());
 
+  
   // Computed properties específicos del juego
   readonly isMyTurn: Signal<boolean> = computed(() => {
     const status = this._gameStatus();
@@ -38,15 +47,15 @@ export class SimonSayGameViewModel {
     return status?.phase || null;
   });
 
-  readonly myColors: Signal<string[]> = computed(() => {
-    const status = this._gameStatus();
-    return status?.myColors || [];
-  });
+  // readonly myColors: Signal<string[]> = computed(() => {
+  //   const status = this._gameStatus();
+  //   return status?.myColors || [];
+  // });
 
-  readonly opponentColors: Signal<string[]> = computed(() => {
-    const status = this._gameStatus();
-    return status?.opponentColors || [];
-  });
+  // readonly opponentColors: Signal<string[]> = computed(() => {
+  //   const status = this._gameStatus();
+  //   return status?.opponentColors || [];
+  // });
 
   readonly mySequenceLength: Signal<number> = computed(() => {
     const status = this._gameStatus();
