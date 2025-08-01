@@ -1,25 +1,38 @@
-// src/app/pages/practica-3-battalla-naval/pages/lobby/lobby.component.ts
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { GameApiService } from '../../services/gameservices/game-api.service';
-import { CardPlayerComponent } from '../../shared/components/card-player/card-player.component';
-import { LobbyPlayer, LobbyStatusResponse } from '../../models/game.model';
-import { AuthService } from '../../services/auth.service';
-
+import { GameApiService } from '../../../../services/gameservices/game-api.service';
+import { LobbyPlayer, LobbyStatusResponse } from '../../../../models/game.model';
+import { AuthService } from '../../../../services/auth.service';
+import { GameLobbyComponent } from '../../../../shared/components/forms/game-lobby/game-lobby.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   standalone: true,
   selector: 'app-lobby',
-  imports: [CommonModule, CardPlayerComponent, RouterModule],
-  templateUrl: './lobby.component.html',
-  styleUrls: ['./lobby.component.scss'],
+  imports: [CommonModule, GameLobbyComponent, RouterModule],
+  template: `
+    <app-game-lobby
+      gameType="battleship"
+      [gameCode]="gameCode()"
+      [players]="players()"
+      [isLoading]="isLoading"
+      [allReady]="allReady"
+      [twoPlayers]="twoPlayers"
+      [canSetReady]="true"
+      [isHost]="isHost"
+      [isMeReady]="isMeReady"
+      (copyCode)="copyGameCode()"
+      (handleReady)="handleReady()"
+      (leaveGame)="onLeaveGame()">
+    </app-game-lobby>
+  `
 })
 export class LobbyComponent implements OnInit, OnDestroy {
   gameId = signal<string | null>(null);
   gameCode = signal<string | null>(null);
   players = signal<LobbyPlayer[]>([]);
-  isHost = false; // propiedad: ¿soy el host según el query param?
+  isHost = false;
   isLoading = true;
   intervalId?: ReturnType<typeof setInterval>;
   heartbeatInterval?: ReturnType<typeof setInterval>;
@@ -27,8 +40,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private gameService: GameApiService,
-    private authService: AuthService
+    private gameApiService: GameApiService,
+    private authService: AuthService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit() {
@@ -38,7 +52,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
       if (!id) return;
       this.gameId.set(id);
-      this.gameCode.set(code ?? id);
+      this.gameCode.set(code || null); // Solo asignar código si existe
 
       this.isHost = !!code; // true si viene el código (host), false si solo id (invitado)
 
@@ -56,11 +70,40 @@ export class LobbyComponent implements OnInit, OnDestroy {
     return this.players().length === 2;
   }
 
+  get isMeReady(): boolean {
+    const myUserId = Number(this.authService.getUserId());
+    const me = this.players().find(p => p.userId === myUserId);
+    return !!me?.ready;
+  }
+
   copyGameCode() {
     const code = this.gameCode();
     if (!code) return;
     navigator.clipboard.writeText(code);
   }
+
+    // En ambos lobby components, cambiar:
+  
+  onLeaveGame() {
+    const id = this.gameId();
+    if (!id) return;
+  
+    this.isLoading = true;
+    
+    // CAMBIO: Usar gameApiService.leaveGame() sin playerGameId
+    this.gameApiService.leaveGame(id).subscribe({
+      next: (result) => {
+        this.toastr.info(result.message || 'Has salido del lobby');
+        this.router.navigate(['/games/battleship']); // o simonsay
+      },
+      error: (err) => {
+        console.error('Error leaving game:', err);
+        this.router.navigate(['/games/battleship']); // o simonsay
+      },
+    });
+  }
+  
+  // ELIMINAR: getMyPlayerGameId() ya no se necesita
 
   startPolling() {
     if (this.intervalId) clearInterval(this.intervalId);
@@ -68,7 +111,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (!id) return;
 
     this.intervalId = setInterval(() => {
-      this.gameService.getLobbyStatus(id).subscribe({
+      this.gameApiService.getLobbyStatus(id).subscribe({
         next: (status: LobbyStatusResponse) => {
           this.isLoading = false;
 
@@ -81,7 +124,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
           if (status.started) {
             // Solo el host inicia la partida
             if (this.isHostPlayer(status.players)) {
-              this.gameService.startGame(id).subscribe({
+              this.gameApiService.startGame(id).subscribe({
                 next: () => {
                   this.router.navigate(['games/battleship/game'], { queryParams: { id } });
                 },
@@ -117,7 +160,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (!id) return;
 
     this.heartbeatInterval = setInterval(() => {
-      this.gameService.heartbeat(id).subscribe({
+      this.gameApiService.heartbeat(id).subscribe({
         next: (res) => console.log('Heartbeat:', res.message),
         error: (err) => console.error('Error en heartbeat:', err),
       });
@@ -128,7 +171,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     const id = this.gameId();
     if (!id) return;
 
-    this.gameService.setReady(id).subscribe({
+    this.gameApiService.setReady(id).subscribe({
       next: () => console.log('Jugador listo'),
       error: (err: any) => console.error('Error al marcar ready', err),
     });

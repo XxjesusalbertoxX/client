@@ -1,18 +1,38 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
-import { SimonSayService } from '../../services/gameservices/simonsay.services';
-import { CardPlayerComponent } from '../../shared/components/card-player/card-player.component';
-import { LobbyPlayer, LobbyStatusResponse } from '../../models/game.model';
-import { AuthService } from '../../services/auth.service';
-import { ColorPickerModalComponent } from '../practica-4-simon-say/components/color-picker-modal/color-picker-modal.component';
+import { SimonSayService } from '../../../../services/gameservices/simonsay.services';
+import { GameApiService } from '../../../../services/gameservices/game-api.service';
+import { LobbyPlayer, LobbyStatusResponse } from '../../../../models/game.model';
+import { AuthService } from '../../../../services/auth.service';
+import { GameLobbyComponent } from '../../../../shared/components/forms/game-lobby/game-lobby.component';
+import { ToastrService } from 'ngx-toastr';
+
 
 @Component({
   standalone: true,
   selector: 'app-lobby-simonsay',
-  imports: [CommonModule, CardPlayerComponent, RouterModule, ColorPickerModalComponent],
-  templateUrl: './lobby-simonsay.component.html',
-  styleUrls: ['./lobby-simonsay.component.scss'],
+  imports: [CommonModule, GameLobbyComponent, RouterModule],
+  template: `
+    <app-game-lobby
+      gameType="simon"
+      [gameCode]="gameCode()"
+      [players]="players()"
+      [isLoading]="isLoading"
+      [allReady]="allReady"
+      [twoPlayers]="twoPlayers"
+      [canSetReady]="canSetReady"
+      [isHost]="isHost"
+      [isMeReady]="isMeReady"
+      [showColorPicker]="showColorPicker"
+      [myColors]="myColors"
+      (copyCode)="copyGameCode()"
+      (handleReady)="handleReady()"
+      (openColorPicker)="openColorPicker()"
+      (colorsSelected)="onColorsSelected($event)"
+      (leaveGame)="onLeaveGame()">
+    </app-game-lobby>
+  `
 })
 export class LobbySimonsayComponent implements OnInit, OnDestroy {
   gameId = signal<string | null>(null);
@@ -25,13 +45,15 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
   
   // SimonSay específico
   showColorPicker = false;
-  myColors: string[] = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+  myColors: string[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private simonSayService: SimonSayService,
-    private authService: AuthService
+    private authService: AuthService,
+    private gameApiService: GameApiService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit() {
@@ -41,7 +63,7 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
 
       if (!id) return;
       this.gameId.set(id);
-      this.gameCode.set(code ?? id);
+      this.gameCode.set(code || null); // Solo asignar código si existe
 
       this.isHost = !!code;
 
@@ -65,11 +87,40 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
     return this.twoPlayers && me?.customColors?.length === 6;
   }
 
+  get isMeReady(): boolean {
+    const myUserId = Number(this.authService.getUserId());
+    const me = this.players().find(p => p.userId === myUserId);
+    return !!me?.ready;
+  }
+
   copyGameCode() {
     const code = this.gameCode();
     if (!code) return;
     navigator.clipboard.writeText(code);
   }
+
+    // En ambos lobby components, cambiar:
+  
+  onLeaveGame() {
+    const id = this.gameId();
+    if (!id) return;
+  
+    this.isLoading = true;
+    
+    // CAMBIO: Usar gameApiService.leaveGame() sin playerGameId
+    this.gameApiService.leaveGame(id).subscribe({
+      next: (result) => {
+        this.toastr.info(result.message || 'Has salido del lobby');
+        this.router.navigate(['/games/battleship']); // o simonsay
+      },
+      error: (err) => {
+        console.error('Error leaving game:', err);
+        this.router.navigate(['/games/battleship']); // o simonsay
+      },
+    });
+  }
+  
+  // ELIMINAR: getMyPlayerGameId() ya no se necesita
 
   openColorPicker() {
     this.showColorPicker = true;

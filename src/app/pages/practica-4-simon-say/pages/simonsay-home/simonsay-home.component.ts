@@ -2,13 +2,20 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SimonSayService } from '../../../../services/gameservices/simonsay.services';
+import { GameHomeComponent } from '../../../../shared/components/forms/game-home/game-home.component';
 
 @Component({
   standalone: true,
   selector: 'app-simonsay-home',
-  imports: [CommonModule],
-  templateUrl: './simonsay-home.component.html',
-  styleUrls: ['./simonsay-home.component.scss'],
+  imports: [CommonModule, GameHomeComponent],
+  template: `
+    <app-game-home 
+      gameType="simon"
+      (createGame)="goToCreate()"
+      (joinGame)="goToJoin()"
+      (goBack)="goBack()">
+    </app-game-home>
+  `
 })
 export class SimonsayHomeComponent {
   constructor(

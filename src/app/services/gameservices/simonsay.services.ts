@@ -15,6 +15,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class SimonSayService {
+  // private readonly baseURL = 'http://127.0.0.1:3333';
   private readonly baseURL = 'http://192.168.1.30:3333';
 
   constructor(private http: HttpClient) {}
@@ -41,10 +42,6 @@ export class SimonSayService {
 
   startGame(gameId: string): Observable<StartGameResponse> {
     return this.http.post<StartGameResponse>(`${this.baseURL}/game/${gameId}/start`, {});
-  }
-
-  leaveGame(gameId: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.baseURL}/game/${gameId}/leave`, {});
   }
 
   heartbeat(gameId: string): Observable<MessageResponse> {

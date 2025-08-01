@@ -8,7 +8,7 @@ import { Subject, of, interval, Subscription, takeUntil } from 'rxjs'
 import { AuthService } from '../../../../services/auth.service'
 import { ToastrService } from 'ngx-toastr'
 import { ActivatedRoute, Router } from '@angular/router'
-import { GameEndModalComponent } from '../../../../shared/components/game-end-modal/game-end-modal.component'
+import { GameEndModalComponent } from '../../../../shared/components/modals/game-end-modal/game-end-modal.component'
 import { switchMap, catchError, finalize } from 'rxjs/operators'
 
 
@@ -152,40 +152,39 @@ export class GameComponent implements OnInit, OnDestroy {
         }
       });
   }
-
-  onLeaveGame() {
-    if (this.isProcessing) return;
     
-    this.isProcessing = true;
-    const gameId = this.viewModel.getGameId();
+    // ...existing code...
     
-    if (gameId) {
-      // Si el juego no ha terminado, llama al método surrender
-      if (this.viewModel.gameStatus() !== 'finished') {
-        this.battleShipService.surrender(gameId).subscribe({
-          next: (_result) => {
-            this.toastr.info('Has abandonado la partida. Tu oponente ha sido declarado ganador.', 'Partida finalizada');
-            this.router.navigate(['/games']);
+    onLeaveGame() {
+      if (this.isProcessing) return;
+      
+      this.isProcessing = true;
+      const gameId = this.viewModel.getGameId();
+      
+      if (gameId) {
+        // CAMBIO: Usar solo gameApiService.leaveGame()
+        this.gameApiService.leaveGame(gameId).subscribe({
+          next: (result) => {
+            if (result.gameOver) {
+              this.toastr.info('Has abandonado la partida. Tu oponente ha sido declarado ganador.', 'Partida finalizada');
+            } else {
+              this.toastr.info(result.message || 'Has salido del juego');
+            }
+            this.router.navigate(['/games/battleship']);
           },
           error: (error) => {
-            console.error('Error al rendirse:', error);
-            this.router.navigate(['/games']);
+            console.error('Error al salir:', error);
+            this.router.navigate(['/games/battleship']);
           },
           complete: () => this.isProcessing = false
         });
       } else {
-        // Si ya terminó, simplemente usa leaveGame
-        this.gameApiService.leaveGame(gameId).subscribe({
-          next: () => this.router.navigate(['/games']),
-          error: () => this.router.navigate(['/games']),
-          complete: () => this.isProcessing = false
-        });
+        this.router.navigate(['/games/battleship']);
+        this.isProcessing = false;
       }
-    } else {
-      this.router.navigate(['/games']);
-      this.isProcessing = false;
     }
-  }
+    
+    // ELIMINAR: getMyPlayerGameId() ya no se necesita
 
   confirmLeaveGame() {
     // Si el juego ya terminó, no necesitamos confirmación
@@ -229,6 +228,10 @@ export class GameComponent implements OnInit, OnDestroy {
           console.error('Error creando partida', err);
         },
       });
+  }
+
+  onGoHome() {
+    this.router.navigate(['/']);
   }
 
   ngOnDestroy() {

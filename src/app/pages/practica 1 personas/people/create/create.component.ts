@@ -3,8 +3,8 @@ import { Router } from '@angular/router'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'       // <-- importa esto
 import { PeopleService } from '../../../../services/people.service'
-import { ButtonComponent } from '../../../../shared/components/button/button.component'
-import { InputComponent } from '../../../../shared/components/input/input.component'
+import { ButtonComponent } from '../../../../shared/components/commons/button/button.component'
+import { InputComponent } from '../../../../shared/components/inputs/input/input.component'
 
 @Component({
   selector: 'app-create-person',

@@ -6,8 +6,8 @@ import {
   ReactiveFormsModule
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { InputComponent } from '../../../shared/components/input/input.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { InputComponent } from '../../../shared/components/inputs/input/input.component';
+import { ButtonComponent } from '../../../shared/components/commons/button/button.component';
 import { onlyLetters, passwordStrength, uniqueEmailValidator } from '../../../shared/validators/validators'
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';

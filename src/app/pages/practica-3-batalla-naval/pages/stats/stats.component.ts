@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BattleshipStatsService } from '../../../../services/gameservices/battleship-stats.service';
-import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
+import { SidebarComponent } from '../../../../shared/components/layouts/sidebar/sidebar.component';
 import { BoardComponent } from '../../components/board/board.component'; // Importar el BoardComponent
 import { 
   BattleshipStatsResponse, 

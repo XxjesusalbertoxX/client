@@ -3,8 +3,8 @@ import { FormBuilder, Validators, ReactiveFormsModule, FormControl } from '@angu
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { InputComponent } from '../../../shared/components/input/input.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { InputComponent } from '../../../shared/components/inputs/input/input.component';
+import { ButtonComponent } from '../../../shared/components/commons/button/button.component';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({

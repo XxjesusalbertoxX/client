@@ -8,6 +8,7 @@ export interface JoinGameResponse {
 }
 
 export interface LobbyPlayer {
+  _id: string;
   userId: number;
   ready: boolean;
   customColors?: string[]; // ← Agregar esta línea

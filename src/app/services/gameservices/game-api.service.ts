@@ -37,8 +37,9 @@ export class GameApiService {
     return this.http.post<StartGameResponse>(`${this.baseURL}/game/${gameId}/start`, {});
   }
 
-  leaveGame(gameId: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.baseURL}/game/${gameId}/leave`, {});
+  // UNIFICADO: Un solo método para salir del juego
+  leaveGame(gameId: string): Observable<any> {
+    return this.http.post<any>(`${this.baseURL}/game/${gameId}/leave`, {});
   }
 
   heartbeat(gameId: string): Observable<MessageResponse> {

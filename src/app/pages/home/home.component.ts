@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component'
+import { SidebarComponent } from '../../shared/components/layouts/sidebar/sidebar.component'
 
 @Component({
   standalone: true,

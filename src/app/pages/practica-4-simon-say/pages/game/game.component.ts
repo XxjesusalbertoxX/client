@@ -9,11 +9,13 @@ import { SimonSayService } from '../../../../services/gameservices/simonsay.serv
 import { SimonSayGameStatusResponse } from '../../models/simonsay.model';
 import { SingleColorPickerModalComponent } from '../../components/single-color-picker-modal/single-color-picker-modal.component';
 import { SimonSayGameViewModel } from '../../view-models/simonsay-game-view-model';
+import { GameEndModalComponent } from '../../../../shared/components/modals/game-end-modal/game-end-modal.component';
+import { GameApiService } from '../../../../services/gameservices/game-api.service';
 
 @Component({
   standalone: true,
   selector: 'app-simonsay-game',
-  imports: [CommonModule, SingleColorPickerModalComponent],
+  imports: [CommonModule, SingleColorPickerModalComponent, GameEndModalComponent],
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']
 })
@@ -24,6 +26,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   // Servicios
   private authService = inject(AuthService);
+  private gameApiService = inject(GameApiService);
   private toastr = inject(ToastrService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -46,6 +49,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   sequenceSpeed = 800; // ms entre colores
   isProcessingColor = false; // Para evitar clics múltiples
+    isAnimatingSequence = false; // NUEVO: Flag para evitar múltiples animaciones
+  hasShownCurrentSequence = false; // NUEVO: Flag para saber si ya se mostró la secuencia actual
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
@@ -67,7 +72,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   // === POLLING Y ESTADO ===
-  
+
   startGamePolling() {
     this.statusSubscription = interval(1500)
       .pipe(
@@ -107,7 +112,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
 handleGameStatus(status: SimonSayGameStatusResponse) {
   const previousMyLength = this.vm.myLocalSequence().length;
-  
+  const currentVersion = status.mySequenceVersion || 0; // Usar la versión del backend
+
+  console.log('=== HANDLE GAME STATUS ===');
+  console.log('Previous length:', previousMyLength);
+  console.log('Backend version:', currentVersion);
+  console.log('Last color added:', status.lastColorAdded);
+  console.log('============================');
+
   this.vm.setGameStatus(status);
 
   if (status.status === 'finished') {
@@ -115,16 +127,14 @@ handleGameStatus(status: SimonSayGameStatusResponse) {
     return;
   }
 
-  // CAMBIO: Detectar si hay un nuevo color agregado por longitud
-  if (status.mySequenceLength > previousMyLength) {
-    // Obtener el último color desde localStorage o pedirlo al backend solo una vez
-    this.requestLastColorAdded(status.mySequenceLength);
+  // CAMBIO: Detectar por versión del backend vs localStorage
+  if (currentVersion > previousMyLength && status.lastColorAdded) {
+    this.addNewColorToSequence(status.lastColorAdded);
   }
 
-  // Solo actualizar longitud, no secuencias completas
+  // Resto igual...
   this.vm.setCurrentProgress(status.myCurrentProgress || 0);
 
-  // Manejar fases
   if (status.isMyTurn) {
     this.handleMyTurn(status);
   } else {
@@ -132,21 +142,43 @@ handleGameStatus(status: SimonSayGameStatusResponse) {
   }
 }
 
+// NUEVO: Método más claro y seguro
+addNewColorToSequence(newColor: string) {
+  const currentSequence = this.vm.myLocalSequence();
+  const newSequence = [...currentSequence, newColor];
+
+  console.log('Adding new color to sequence:', newColor);
+  console.log('Old sequence:', currentSequence);
+  console.log('New sequence:', newSequence);
+
+  this.vm.setMyLocalSequence(newSequence);
+  this.saveSequenceToStorage('my', newSequence);
+
+  // Mostrar notificación
+  this.toastr.info(
+    `🎯 ${this.vm.gameStatus()?.opponentName || 'Oponente'} agregó ${newColor.toUpperCase()} a tu secuencia`,
+    'Nuevo color',
+    { timeOut: 3000 }
+  );
+}
+
+// ELIMINAR este método que no funciona:
+// requestLastColorAdded(newLength: number) { ... }
+
 requestLastColorAdded(newLength: number) {
-  // Si el backend puede mandar solo el último color agregado:
-  if (this.vm.gameStatus()?.lastColorAdded) {
-    const newColor = this.vm.gameStatus()!.lastColorAdded;
-    
-    // Agregar al localStorage
-    const currentSequence = this.vm.myLocalSequence();
-const newSequence = [...currentSequence, newColor].filter((c): c is string => !!c);
-    
-    this.vm.setMyLocalSequence(newSequence);
-    this.saveSequenceToStorage('my', newSequence);
-    
-    // Mostrar notificación
-    this.toastr.info(`🎯 ${this.vm.gameStatus()?.opponentName} agregó ${newColor!.toUpperCase()} a tu secuencia`, 'Nuevo color');
-  }
+  // CAMBIO: Verificar que el color no sea null/undefined
+  const lastColor = this.vm.gameStatus()?.lastColorAdded;
+  if (!lastColor) return; // Si no hay color, salir
+
+  // Agregar al localStorage
+  const currentSequence = this.vm.myLocalSequence();
+  const newSequence = [...currentSequence, lastColor]; // lastColor ya está verificado
+
+  this.vm.setMyLocalSequence(newSequence);
+  this.saveSequenceToStorage('my', newSequence);
+
+  // Mostrar notificación
+  this.toastr.info(`🎯 ${this.vm.gameStatus()?.opponentName} agregó ${lastColor.toUpperCase()} a tu secuencia`, 'Nuevo color');
 }
 
 
@@ -178,166 +210,207 @@ const newSequence = [...currentSequence, newColor].filter((c): c is string => !!
     this.vm.setCurrentProgress(status.myCurrentProgress || 0);
   }
 
-  handleMyTurn(status: SimonSayGameStatusResponse) {
-  switch (status.phase) {
-    case 'choose_first_color':
-      this.modalTitle = 'Primer color';
-      this.modalSubtitle = 'Escoge el primer color para la secuencia de tu oponente';
-      this.vm.setShowColorPicker(true);
-      this.vm.setCanInteract(false);
-      break;
-      
-    case 'repeat_sequence':
-      // NO mostrar modal, solo preparar para repetir secuencia
-      this.vm.setShowColorPicker(false);
-      this.startSequenceAnimation();
-      break;
-      
-    case 'choose_color':
-      // Solo mostrar después de completar mi secuencia
-      this.modalTitle = 'Agregar color';
-      this.modalSubtitle = 'Escoge el siguiente color para la secuencia de tu oponente';
-      this.vm.setShowColorPicker(true);
-      this.vm.setCanInteract(false);
-      break;
-  }
-}
-
   handleOpponentTurn(status: SimonSayGameStatusResponse) {
     this.vm.setCanInteract(false);
     this.vm.setShowColorPicker(false);
   }
 
-  // === ANIMACIÓN DE SECUENCIA ===
+handleMyTurn(status: SimonSayGameStatusResponse) {
+    switch (status.phase) {
+      case 'choose_first_color':
+        this.modalTitle = 'Primer color';
+        this.modalSubtitle = 'Escoge el primer color para la secuencia de tu oponente';
+        this.vm.setShowColorPicker(true);
+        this.vm.setCanInteract(false);
+        this.hasShownCurrentSequence = false; // Reset del flag
+        break;
+
+      case 'repeat_sequence':
+        this.vm.setShowColorPicker(false);
+        
+        // CAMBIO: Solo animar si no estamos ya animando Y no hemos mostrado esta secuencia
+        if (!this.isAnimatingSequence && !this.hasShownCurrentSequence) {
+          this.startSequenceAnimation();
+        }
+        break;
+
+      case 'choose_color':
+        this.modalTitle = 'Agregar color';
+        this.modalSubtitle = 'Escoge el siguiente color para la secuencia de tu oponente';
+        this.vm.setShowColorPicker(true);
+        this.vm.setCanInteract(false);
+        this.hasShownCurrentSequence = false; // Reset del flag
+        break;
+    }
+  }
+
+  // === ANIMACIÓN DE SECUENCIA (CORREGIDA) ===
 
   startSequenceAnimation() {
-  const sequence = this.vm.myLocalSequence(); // Solo desde localStorage
-  
-  this.vm.setShowingSequence(true);
-  this.vm.setCanInteract(false);
-  
-  this.toastr.info(`Mostrando secuencia de ${sequence.length} colores`);
-  this.animateSequence(sequence, 0);
-}
+    // CAMBIO: Verificar que no estemos ya animando
+    if (this.isAnimatingSequence) {
+      console.log('Animation already in progress, skipping');
+      return;
+    }
+
+    const sequence = this.vm.myLocalSequence();
+
+    console.log('Starting sequence animation with:', sequence);
+
+    if (sequence.length === 0) {
+      console.warn('No sequence found in localStorage, cannot animate');
+      this.toastr.warning('No hay secuencia para mostrar');
+      this.vm.setCanInteract(true);
+      return;
+    }
+
+    // CAMBIO: Marcar que estamos animando y que ya mostramos esta secuencia
+    this.isAnimatingSequence = true;
+    this.hasShownCurrentSequence = true;
+    
+    this.vm.setShowingSequence(true);
+    this.vm.setCanInteract(false);
+
+    this.toastr.info(`Mostrando secuencia de ${sequence.length} colores`);
+    this.animateSequence(sequence, 0);
+  }
 
   animateSequence(sequence: string[], index: number) {
     if (index >= sequence.length) {
+      // CAMBIO: Al terminar, limpiar flags y habilitar interacción
+      this.isAnimatingSequence = false;
       this.vm.setShowingSequence(false);
       this.vm.setCanInteract(true);
-      this.vm.setCurrentProgress(0);
-      this.toastr.success('¡Ahora repite la secuencia!');
+      this.vm.setCurrentProgress(0); // Reset del progreso para empezar a repetir
+      
+      this.toastr.success('¡Ahora repite la secuencia!', '', { timeOut: 2000 });
       return;
     }
 
     const color = sequence[index];
+    console.log(`Illuminating color ${index + 1}/${sequence.length}: ${color}`);
+    
     this.illuminateColor(color);
 
+    // CAMBIO: Usar setTimeout más claro
     setTimeout(() => {
       this.animateSequence(sequence, index + 1);
     }, this.sequenceSpeed);
   }
 
   illuminateColor(color: string) {
-    const colorElement = document.querySelector(`[data-color="${color}"]`);
+    const colorElement = document.querySelector(`[data-color="${color}"]`) as HTMLElement;
     if (colorElement) {
+      // CAMBIO: Limpiar clases antes de agregar la nueva
+      colorElement.classList.remove('illuminated', 'correct-flash', 'error-flash');
+      
+      // Agregar la clase de iluminación
       colorElement.classList.add('illuminated');
+      
+      // CAMBIO: Remover la clase después del tiempo especificado
       setTimeout(() => {
         colorElement.classList.remove('illuminated');
-      }, this.sequenceSpeed * 0.7);
+      }, this.sequenceSpeed * 0.6); // Un poco menos tiempo para que no se sobrepongan
     }
   }
 
-  // === INTERACCIONES DEL JUGADOR ===
+  // === INTERACCIONES DEL JUGADOR (CORREGIDA) ===
 
-    // Ya está correcto, pero verificar que mande al backend:
   onColorClick(color: string) {
-    if (!this.vm.canInteract() || this.vm.showingSequence() || this.isProcessingColor) return;
-  
+    // CAMBIO: Verificar que no estemos animando
+    if (!this.vm.canInteract() || this.vm.showingSequence() || this.isProcessingColor || this.isAnimatingSequence) {
+      console.log('Click blocked - animation in progress or cannot interact');
+      return;
+    }
+
     const expectedColor = this.vm.getExpectedColor();
-    if (!expectedColor) return;
-    
+    if (!expectedColor) {
+      console.log('No expected color, cannot proceed');
+      return;
+    }
+
     // Bloquear interacción inmediatamente
     this.isProcessingColor = true;
     this.vm.setCanInteract(false);
-    
-    console.log(color)
-    // IMPORTANTE: Siempre mandar al backend, sin importar si es correcto o no
+
+    console.log(`Color clicked: ${color}, Expected: ${expectedColor}`);
+
     this.simonSayService.playColor(this.vm.gameId(), color).subscribe({
       next: (response: any) => {
         this.isProcessingColor = false;
-        
+
         if (color === expectedColor) {
           // Color correcto
           const newProgress = this.vm.currentProgress() + 1;
           this.vm.setCurrentProgress(newProgress);
           this.illuminateColorSuccess(color);
-          
+
           this.toastr.success(`✅ Correcto! ${newProgress}/${this.vm.mySequenceLength()}`);
-          
+
           if (response.sequenceCompleted) {
             this.toastr.success('🎉 ¡Secuencia completada!');
-            // El modal se mostrará cuando cambie la fase en el próximo polling
+            // No habilitar interacción aquí, esperar al siguiente turno
           } else {
-            // Continuar con la secuencia
+            // CAMBIO: Pequeño delay antes de habilitar la siguiente interacción
             setTimeout(() => {
               this.vm.setCanInteract(true);
-            }, 500);
+            }, 600);
           }
         }
-        // Si es incorrecto, el backend terminará el juego y se manejará en el próximo polling
       },
       error: (error) => {
         this.isProcessingColor = false;
-        
-        // Color incorrecto o error del servidor
         this.illuminateColorError(color);
         this.toastr.error(`❌ ¡Incorrecto! Era ${expectedColor.toUpperCase()}`, 'Game Over');
-        
-        // El fin del juego se manejará en el próximo polling
+        // No habilitar interacción en error, el juego debería terminar
       }
     });
   }
 
-// Nuevas animaciones para feedback visual:
-illuminateColorSuccess(color: string) {
-  const colorElement = document.querySelector(`[data-color="${color}"]`);
-  if (colorElement) {
-    colorElement.classList.add('correct-flash');
-    setTimeout(() => {
-      colorElement.classList.remove('correct-flash');
-    }, 800);
+  // CAMBIO: Mejorar las animaciones de feedback
+  illuminateColorSuccess(color: string) {
+    const colorElement = document.querySelector(`[data-color="${color}"]`) as HTMLElement;
+    if (colorElement) {
+      colorElement.classList.remove('illuminated', 'error-flash');
+      colorElement.classList.add('correct-flash');
+      setTimeout(() => {
+        colorElement.classList.remove('correct-flash');
+      }, 800);
+    }
   }
-}
 
-illuminateColorError(color: string) {
-  const colorElement = document.querySelector(`[data-color="${color}"]`);
-  if (colorElement) {
-    colorElement.classList.add('error-flash');
-    setTimeout(() => {
-      colorElement.classList.remove('error-flash');
-    }, 800);
+  illuminateColorError(color: string) {
+    const colorElement = document.querySelector(`[data-color="${color}"]`) as HTMLElement;
+    if (colorElement) {
+      colorElement.classList.remove('illuminated', 'correct-flash');
+      colorElement.classList.add('error-flash');
+      setTimeout(() => {
+        colorElement.classList.remove('error-flash');
+      }, 800);
+    }
   }
-}
-
   onColorChosenForOpponent(chosenColor: string) {
   const isFirstColor = this.vm.currentPhase() === 'choose_first_color';
-  
-  console.log('Color elegido para oponente:', chosenColor);
-  console.log('Mis colores disponibles para elegir:', this.vm.myCustomColors()); // Los que YO elegí en el lobby
 
-  const endpoint = isFirstColor 
+  console.log('=== COLOR CHOSEN DEBUG ===');
+  console.log('Color chosen:', chosenColor);
+  console.log('Type:', typeof chosenColor);
+  console.log('Available colors:', this.vm.myCustomColors());
+  console.log('========================');
+
+  const endpoint = isFirstColor
     ? this.simonSayService.chooseFirstColor(this.vm.gameId(), chosenColor)
     : this.simonSayService.chooseColor(this.vm.gameId(), chosenColor);
 
   endpoint.subscribe({
     next: (response) => {
       this.vm.setShowColorPicker(false);
-      
+
       // Agregar color a la secuencia del oponente localmente
       const newOpponentSequence = [...this.vm.opponentLocalSequence(), chosenColor];
       this.vm.setOpponentLocalSequence(newOpponentSequence);
       this.saveSequenceToStorage('opponent', newOpponentSequence);
-      
+
       if (isFirstColor) {
         this.toastr.success(`✨ Primer color elegido: ${chosenColor.toUpperCase()}`);
       } else {
@@ -380,7 +453,7 @@ illuminateColorError(color: string) {
     this.isWinner = status.winner === this.vm.myUserId();
     this.winnerName = status.winnerName || 'Desconocido';
     this.loserName = status.loserName || 'Desconocido';
-    
+
     this.showEndModal = true;
     this.stopPolling();
     this.clearSequencesFromStorage();
@@ -388,33 +461,53 @@ illuminateColorError(color: string) {
 
   // === ACCIONES DEL MODAL DE FIN ===
 
+    // ...existing code...
+  
   onLeaveGame() {
-    this.simonSayService.leaveGame(this.vm.gameId()).subscribe({
-      complete: () => {
+    const gameId = this.vm.gameId();
+    if (!gameId) return;
+    
+    this.vm.setLoading(true);
+    
+    // CAMBIO: Usar solo gameApiService.leaveGame()
+    this.gameApiService.leaveGame(gameId).subscribe({
+      next: (result) => {
+        if (result.gameOver) {
+          this.toastr.info('Has abandonado la partida. Tu oponente ha sido declarado ganador.', 'Partida finalizada');
+        } else {
+          this.toastr.info(result.message || 'Has salido del juego');
+        }
+        this.router.navigate(['/games/simonsay']);
+      },
+      error: (err) => {
+        console.error('Error leaving game:', err);
         this.router.navigate(['/games/simonsay']);
       }
     });
   }
-
-  onRematch() {
-    this.simonSayService.requestRematch(this.vm.gameId()).subscribe({
-      next: (response: any) => {
-        if (response.rematchStarted) {
-          this.router.navigate(['/games/simonsay/lobby'], {
-            queryParams: { id: response.gameId }
-          });
-        } else {
-          this.rematchRequested = true;
-          this.toastr.info('Solicitud de revancha enviada');
-        }
-      },
-      error: (error) => {
-        this.toastr.error('Error al solicitar revancha');
-      }
-    });
-  }
+  
+  // ELIMINAR: getMyPlayerGameId() ya no se necesita
 
   onNewGame() {
     this.router.navigate(['/games/simonsay']);
+  }
+
+  onCreateNewGame() {
+    this.gameApiService
+      .createGame('battleship')
+      .subscribe({
+        next: (res) => {
+          this.router.navigate(['games/battleship/lobby'], {
+            queryParams: { id: res.gameId, code: res.code },
+          });
+        },
+        error: (err) => {
+          console.error('Error creando partida', err);
+        },
+      });
+  }
+
+  onGoHome() {
+    this.router.navigate(['/']);
   }
 }

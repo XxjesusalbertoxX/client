@@ -1,8 +1,10 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   standalone: true,
   selector: 'app-game-end-modal',
+  imports: [CommonModule],
   templateUrl: './game-end-modal.component.html',
   styleUrls: ['./game-end-modal.component.scss']
 })
@@ -10,10 +12,8 @@ export class GameEndModalComponent {
   @Input() winnerName: string = '';
   @Input() loserName: string = '';
   @Input() isWinner: boolean = false;
-  @Input() rematchRequested: boolean = false;
-  @Input() opponentLeft: boolean = false;
+  @Input() gameType: 'simon' | 'battleship' = 'simon'; // Nuevo: tipo de juego
 
-  @Output() leave = new EventEmitter<void>();
-  @Output() rematch = new EventEmitter<void>();
-  @Output() newGame = new EventEmitter<void>();
+  @Output() createNewGame = new EventEmitter<void>();
+  @Output() goHome = new EventEmitter<void>();
 }

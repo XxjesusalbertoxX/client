@@ -101,11 +101,9 @@
         [winnerName]="winnerName"
         [loserName]="loserName"
         [isWinner]="isWinner"
-        [rematchRequested]="rematchRequested"
-        [opponentLeft]="opponentLeft"
-        (leave)="onLeaveGame()"
-        (rematch)="onRequestRematch()"
-        (newGame)="onCreateNewGame()">
+        gameType="battleship"
+        (createNewGame)="onCreateNewGame()"
+        (goHome)="onGoHome()">
       </app-game-end-modal>
     }
   </div>

@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SimonSayService } from '../../../../services/gameservices/simonsay.services';
+import { GameApiService } from '../../../../services/gameservices/game-api.service';
 import { ToastrService } from 'ngx-toastr';
 import { GameJoinComponent } from '../../../../shared/components/forms/game-join/game-join.component';
 
 @Component({
   standalone: true,
-  selector: 'app-join-simonsay',
+  selector: 'app-join-game',
   imports: [CommonModule, GameJoinComponent],
   template: `
     <app-game-join 
-      gameType="simon"
+      gameType="battleship"
       [isLoading]="isLoading"
       [errorMessage]="errorMessage"
       (submitCode)="onSubmitCode($event)"
@@ -19,12 +19,12 @@ import { GameJoinComponent } from '../../../../shared/components/forms/game-join
     </app-game-join>
   `
 })
-export class JoinSimonsayComponent {
+export class JoinGameComponent {
   isLoading = false;
   errorMessage = '';
 
   constructor(
-    private simonSayService: SimonSayService,
+    private gameApiService: GameApiService,
     private router: Router,
     private toastr: ToastrService
   ) {}
@@ -33,9 +33,9 @@ export class JoinSimonsayComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.simonSayService.joinGame(code).subscribe({
+    this.gameApiService.joinGame(code).subscribe({
       next: (response) => {
-        this.router.navigate(['/games/simonsay/lobby'], {
+        this.router.navigate(['/games/battleship/lobby'], {
           queryParams: { id: response.gameId }
         });
       },
@@ -47,6 +47,6 @@ export class JoinSimonsayComponent {
   }
 
   goBack() {
-    this.router.navigate(['/games/simonsay']);
+    this.router.navigate(['/games/battleship']);
   }
 }

@@ -24,6 +24,7 @@ export interface SimonSayGameStatusResponse {
   opponentSequenceLength: number;
   myCurrentProgress: number;
   phase: SimonSayPhase;
+  playerGameId: string; // AÑADIR ESTO
   // Solo si terminó:
   winner?: number;
   winnerName?: string;
@@ -31,6 +32,7 @@ export interface SimonSayGameStatusResponse {
   mySequence?: string[];
   opponentSequence?: string[];
   lastColorAdded?: string | null; // Solo el último color agregado
+  mySequenceVersion?: number; // Nuevo: versión de la secuencia
 }
 
 export interface SimonSayLobbyPlayer {

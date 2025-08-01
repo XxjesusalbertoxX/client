@@ -1,0 +1,79 @@
+<div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200 transition-all duration-300 hover:shadow-xl"
+     [class.ring-2]="isCurrent"
+     [class.ring-blue-500]="isCurrent"
+     [class.opacity-60]="!player">
+  
+  @if (player) {
+    <!-- Jugador real -->
+    <div class="animate-fade-in">
+      <!-- Avatar y nombre -->
+      <div class="flex items-center space-x-4 mb-4">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+          {{ player.user.name.charAt(0).toUpperCase() }}
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold text-gray-800">{{ player.user.name }}</h3>
+          @if (player.ready) {
+            <div class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <div class="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+              Listo
+            </div>
+          } @else {
+            <div class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              <div class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>
+              Esperando...
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="text-center p-3 bg-gray-50 rounded-lg">
+          <div class="text-2xl font-bold text-green-600">{{ player.user.wins }}</div>
+          <div class="text-xs text-gray-600">Victorias</div>
+        </div>
+        <div class="text-center p-3 bg-gray-50 rounded-lg">
+          <div class="text-2xl font-bold text-red-600">{{ player.user.losses }}</div>
+          <div class="text-xs text-gray-600">Derrotas</div>
+        </div>
+        <div class="text-center p-3 bg-gray-50 rounded-lg">
+          <div class="text-2xl font-bold text-blue-600">{{ player.user.level }}</div>
+          <div class="text-xs text-gray-600">Nivel</div>
+        </div>
+      </div>
+
+      <!-- Botón Ready (solo para el jugador actual) -->
+      @if (canReady && isCurrent && !player.ready) {
+        <button (click)="handleReady()"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+          ¡Estoy Listo!
+        </button>
+      }
+    </div>
+  } @else {
+    <!-- Slot vacío esperando jugador -->
+    <div class="text-center py-8 animate-pulse">
+      <div class="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+        <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-400 mb-2">Esperando Jugador...</h3>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="text-center p-3 bg-gray-100 rounded-lg">
+          <div class="text-xl font-bold text-gray-300">-</div>
+          <div class="text-xs text-gray-400">Victorias</div>
+        </div>
+        <div class="text-center p-3 bg-gray-100 rounded-lg">
+          <div class="text-xl font-bold text-gray-300">-</div>
+          <div class="text-xs text-gray-400">Derrotas</div>
+        </div>
+        <div class="text-center p-3 bg-gray-100 rounded-lg">
+          <div class="text-xl font-bold text-gray-300">-</div>
+          <div class="text-xs text-gray-400">Nivel</div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

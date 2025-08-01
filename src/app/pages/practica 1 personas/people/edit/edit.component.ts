@@ -3,8 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { PeopleService } from '../../../../services/people.service'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
-import { InputComponent } from '../../../../shared/components/input/input.component'
-import { ButtonComponent } from '../../../../shared/components/button/button.component'
+import { InputComponent } from '../../../../shared/components/inputs/input/input.component'
+import { ButtonComponent } from '../../../../shared/components/commons/button/button.component'
 
 @Component({
   selector: 'app-edit-person',

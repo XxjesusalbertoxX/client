@@ -2,13 +2,20 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { GameApiService } from '../../../../services/gameservices/game-api.service';
+import { GameHomeComponent } from '../../../../shared/components/forms/game-home/game-home.component';
 
 @Component({
   standalone: true,
   selector: 'app-battleship-home',
-  imports: [CommonModule],
-  templateUrl: './battleship-home.component.html',
-  styleUrls: ['./battleship-home.component.scss'],
+  imports: [CommonModule, GameHomeComponent],
+  template: `
+    <app-game-home 
+      gameType="battleship"
+      (createGame)="goToCreate()"
+      (joinGame)="goToJoin()"
+      (goBack)="goBack()">
+    </app-game-home>
+  `
 })
 export class BattleshipHomeComponent {
   constructor(
