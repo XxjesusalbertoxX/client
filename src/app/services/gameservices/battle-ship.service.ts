@@ -11,7 +11,8 @@ import {
 @Injectable({ providedIn: 'root' })
 export class BattleShipService {
   private _gameId = signal<string | null>(null);
-  private readonly baseURL = 'http://192.168.1.30:3333';
+  // private readonly baseURL = 'http://192.168.1.30:3333';
+  private readonly baseURL = 'http://127.0.0.1:3333';
 
   constructor(private http: HttpClient) {}
 

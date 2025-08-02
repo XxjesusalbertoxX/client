@@ -50,10 +50,11 @@ export class GameComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Obtener el nombre del usuario
     this.authService.getUser().subscribe(user => {
-      if (user) {
-        this.currentUserName = user.name;
+      console.log("usuario obtenido", user)
+      if (user && user.user) {
+        this.currentUserName = user.user.name;
+        console.log("que royo", this.currentUserName)
       }
-      // Configurar el juego después de obtener el usuario
       this.setupGame();
     });
   }
@@ -86,6 +87,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.showEndModal = true;
       this.winnerName = gameData.winnerName;
       this.loserName = gameData.loserName;
+      console.log(`Juego terminado. Ganador: ${this.winnerName}, Perdedor: ${this.loserName}, currentUserName: ${this.currentUserName}`);
       this.isWinner = this.currentUserName === gameData.winnerName;
       
       // Si el backend envía estos datos, úsalos
@@ -195,24 +197,6 @@ export class GameComponent implements OnInit, OnDestroy {
     
     // Si el juego está en progreso, pedimos confirmación
     this.showConfirmLeaveModal = true;
-  }
-
-  onRequestRematch() {
-    const gameId = this.viewModel.getGameId();
-    if (gameId) {
-      this.gameApiService.requestRematch(gameId).subscribe({
-        next: (result) => {
-          if ('rematchStarted' in result && result.rematchStarted && result.gameId) {
-            // Redirige a la nueva partida y reinicia todo
-            this.router.navigate(['/games/battleship/game'], { queryParams: { id: result.gameId } });
-          } else if ('rematchAcceptedBy' in result) {
-            this.rematchRequested = true;
-            this.toastr.info('Solicitud de revancha enviada. Esperando al oponente...');
-          }
-        },
-        error: () => this.toastr.error('No se pudo solicitar la revancha')
-      });
-    }
   }
 
   onCreateNewGame() {

@@ -42,7 +42,7 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
   isLoading = true;
   intervalId?: ReturnType<typeof setInterval>;
   heartbeatInterval?: ReturnType<typeof setInterval>;
-  
+
   // SimonSay específico
   showColorPicker = false;
   myColors: string[] = [];
@@ -100,13 +100,13 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
   }
 
     // En ambos lobby components, cambiar:
-  
+
   onLeaveGame() {
     const id = this.gameId();
     if (!id) return;
-  
+
     this.isLoading = true;
-    
+
     // CAMBIO: Usar gameApiService.leaveGame() sin playerGameId
     this.gameApiService.leaveGame(id).subscribe({
       next: (result) => {
@@ -119,7 +119,7 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
       },
     });
   }
-  
+
   // ELIMINAR: getMyPlayerGameId() ya no se necesita
 
   openColorPicker() {
@@ -150,7 +150,6 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
       this.simonSayService.getLobbyStatus(id).subscribe({
         next: (status: LobbyStatusResponse) => {
           this.isLoading = false;
-
           if ((status as any).status === 'in_progress' || (status as any).status === 'waiting_first_color') {
             this.router.navigate(['games/simonsay/game'], { queryParams: { id } });
             return;

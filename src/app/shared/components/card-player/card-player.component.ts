@@ -13,7 +13,7 @@ import { AuthService } from '../../../services/auth.service';
 export class CardPlayerComponent {
   @Input() player!: LobbyPlayer | null;
   @Input() canReady: boolean = false;
-  @Input() gameType: string = 'battleship'; // ← Agregar esta línea
+  @Input() gameType: string = 'battleship';
   @Output() ready = new EventEmitter<void>();
 
   private authService = inject(AuthService);
@@ -21,6 +21,13 @@ export class CardPlayerComponent {
   get isCurrent(): boolean {
     if (!this.player) return false;
     return Number(this.authService.getUserId()) === this.player.userId;
+  }
+
+  get winRate(): number {
+    if (!this.player) return 0;
+    const total = this.player.user.wins + this.player.user.losses;
+    if (total === 0) return 0;
+    return Math.round((this.player.user.wins / total) * 100);
   }
 
   handleReady() {

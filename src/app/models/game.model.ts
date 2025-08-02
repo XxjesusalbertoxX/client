@@ -17,6 +17,7 @@ export interface LobbyPlayer {
     name: string;
     wins: number;
     losses: number;
+    exp: number;
     level: number;
   };
 }

@@ -2,17 +2,33 @@
      [class.ring-2]="isCurrent"
      [class.ring-blue-500]="isCurrent"
      [class.opacity-60]="!player">
-  
+
   @if (player) {
     <!-- Jugador real -->
     <div class="animate-fade-in">
       <!-- Avatar y nombre -->
       <div class="flex items-center space-x-4 mb-4">
-        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-          {{ player.user.name.charAt(0).toUpperCase() }}
+        <div class="relative">
+          <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+            {{ player.user.name.charAt(0).toUpperCase() }}
+          </div>
+          <!-- Badge de nivel -->
+          <div class="absolute -top-1 -right-1 bg-yellow-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+            {{ player.user.level }}
+          </div>
         </div>
         <div>
           <h3 class="text-xl font-semibold text-gray-800">{{ player.user.name }}</h3>
+          <!-- Nivel y EXP -->
+          <div class="text-sm text-gray-600 mb-1">
+            Nivel {{ player.user.level }} • {{ player.user.exp }}/1000 EXP
+          </div>
+          <!-- Barra de experiencia -->
+          <div class="w-32 bg-gray-200 rounded-full h-2 mb-2">
+            <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full transition-all duration-300"
+                 [style.width.%]="(player.user.exp / 1000) * 100">
+            </div>
+          </div>
           @if (player.ready) {
             <div class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
               <div class="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
@@ -27,7 +43,7 @@
         </div>
       </div>
 
-      <!-- Estadísticas -->
+      <!-- Estadísticas mejoradas -->
       <div class="grid grid-cols-3 gap-4 mb-4">
         <div class="text-center p-3 bg-gray-50 rounded-lg">
           <div class="text-2xl font-bold text-green-600">{{ player.user.wins }}</div>
@@ -38,8 +54,8 @@
           <div class="text-xs text-gray-600">Derrotas</div>
         </div>
         <div class="text-center p-3 bg-gray-50 rounded-lg">
-          <div class="text-2xl font-bold text-blue-600">{{ player.user.level }}</div>
-          <div class="text-xs text-gray-600">Nivel</div>
+          <div class="text-2xl font-bold text-purple-600">{{ winRate }}%</div>
+          <div class="text-xs text-gray-600">% Victoria</div>
         </div>
       </div>
 
@@ -52,7 +68,7 @@
       }
     </div>
   } @else {
-    <!-- Slot vacío esperando jugador -->
+        <!-- Slot vacío esperando jugador -->
     <div class="text-center py-8 animate-pulse">
       <div class="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
         <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">

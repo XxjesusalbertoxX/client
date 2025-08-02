@@ -13,7 +13,8 @@ import {
 @Injectable({ providedIn: 'root' })
 export class GameApiService {
   private _gameId = signal<string | null>(null);
-  private readonly baseURL = 'http://192.168.1.30:3333'
+  // private readonly baseURL = 'http://192.168.1.30:3333'
+  private readonly baseURL = 'http://127.0.0.1:3333'; // Uncomment for local development
 
   constructor(private http: HttpClient) {}
 

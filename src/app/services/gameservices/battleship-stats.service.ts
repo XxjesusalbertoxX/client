@@ -8,17 +8,17 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class BattleshipStatsService {
-  private readonly baseURL = 'http://192.168.1.30:3333'; // Cambia si es necesario
+  private readonly baseURL = 'http://192.168.1.30:3333/battleship/stats'; // Cambia si es necesario
 
   constructor(private http: HttpClient) {}
 
   getStats(): Observable<BattleshipStatsResponse> {
     // GET /stats/battleship
-    return this.http.get<BattleshipStatsResponse>(`${this.baseURL}/stats/battleship`);
+    return this.http.get<BattleshipStatsResponse>(`${this.baseURL}/games`);
   }
 
   getGameDetails(gameId: string): Observable<BattleshipGameDetails> {
     // GET /stats/battleship/:id
-    return this.http.get<BattleshipGameDetails>(`${this.baseURL}/stats/battleship/${gameId}`);
+    return this.http.get<BattleshipGameDetails>(`${this.baseURL}/game/${gameId}`);
   }
 }
