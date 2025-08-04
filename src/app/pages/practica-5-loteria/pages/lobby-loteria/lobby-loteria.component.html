@@ -1,0 +1,230 @@
+<div class="min-h-screen bg-gradient-to-br from-red-900 via-orange-900 to-yellow-900 relative overflow-hidden">
+
+  <!-- Elementos decorativos mexicanos -->
+  <div class="absolute inset-0 opacity-20">
+    <div class="absolute top-10 left-10 text-4xl animate-bounce" style="animation-delay: 0s;">🌮</div>
+    <div class="absolute top-20 right-20 text-3xl animate-bounce" style="animation-delay: 1s;">🌵</div>
+    <div class="absolute bottom-20 left-1/4 text-5xl animate-bounce" style="animation-delay: 2s;">🎺</div>
+    <div class="absolute bottom-40 right-1/3 text-3xl animate-bounce" style="animation-delay: 1.5s;">🪕</div>
+  </div>
+
+  <div class="relative z-10 min-h-screen p-4">
+
+    @if (viewModel.isLoading()) {
+      <!-- Loading State -->
+      <div class="flex items-center justify-center min-h-screen">
+        <div class="text-center animate-fade-in">
+          <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-12 w-full max-w-md">
+            <div class="text-6xl mb-6">🎲</div>
+            <h1 class="text-2xl font-bold text-white mb-4">Conectando...</h1>
+            <div class="flex items-center justify-center space-x-2 text-white mb-6">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              <span>Cargando feria mexicana</span>
+            </div>
+            <div class="flex justify-center space-x-1">
+              <div class="w-2 h-2 bg-red-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+              <div class="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+              <div class="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <!-- Main Lobby Content -->
+      <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <div class="text-center mb-8 animate-slide-down">
+          <div class="flex items-center justify-center space-x-4 mb-4">
+            <div class="text-6xl">🎲</div>
+            <h1 class="text-4xl font-bold text-white">Feria de la Lotería</h1>
+            <div class="text-6xl">🎪</div>
+          </div>
+          <p class="text-xl text-orange-200 mb-4">{{ viewModel.getStatusText() }}</p>
+
+          <!-- Código de partida -->
+          @if (canShowCode) {
+            <div class="bg-white/20 rounded-2xl p-4 mb-4 inline-block animate-fade-in">
+              <h2 class="text-lg font-semibold text-white mb-2">Código de la Feria</h2>
+              <div class="flex items-center space-x-4">
+                <div class="text-3xl font-mono font-bold text-yellow-300 bg-black/30 rounded-lg p-3 tracking-wider">
+                  {{ viewModel.gameCode() }}
+                </div>
+                <button
+                  (click)="onCopyCode()"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-md hover:shadow-lg">
+                  📋 Copiar
+                </button>
+              </div>
+              <p class="text-orange-200 mt-2">Comparte este código para que se unan</p>
+            </div>
+          }
+
+          <!-- Progreso -->
+          <div class="bg-white/20 rounded-2xl p-4 max-w-md mx-auto">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white font-medium">Participantes</span>
+              <span class="text-yellow-300 font-bold">
+                {{ viewModel.currentPlayers() }}/{{ viewModel.maxPlayers() }}
+              </span>
+            </div>
+
+            <div class="w-full bg-black/30 rounded-full h-3 mb-2">
+              <div
+                class="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
+                [style.width.%]="progressPercentage">
+              </div>
+            </div>
+
+            <p class="text-sm text-gray-300">
+              Mínimo {{ viewModel.minPlayers() }} jugadores para iniciar
+            </p>
+          </div>
+        </div>
+
+        <!-- Sección de Mi Carta (si aplica) -->
+        @if (!isHost) {
+          <div class="mb-8">
+            <div class="bg-white/10 rounded-3xl p-6 border border-white/20 max-w-2xl mx-auto">
+              <h2 class="text-2xl font-bold text-white text-center mb-6">
+                🎫 Mi Carta de Lotería
+              </h2>
+
+              <!-- Botones de control de carta -->
+              <div class="flex flex-wrap justify-center gap-4 mb-6">
+                <!-- Generar carta -->
+                <button
+                  (click)="onGenerateCard()"
+                  [disabled]="isGeneratingCard"
+                  class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all duration-200 shadow-lg">
+                  @if (isGeneratingCard) {
+                    <span class="inline-flex items-center">
+                      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generando...
+                    </span>
+                  } @else {
+                    🎲 {{ hasGeneratedCard ? 'Nueva Carta' : 'Generar Carta' }}
+                  }
+                </button>
+
+                <!-- Ver/Ocultar carta -->
+                @if (hasGeneratedCard) {
+                  <button
+                    (click)="toggleMyCard()"
+                    class="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg">
+                    {{ showMyCard ? '👁️‍🗨️ Ocultar' : '👁️ Ver' }} Carta
+                  </button>
+                }
+
+                <!-- Marcar como listo -->
+                @if (hasGeneratedCard && !viewModel.myReady()) {
+                  <button
+                    (click)="onSetReady()"
+                    class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg">
+                    ✅ ¡Estoy Listo!
+                  </button>
+                }
+
+                <!-- Estado de listo -->
+                @if (viewModel.myReady()) {
+                  <div class="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl shadow-lg">
+                    ✅ Listo para jugar
+                  </div>
+                }
+              </div>
+
+              <!-- Estado de la carta -->
+              @if (!hasGeneratedCard) {
+                <div class="text-center py-8">
+                  <div class="text-6xl mb-4 opacity-50">📋</div>
+                  <p class="text-gray-400 text-lg">Genera tu carta para comenzar</p>
+                  <p class="text-gray-500 text-sm">Puedes generar varias cartas hasta encontrar la que más te guste</p>
+                </div>
+              } @else {
+                <!-- Carta generada -->
+                @if (showMyCard && myGeneratedCard.length > 0) {
+                  <div class="animate-fade-in">
+                    <app-loteria-card
+                      [playerCard]="myGeneratedCard"
+                      [showCardNames]="true">
+                    </app-loteria-card>
+                  </div>
+                } @else if (hasGeneratedCard) {
+                  <div class="text-center py-8">
+                    <div class="text-6xl mb-4">🎫</div>
+                    <p class="text-green-300 text-lg font-medium">Carta generada exitosamente</p>
+                    <p class="text-gray-400 text-sm">Haz clic en "Ver Carta" para mostrarla</p>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Grid de Jugadores -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-white text-center mb-6">
+            🎭 Participantes de la Feria
+          </h2>
+
+                    <div [class]="'grid gap-6 ' + getPlayerGridClass()">
+            @for (player of viewModel.players(); track player.userId) {
+              <app-lobby-player-card
+                [player]="player"
+                [isMe]="player.userId === currentUserId"
+                [canStartGame]="canStartGame"
+                [showKickButton]="isHost && !player.isHost && player.userId !== currentUserId"
+                (startGame)="onStartGame()"
+                (kickPlayer)="onKickPlayer($event)">
+              </app-lobby-player-card>
+            }
+          </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="max-w-4xl mx-auto">
+          <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+            <h3 class="text-xl font-bold text-white mb-4 text-center">
+              🎯 ¿Cómo jugar a la Lotería?
+            </h3>
+
+            <div class="grid md:grid-cols-2 gap-6 text-gray-300">
+              <div>
+                <h4 class="font-semibold text-yellow-300 mb-2">👑 El Gritón (Anfitrión):</h4>
+                <ul class="space-y-1 text-sm">
+                  <li>• Saca las cartas del mazo</li>
+                  <li>• Controla el ritmo del juego</li>
+                  <li>• Puede rebarajear cuando quiera</li>
+                  <li>• Valida los ganadores</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-yellow-300 mb-2">🎫 Los Jugadores:</h4>
+                <ul class="space-y-1 text-sm">
+                  <li>• Generan su carta de 16 imágenes</li>
+                  <li>• Marcan fichas cuando sale su carta</li>
+                  <li>• Ganan al completar toda la carta</li>
+                  <li>• ¡Gritan "LOTERÍA!" al ganar!</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de salir -->
+        <div class="text-center mt-8">
+          <button
+            (click)="onLeaveGame()"
+            class="text-gray-400 hover:text-white transition-colors duration-300 flex items-center space-x-2 underline underline-offset-4 mx-auto">
+            <span>←</span>
+            <span>Salir de la feria</span>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

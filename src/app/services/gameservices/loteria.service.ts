@@ -25,7 +25,7 @@ import {
   providedIn: 'root'
 })
 export class LoteriaService {
-  private apiUrl = 'http://127.0.0.1:3333/';
+  private apiUrl = 'http://127.0.0.1:3333';
   // private apiUrl = environment.apiUrl || 'http://127.0.0.1:3333/';
 
   constructor(private http: HttpClient) {}

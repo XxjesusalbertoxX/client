@@ -21,5 +21,9 @@ export class HomeComponent {
   goToSimon() {
     this.router.navigateByUrl('games/simonsay');
   }
+
+  goToLoteria() {
+    this.router.navigateByUrl('games/loteria');
+  }
 }
 

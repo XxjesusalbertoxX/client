@@ -1,0 +1,101 @@
+    <div class="bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl transition-all duration-300 hover:scale-102 hover:shadow-3xl">
+      
+      <!-- Header del jugador -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3">
+          <!-- Avatar -->
+          <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+            {{ getPlayerInitials() }}
+          </div>
+          
+          <!-- Info del jugador -->
+          <div>
+            <h3 class="text-white font-bold text-lg">{{ player.user?.name || 'Jugador' }}</h3>
+            <div class="flex items-center space-x-2 text-sm">
+              <span class="text-yellow-300">⭐ Nivel {{ player.user?.level || 1 }}</span>
+              <span class="text-gray-300">{{ player.user?.exp || 0 }} XP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Badges de estado -->
+        <div class="flex flex-col items-end space-y-1">
+          @if (player.isHost) {
+            <span class="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-full shadow-lg">
+              👑 GRITÓN
+            </span>
+          }
+          
+          @if (showKickButton) {
+            <button
+              (click)="onKick()"
+              class="px-2 py-1 bg-red-600/80 hover:bg-red-700 text-white text-xs rounded-full transition-colors duration-200 shadow-md">
+              ❌ Expulsar
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Estado de la carta -->
+      <div class="mb-4">
+        @if (player.isHost) {
+          <!-- El anfitrión no genera carta -->
+          <div class="text-center py-4">
+            <div class="text-4xl mb-2">🎯</div>
+            <p class="text-yellow-300 font-medium">Control de la partida</p>
+            <p class="text-gray-400 text-sm">Administra el juego y saca las cartas</p>
+          </div>
+        } @else {
+          <!-- Jugadores normales -->
+          @if (player.cardGenerated) {
+            <div class="text-center py-4">
+              <div class="text-4xl mb-2">🎫</div>
+              <p class="text-green-300 font-medium">Carta generada</p>
+              <p class="text-gray-400 text-sm">Lista para jugar</p>
+            </div>
+          } @else {
+            <div class="text-center py-4">
+              <div class="text-4xl mb-2 opacity-50">📋</div>
+              <p class="text-gray-400 font-medium">Sin carta</p>
+              <p class="text-gray-500 text-sm">Necesita generar su carta</p>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Estado de ready -->
+      <div class="mb-4">
+        @if (player.isHost) {
+          <!-- Estado del anfitrión -->
+          @if (canStartGame) {
+            <div class="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-xl text-center font-bold shadow-lg">
+              ✅ Puede iniciar partida
+            </div>
+          } @else {
+            <div class="bg-gradient-to-r from-yellow-600 to-orange-600 text-white py-3 px-4 rounded-xl text-center font-bold shadow-lg">
+              ⏳ Esperando jugadores
+            </div>
+          }
+        } @else {
+          <!-- Estado de jugadores -->
+          @if (player.ready) {
+            <div class="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-xl text-center font-bold shadow-lg">
+              ✅ Listo para jugar
+            </div>
+          } @else {
+            <div class="bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl text-center font-bold shadow-lg">
+              ⏸️ No está listo
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Botón de iniciar partida (solo para anfitrión) -->
+      @if (isMe && player.isHost && canStartGame) {
+        <button
+          (click)="onStartGame()"
+          class="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg">
+          🚀 ¡INICIAR LOTERÍA!
+        </button>
+      }
+    </div>

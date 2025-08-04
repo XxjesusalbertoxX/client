@@ -24,7 +24,7 @@
     </div>
 
     <!-- Juegos -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
       
       <!-- Battleship -->
       <div class="group relative">
@@ -45,7 +45,6 @@
             <span>👥 2 Jugadores</span>
           </div>
           
-          <!-- Indicador de hover -->
           <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </button>
       </div>
@@ -54,7 +53,7 @@
       <div class="group relative">
         <button
           (click)="goToSimon()"
-          class="w-full p-8 bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-xl rounded-3xl border border-purple-400/30 hover:border-purple-400/60 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 opacity-75">
+          class="w-full p-8 bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-xl rounded-3xl border border-purple-400/30 hover:border-purple-400/60 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25">
           
           <div class="text-6xl mb-4 group-hover:animate-pulse">🎵</div>
           
@@ -63,15 +62,31 @@
           
           <div class="flex items-center justify-center space-x-4 text-sm text-gray-400">
             <span class="flex items-center">
-              <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
-              Próximamente
+              <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+              Disponible
             </span>
-            <span>👤 1 Jugador</span>
+            <span>� 2 Jugadores</span>
           </div>
+        </button>
+      </div>
+
+      <!-- NUEVO - Lotería Mexicana -->
+      <div class="group relative">
+        <button
+          (click)="goToLoteria()"
+          class="w-full p-8 bg-gradient-to-br from-red-600/20 to-orange-600/20 backdrop-blur-xl rounded-3xl border border-red-400/30 hover:border-red-400/60 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/25">
           
-          <!-- Badge de "Coming Soon" -->
-          <div class="absolute top-4 right-4 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full">
-            SOON
+          <div class="text-6xl mb-4 group-hover:animate-pulse">🎲</div>
+          
+          <h2 class="text-3xl font-bold text-white mb-3">Lotería Mexicana</h2>
+          <p class="text-gray-300 mb-4">El juego tradicional mexicano. Escucha al gritón y marca tu carta. ¡Lotería!</p>
+          
+          <div class="flex items-center justify-center space-x-4 text-sm text-gray-400">
+            <span class="flex items-center">
+              <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+              Disponible
+            </span>
+            <span>👥 4-16 Jugadores</span>
           </div>
         </button>
       </div>
@@ -81,7 +96,7 @@
     <div class="mt-16 text-center animate-fade-in-delay">
       <div class="flex items-center justify-center space-x-8 text-gray-400">
         <div class="text-center">
-          <div class="text-2xl font-bold text-white">1</div>
+          <div class="text-2xl font-bold text-white">3</div>
           <div class="text-sm">Juegos disponibles</div>
         </div>
         <div class="text-center">

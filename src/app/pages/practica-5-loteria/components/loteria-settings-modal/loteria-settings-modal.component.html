@@ -1,0 +1,96 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+      <div class="bg-gradient-to-br from-red-900/90 to-orange-900/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-md border border-red-400/30 animate-modal-appear">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+          <div class="text-6xl mb-4">🎲</div>
+          <h2 class="text-3xl font-bold text-white mb-2">Configurar Lotería</h2>
+          <p class="text-red-200">Personaliza tu partida mexicana</p>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          
+          <!-- Jugadores -->
+          <div class="space-y-4">
+            <h3 class="text-xl font-semibold text-white flex items-center">
+              👥 Jugadores
+            </h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Mínimo -->
+              <div>
+                <label class="block text-red-200 text-sm font-medium mb-2">
+                  Mínimo
+                </label>
+                <select 
+                  formControlName="minPlayers"
+                  class="w-full px-3 py-2 bg-black/30 border border-red-400/50 rounded-lg text-white focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20">
+                  <option value="4">4 jugadores</option>
+                  <option value="5">5 jugadores</option>
+                  <option value="6">6 jugadores</option>
+                </select>
+              </div>
+
+              <!-- Máximo -->
+              <div>
+                <label class="block text-red-200 text-sm font-medium mb-2">
+                  Máximo
+                </label>
+                <select 
+                  formControlName="maxPlayers"
+                  class="w-full px-3 py-2 bg-black/30 border border-red-400/50 rounded-lg text-white focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20">
+                  <option value="8">8 jugadores</option>
+                  <option value="10">10 jugadores</option>
+                  <option value="12">12 jugadores</option>
+                  <option value="16">16 jugadores</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Velocidad de cartas -->
+          <div>
+            <h3 class="text-xl font-semibold text-white flex items-center mb-4">
+              ⏱️ Velocidad de Cartas
+            </h3>
+            
+            <div class="space-y-3">
+              <label class="block text-red-200 text-sm font-medium">
+                Segundos entre cartas: {{ settingsForm.value.drawCooldownSeconds }}s
+              </label>
+              
+              <input 
+                type="range" 
+                formControlName="drawCooldownSeconds"
+                min="1" 
+                max="10" 
+                step="1"
+                class="w-full h-2 bg-black/30 rounded-lg appearance-none cursor-pointer slider-red">
+              
+              <div class="flex justify-between text-xs text-red-300">
+                <span>Muy rápido (1s)</span>
+                <span>Tranquilo (10s)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex space-x-4 pt-4">
+            <button
+              type="button"
+              (click)="onCancel()"
+              class="flex-1 py-3 px-6 bg-gray-600/50 hover:bg-gray-600/70 text-white rounded-xl transition-colors duration-200 font-medium">
+              Cancelar
+            </button>
+            
+            <button
+              type="submit"
+              [disabled]="settingsForm.invalid"
+              class="flex-1 py-3 px-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-200 font-medium shadow-lg">
+              🎲 Crear Partida
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>

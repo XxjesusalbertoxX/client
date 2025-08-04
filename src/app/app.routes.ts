@@ -21,6 +21,8 @@ import { JoinSimonsayComponent } from './pages/practica-4-simon-say/pages/join-s
 import { LobbySimonsayComponent } from './pages/practica-4-simon-say/pages/lobby-simonsay/lobby-simonsay.component';
 import { GameComponent as SimonSayGameComponent } from './pages/practica-4-simon-say/pages/game/game.component';
 
+import { LoteriaHomeComponent } from './pages/practica-5-loteria/pages/loteria-home/loteria-home.component';
+import { LobbyLoteriaComponent } from './pages/practica-5-loteria/pages/lobby-loteria/lobby-loteria.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'people', pathMatch: 'full' },
@@ -57,6 +59,7 @@ export const routes: Routes = [
   { path: 'games/simonsay/lobby', component: LobbySimonsayComponent, canActivate: [AuthGuard] },
   { path: 'games/simonsay/game', component: SimonSayGameComponent, canActivate: [AuthGuard] },
 
-  // Wildcard redirect
+  { path: 'games/loteria', component: LoteriaHomeComponent, canActivate: [AuthGuard] },
+  { path: 'games/loteria/lobby', component: LobbyLoteriaComponent, canActivate: [AuthGuard] },  // Wildcard redirect
   { path: '**', redirectTo: '' },
 ];

@@ -19,7 +19,7 @@ interface JoinConfig {
 export class GameJoinComponent implements OnInit {
   private fb = inject(FormBuilder);
 
-  @Input() gameType: 'battleship' | 'simon' = 'battleship';
+  @Input() gameType: 'battleship' | 'simon' | 'loteria' = 'battleship';
   @Input() isLoading = false;
   @Input() errorMessage = '';
 
@@ -31,7 +31,6 @@ export class GameJoinComponent implements OnInit {
   });
 
   ngOnInit() {
-    // Reset form when component initializes
     this.form.reset();
   }
 
@@ -48,6 +47,12 @@ export class GameJoinComponent implements OnInit {
         emoji: '🎨',
         backgroundGradient: 'from-slate-900 via-purple-900 to-slate-900',
         buttonGradient: 'from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+      },
+      loteria: {
+        title: 'Lotería Mexicana',
+        emoji: '🎲',
+        backgroundGradient: 'from-red-900 via-orange-900 to-yellow-900',
+        buttonGradient: 'from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700'
       }
     };
     return configs[this.gameType];

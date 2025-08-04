@@ -34,17 +34,13 @@
           (click)="onCreateClick()"
           class="w-full p-8 bg-gradient-to-br from-green-600/30 to-emerald-600/30 backdrop-blur-xl rounded-3xl border-2 border-green-400/50 hover:border-green-400 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/25 group-hover:bg-gradient-to-br group-hover:from-green-600/40 group-hover:to-emerald-600/40">
           
-          <div class="text-5xl mb-4 group-hover:animate-pulse">🎯</div>
+          <div class="text-5xl mb-4 group-hover:animate-pulse">{{ config.createIcon }}</div>
           
-          <h2 class="text-2xl font-bold text-white mb-3">Crear Partida</h2>
-          <p class="text-gray-300 mb-4">
-            <span *ngIf="gameType === 'battleship'">Sé el capitán de tu propia batalla. Invita a un amigo y demuestra quién domina los mares.</span>
-            <span *ngIf="gameType === 'simon'">Inicia una nueva partida de Simon Dice. Desafía a tu memoria y la de tus amigos.</span>
-          </p>
+          <h2 class="text-2xl font-bold text-white mb-3">{{ config.createButtonText }}</h2>
+          <p class="text-gray-300 mb-4">{{ config.createButtonDesc }}</p>
           
           <div class="flex items-center justify-center space-x-2 text-green-300 font-medium">
-            <span *ngIf="gameType === 'battleship'">🏴‍☠️</span>
-            <span *ngIf="gameType === 'simon'">🎨</span>
+            <span>�</span>
             <span>Ser el Host</span>
           </div>
         </button>
@@ -56,21 +52,14 @@
           (click)="onJoinClick()"
           class="w-full p-8 bg-gradient-to-br from-yellow-600/30 to-orange-600/30 backdrop-blur-xl rounded-3xl border-2 border-yellow-400/50 hover:border-yellow-400 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/25 group-hover:bg-gradient-to-br group-hover:from-yellow-600/40 group-hover:to-orange-600/40">
           
-          <div class="text-5xl mb-4 group-hover:animate-bounce">
-            <span *ngIf="gameType === 'battleship'">🧭</span>
-            <span *ngIf="gameType === 'simon'">🎮</span>
-          </div>
+          <div class="text-5xl mb-4 group-hover:animate-bounce">{{ config.joinIcon }}</div>
           
-          <h2 class="text-2xl font-bold text-white mb-3">Unirse a Partida</h2>
-          <p class="text-gray-300 mb-4">
-            <span *ngIf="gameType === 'battleship'">¿Tienes un código de batalla? Únete a la guerra naval y demuestra tu valía como marinero.</span>
-            <span *ngIf="gameType === 'simon'">¿Tienes un código de partida? Únete al desafío de memoria y pon a prueba tu concentración.</span>
-          </p>
+          <h2 class="text-2xl font-bold text-white mb-3">{{ config.joinButtonText }}</h2>
+          <p class="text-gray-300 mb-4">{{ config.joinButtonDesc }}</p>
           
           <div class="flex items-center justify-center space-x-2 text-yellow-300 font-medium">
-            <span *ngIf="gameType === 'battleship'">⚔️</span>
-            <span *ngIf="gameType === 'simon'">🧠</span>
-            <span>Entrar en batalla</span>
+            <span>🎊</span>
+            <span>¡A jugar!</span>
           </div>
         </button>
       </div>
@@ -81,23 +70,32 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div class="text-center">
           <div class="text-3xl mb-2">🎮</div>
-          <h3 class="text-lg font-semibold text-white mb-2">Fácil de jugar</h3>
-          <p class="text-gray-400 text-sm">Reglas simples, estrategia profunda</p>
+          <h3 class="text-lg font-semibold text-white mb-2">
+            <span *ngIf="gameType === 'loteria'">Tradicional</span>
+            <span *ngIf="gameType !== 'loteria'">Fácil de jugar</span>
+          </h3>
+          <p class="text-gray-400 text-sm">
+            <span *ngIf="gameType === 'loteria'">El juego clásico mexicano de toda la vida</span>
+            <span *ngIf="gameType !== 'loteria'">Reglas simples, estrategia profunda</span>
+          </p>
         </div>
         
         <div class="text-center">
           <div class="text-3xl mb-2">👥</div>
           <h3 class="text-lg font-semibold text-white mb-2">Multijugador</h3>
-          <p class="text-gray-400 text-sm">Desafía a tus amigos en tiempo real</p>
+          <p class="text-gray-400 text-sm">
+            <span *ngIf="gameType === 'loteria'">De 4 hasta 16 jugadores simultáneos</span>
+            <span *ngIf="gameType !== 'loteria'">Desafía a tus amigos en tiempo real</span>
+          </p>
         </div>
         
         <div class="text-center">
           <div class="text-3xl mb-2">🏆</div>
-          <h3 class="text-lg font-semibold text-white mb-2">Competitivo</h3>
-          <p class="text-gray-400 text-sm">
-            <span *ngIf="gameType === 'battleship'">Sube de nivel y domina los océanos</span>
-            <span *ngIf="gameType === 'simon'">Mejora tu memoria y concentración</span>
-          </p>
+          <h3 class="text-lg font-semibold text-white mb-2">
+            <span *ngIf="gameType === 'loteria'">Emocionante</span>
+            <span *ngIf="gameType !== 'loteria'">Competitivo</span>
+          </h3>
+          <p class="text-gray-400 text-sm">{{ config.competitiveText }}</p>
         </div>
       </div>
     </div>

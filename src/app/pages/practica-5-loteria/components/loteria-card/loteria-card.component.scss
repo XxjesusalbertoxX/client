@@ -1,0 +1,22 @@
+.grid {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+img {
+  transition: all 0.2s ease-in-out;
+  object-fit: cover;
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+// Asegurar que el grid sea exactamente 4x4
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+} 
