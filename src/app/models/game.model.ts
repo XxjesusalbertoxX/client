@@ -11,7 +11,7 @@ export interface LobbyPlayer {
   _id: string;
   userId: number;
   ready: boolean;
-  customColors?: string[]; // ← Agregar esta línea
+  customColors?: string[];
   user: {
     id: number;
     name: string;
@@ -49,3 +49,18 @@ export interface RematchWaitingResponse {
 }
 
 export type RematchResponse = RematchStartedResponse | RematchWaitingResponse;
+
+// ========================================
+// NUEVOS TIPOS PARA LOTERÍA
+// ========================================
+
+export type GameType = 'battleship' | 'simonsay' | 'loteria';
+
+export interface GameBase {
+  id: string;
+  code: string;
+  gameType: GameType;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
