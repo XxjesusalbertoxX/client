@@ -1,0 +1,23 @@
+@if (viewModel.isLoading()) {
+  <!-- Loading State -->
+  <div class="min-h-screen bg-gradient-to-br from-red-900 via-orange-900 to-yellow-900 flex items-center justify-center">
+    <div class="text-center animate-fade-in">
+      <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-12 w-full max-w-md">
+        <div class="text-6xl mb-6">🎲</div>
+        <h1 class="text-2xl font-bold text-white mb-4">Cargando partida...</h1>
+        <div class="flex items-center justify-center space-x-2 text-white mb-6">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <span>Preparando la feria</span>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- Vista del Anfitrión -->
+  @if (viewModel.isHost()) {
+    <app-game-anfitrion [viewModel]="viewModel"></app-game-anfitrion>
+  } @else {
+    <!-- Vista del Jugador -->
+    <app-game-players [viewModel]="viewModel"></app-game-players>
+  }
+}

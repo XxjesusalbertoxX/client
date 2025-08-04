@@ -1,11 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { BattleShipService } from '../gameservices/battle-ship.service';
 import { GameApiService } from '../gameservices/game-api.service';
-import { SimonSayService } from '../gameservices/simonsay.service';
+import { SimonSayService } from '../gameservices/simonsay.services';
 
 @Injectable({ providedIn: 'root' })
 export class LobbyService {
-  private battleship = inject(BattleShipService);
   private gameApi = inject(GameApiService);
   private simonsay = inject(SimonSayService);
 

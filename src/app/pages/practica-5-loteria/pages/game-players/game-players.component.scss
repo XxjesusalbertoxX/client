@@ -1,0 +1,60 @@
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modal-appear {
+  from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 1s ease-out;
+}
+
+.animate-modal-appear {
+  animation: modal-appear 0.4s ease-out;
+}
+
+// Drag and drop styles
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grabbing {
+  cursor: grabbing;
+}
+
+// Hover effects para las fichas
+.hover\:scale-110:hover {
+  transform: scale(1.1);
+}
+
+// Grid responsivo
+@media (max-width: 1024px) {
+  .lg\:col-span-1 {
+    order: 3;
+  }
+
+  .lg\:col-span-2 {
+    order: 1;
+  }
+}
+
+// Sticky positioning
+.sticky {
+  position: sticky;
+}
+
+.top-4 {
+  top: 1rem;
+}

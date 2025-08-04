@@ -2,11 +2,14 @@ import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { jwtDecode } from 'jwt-decode';
 import { Observable, map } from 'rxjs'
+import { environment } from '../../../environment/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   // private baseUrl = 'http://localhost:3333'
-  private baseUrl = 'http://192.168.1.30:3333'
+  // private baseUrl = 'http://192.168.1.30:3333'
+  // private readonly baseUrl = 'http://www.atenasoficial.com:3333'
+  private readonly baseUrl = environment.apiUrl; // Uncomment if using environment variable
 
   constructor(private http: HttpClient) {}
 

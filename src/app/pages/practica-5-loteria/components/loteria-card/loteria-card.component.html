@@ -1,5 +1,5 @@
 <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl shadow-2xl p-4 border-4 border-yellow-600">
-  
+
   <!-- Header de la carta -->
   <div class="text-center mb-4">
     <div class="bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg">
@@ -11,28 +11,31 @@
   <!-- Grid 4x4 de cartas -->
   <div class="grid grid-cols-4 gap-2 mb-4 aspect-square">
     @for (cardName of playerCard; track $index) {
-      <div 
+      <div
         class="relative aspect-square bg-white rounded-lg border-2 border-gray-300 shadow-md overflow-hidden transition-all duration-200"
         [class.border-green-500]="showTokens && markedCells && markedCells[$index]"
         [class.bg-green-100]="showTokens && markedCells && markedCells[$index]"
         [class.cursor-pointer]="clickable"
         [class.hover:scale-105]="clickable"
-        (click)="onCellClick($index)">
-        
+        (click)="onCellClick($index)"
+        (dragover)="onCellDragOver($event)"
+        (drop)="onCellDrop($event, $index)">
+
         <!-- Imagen de la carta -->
-        <img 
+        <img
           [src]="getCardImagePath(cardName)"
           [alt]="formatCardName(cardName)"
           class="w-full h-full object-cover rounded-lg"
           [class.opacity-50]="showTokens && markedCells && markedCells[$index]"
           (error)="onImageError($event)">
-        
+
         <!-- Ficha encima -->
         @if (showTokens && markedCells && markedCells[$index]) {
-          <div class="absolute inset-0 flex items-center justify-center bg-green-500/30 rounded-lg">
-            <div class="w-6 h-6 bg-red-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-              <span class="text-white font-bold text-xs">●</span>
-            </div>
+          <div class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+            <img
+              [src]="getFichaImagePath()"
+              alt="Ficha"
+              class="w-8 h-8 object-contain drop-shadow-lg animate-ficha-drop">
           </div>
         }
 

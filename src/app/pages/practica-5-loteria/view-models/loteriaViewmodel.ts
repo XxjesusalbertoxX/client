@@ -51,7 +51,21 @@ export class LoteriaViewModel {
   maxPlayers = computed(() => this._lobbyStatus()?.maxPlayers || 8);
   
   // Estados del usuario
-  isHost = computed(() => this._lobbyStatus()?.isHost || false);
+// En loteriaViewmodel.ts, agregar método para verificar si es host correctamente
+  isHost = computed(() => {
+    const gameStatus = this._gameStatus();
+    if (!gameStatus) return false;
+
+    const currentUserId = this.authService.getUserId();
+    if (!currentUserId) return false;
+
+    // Si tenemos hostView, somos host
+    if ('hostView' in gameStatus && gameStatus.hostView) {
+      return true;
+    }
+
+    return false;
+  });
   myCardGenerated = computed(() => this._lobbyStatus()?.myCardGenerated || false);
   myReady = computed(() => this._lobbyStatus()?.myReady || false);
   canStart = computed(() => this._lobbyStatus()?.canStart || false);
@@ -64,10 +78,6 @@ export class LoteriaViewModel {
   allPlayersReady = computed(() => 
     this.players().length > 0 && 
     this.players().every(p => p.ready && p.cardGenerated)
-  );
-
-  gameCanStart = computed(() => 
-    this.hasEnoughPlayers() && this.allPlayersReady() && this.isHost()
   );
 
   // Información del juego
@@ -105,10 +115,36 @@ export class LoteriaViewModel {
     return status && 'hostView' in status ? status.hostView : null;
   });
 
+  hostPlayersCards = computed(() => {
+    const hostView = this.hostView();
+    return hostView ? hostView.playersCards : [];
+  });
+
+  // Información de jugadores (sin cartas) para jugadores normales
   playersInfo = computed(() => {
     const status = this._gameStatus();
-    return status && 'playersInfo' in status ? status.playersInfo : [];
+    if (status && 'playersInfo' in status) {
+      return status.playersInfo;
+    }
+    
+    // Si es anfitrión, devolver info básica de los jugadores
+    const hostView = this.hostView();
+    if (hostView) {
+      return hostView.playersCards.map(p => ({
+        userId: p.userId,
+        tokensUsed: p.tokensUsed,
+        isSpectator: p.isSpectator,
+        claimedWin: p.claimedWin,
+        user: p.user,
+        // Para anfitrión también incluir la carta
+        card: p.playerCard,
+        markedCells: p.markedCells
+      }));
+    }
+    
+    return [];
   });
+
 
   // Estados del juego
   isInLobby = computed(() => 
@@ -240,4 +276,6 @@ export class LoteriaViewModel {
     
     return 'Esperando inicio...';
   }
+
+
 }

@@ -4,12 +4,16 @@ import { HttpClient, HttpParams } from '@angular/common/http'
 import { Observable, throwError } from 'rxjs'
 import { catchError } from 'rxjs/operators'
 import { StatsResponse } from '../models/stats.model'
+import { environment } from '../../../environment/environment.prod';
+
 
 
 @Injectable({ providedIn: 'root' })
 export class PeopleService {
   // private baseUrl = 'http://localhost:3333'
-  private baseUrl = 'http://192.168.1.30:3333'
+  // private baseUrl = 'http://192.168.1.30:3333'
+  // private readonly baseUrl = 'http://www.atenasoficial.com:3333'
+  private readonly baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

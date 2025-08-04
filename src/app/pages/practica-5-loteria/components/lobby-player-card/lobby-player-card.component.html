@@ -89,13 +89,4 @@
           }
         }
       </div>
-
-      <!-- Botón de iniciar partida (solo para anfitrión) -->
-      @if (isMe && player.isHost && canStartGame) {
-        <button
-          (click)="onStartGame()"
-          class="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg">
-          🚀 ¡INICIAR LOTERÍA!
-        </button>
-      }
     </div>

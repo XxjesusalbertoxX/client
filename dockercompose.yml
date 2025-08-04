@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .             # la carpeta donde está el Dockerfile y dist/
+      dockerfile: Dockerfile # nombre de tu Dockerfile
+    image: mi-frontend
+    container_name: frontend-igmar
+    networks:
+      - igmar-net
+    ports:
+      - '80:80'           # mapa puerto 80 del contenedor al 8080 de la máquina
+
+networks:
+  igmar-net:
+    external: true 

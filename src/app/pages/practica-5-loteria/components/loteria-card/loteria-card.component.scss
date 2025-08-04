@@ -19,4 +19,22 @@ img {
 .grid-cols-4 {
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
-} 
+}
+
+@keyframes ficha-drop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-10px);
+  }
+  50% {
+    transform: scale(1.1) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-ficha-drop {
+  animation: ficha-drop 0.4s ease-out;
+}

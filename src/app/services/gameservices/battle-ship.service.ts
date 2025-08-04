@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environment/environment.prod.js';
 import {
   AttackResponse,
   GameStatusResponse,
@@ -12,7 +13,9 @@ import {
 export class BattleShipService {
   private _gameId = signal<string | null>(null);
   // private readonly baseURL = 'http://192.168.1.30:3333';
-  private readonly baseURL = 'http://127.0.0.1:3333';
+  // private readonly baseURL = 'http://www.atenasoficial.com:3333';
+  private readonly baseURL = environment.apiUrl; // Use environment variable for API URL
+  // private readonly baseURL = 'http://127.0.0.1:3333';
 
   constructor(private http: HttpClient) {}
 

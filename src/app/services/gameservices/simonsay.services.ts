@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environment/environment.prod';
 import {
   CreateGameResponse,
   JoinGameResponse,
@@ -15,8 +16,10 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class SimonSayService {
-  private readonly baseURL = 'http://127.0.0.1:3333';
+  // private readonly baseURL = 'http://127.0.0.1:3333';
   // private readonly baseURL = 'http://192.168.1.30:3333';
+  // private readonly baseURL = 'http://www.atenasoficial.com:3333'
+  private readonly baseURL = environment.apiUrl; // Use environment variable for API URL
 
   constructor(private http: HttpClient) {}
 

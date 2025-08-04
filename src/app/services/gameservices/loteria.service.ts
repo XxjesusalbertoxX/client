@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-// import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environment/environment.prod';
 import {
   CreateLoteriaGameRequest,
   CreateLoteriaGameResponse,
@@ -25,8 +25,10 @@ import {
   providedIn: 'root'
 })
 export class LoteriaService {
-  private apiUrl = 'http://127.0.0.1:3333';
-  // private apiUrl = environment.apiUrl || 'http://127.0.0.1:3333/';
+  // private apiUrl = 'http://127.0.0.1:3333';
+  // private apiUrl = 'http://192.168.1.30:3333';
+  // private apiUrl = 'http://www.atenasoficial.com:3333';
+  private apiUrl = environment.apiUrl; // Use environment variable for API URL
 
   constructor(private http: HttpClient) {}
 

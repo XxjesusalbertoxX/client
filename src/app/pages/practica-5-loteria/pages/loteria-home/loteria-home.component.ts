@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LoteriaService } from '../../../../services/gameservices/loteria.service';
-import { GameHomeComponent } from '../../../../shared/components/forms/game-home/game-home.component';
 import { GameJoinComponent } from '../../../../shared/components/forms/game-join/game-join.component';
 import { LoteriaSettingsModalComponent, LoteriaSettings } from '../../components/loteria-settings-modal/loteria-settings-modal.component';
 import { ToastrService } from 'ngx-toastr';
@@ -10,7 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
   standalone: true,
   selector: 'app-loteria-home',
-  imports: [CommonModule, GameHomeComponent, GameJoinComponent, LoteriaSettingsModalComponent],
+  imports: [CommonModule, GameJoinComponent, LoteriaSettingsModalComponent],
   templateUrl: './loteria-home.component.html',
   styleUrls: ['./loteria-home.component.scss']
 })

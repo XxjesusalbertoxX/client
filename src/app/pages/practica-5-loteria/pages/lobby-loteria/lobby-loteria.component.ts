@@ -211,8 +211,16 @@ export class LobbyLoteriaComponent implements OnInit, OnDestroy {
     return this.isHost && this.viewModel.currentPlayers() < this.viewModel.maxPlayers();
   }
 
+    // En lobby-loteria.component.ts - SOLO cambia este getter:
   get canStartGame(): boolean {
-    return this.viewModel.gameCanStart();
+    const result = this.viewModel.canStart(); // Usar canStart del backend
+    console.log('Debug canStartGame:', {
+      canStart: result,
+      currentPlayers: this.viewModel.currentPlayers(),
+      minPlayers: this.viewModel.minPlayers(),
+      isHost: this.isHost
+    });
+    return result;
   }
 
   get progressPercentage(): number {
@@ -224,10 +232,12 @@ export class LobbyLoteriaComponent implements OnInit, OnDestroy {
   getPlayerGridClass(): string {
     const playerCount = this.viewModel.currentPlayers();
     
+    // Optimizado para mejor distribución
+    if (playerCount <= 2) return 'grid-cols-1 md:grid-cols-2';
     if (playerCount <= 4) return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
     if (playerCount <= 6) return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-    if (playerCount <= 9) return 'grid-cols-1 md:grid-cols-3';
+    if (playerCount <= 8) return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
     if (playerCount <= 12) return 'grid-cols-1 md:grid-cols-3 lg:grid-cols-4';
-    return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5';
+    return 'grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
   }
 }

@@ -15,7 +15,7 @@ export class LoteriaCardComponent {
   @Input() showTokens: boolean = false;
   @Input() showCardNames: boolean = false;
   @Input() clickable: boolean = false;
-  
+
   @Output() cellClick = new EventEmitter<number>();
 
   onCellClick(index: number) {
@@ -87,6 +87,10 @@ export class LoteriaCardComponent {
     return `/assets/Cartas/${fileName}`;
   }
 
+  getFichaImagePath(): string {
+    return '/assets/Ficha.png'; // O la extensión que tengas (.jpg, .webp, etc.)
+  }
+
   formatCardName(cardName: string): string {
     return cardName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
@@ -94,5 +98,23 @@ export class LoteriaCardComponent {
   onImageError(event: any) {
     // Fallback a una imagen por defecto si no se encuentra
     event.target.src = '/assets/Cartas/01 el gallo.jpg';
+  }
+
+    // En loteria-card.component.ts, agregar estos métodos:
+
+  onCellDragOver(event: DragEvent) {
+    if (this.clickable) {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+      }
+    }
+  }
+
+  onCellDrop(event: DragEvent, index: number) {
+    if (this.clickable) {
+      event.preventDefault();
+      this.cellClick.emit(index);
+    }
   }
 }
