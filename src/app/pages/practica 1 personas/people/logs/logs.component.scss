@@ -1,0 +1,22 @@
+.log-item {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Responsive table
+@media (max-width: 1023px) {
+  .log-item {
+    padding: 1rem;
+  }
+}
+
+// Animation delays for staggered loading
+.log-item:nth-child(1) { animation-delay: 0.1s; }
+.log-item:nth-child(2) { animation-delay: 0.2s; }
+.log-item:nth-child(3) { animation-delay: 0.3s; }
+.log-item:nth-child(4) { animation-delay: 0.4s; }
+.log-item:nth-child(5) { animation-delay: 0.5s; }

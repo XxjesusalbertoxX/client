@@ -1,11 +1,11 @@
 import { signal, computed } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
-import { 
-  LoteriaLobbyStatusResponse, 
+import {
+  LoteriaLobbyStatusResponse,
   LoteriaGameStatusResponse,
   LoteriaLobbyPlayer,
   LoteriaHost,
-  LoteriaGameStatus 
+  LoteriaGameStatus
 } from '../models/loteria.model';
 
 export class LoteriaViewModel {
@@ -45,43 +45,53 @@ export class LoteriaViewModel {
   // Información del lobby
   players = computed(() => this._lobbyStatus()?.players || []);
   host = computed(() => this._lobbyStatus()?.host);
-  
+
   currentPlayers = computed(() => this._lobbyStatus()?.currentPlayers || 0);
   minPlayers = computed(() => this._lobbyStatus()?.minPlayers || 4);
   maxPlayers = computed(() => this._lobbyStatus()?.maxPlayers || 8);
-  
+
   // Estados del usuario
 // En loteriaViewmodel.ts, agregar método para verificar si es host correctamente
-  isHost = computed(() => {
-    const gameStatus = this._gameStatus();
-    if (!gameStatus) return false;
+    // ...existing code...
+    isHost = computed(() => {
+      // En el lobby, verificar desde lobbyStatus
+      const lobbyStatus = this._lobbyStatus();
+      if (lobbyStatus && lobbyStatus.host) {
+        const currentUserId = Number(this.authService.getUserId());
+        return lobbyStatus.host.userId === currentUserId;
+      }
+  
+      // En el juego, verificar desde gameStatus
+      const gameStatus = this._gameStatus();
+      if (gameStatus) {
+        const currentUserId = this.authService.getUserId();
+        if (!currentUserId) return false;
 
-    const currentUserId = this.authService.getUserId();
-    if (!currentUserId) return false;
+        // Si tenemos hostView, somos host
+        if ('hostView' in gameStatus && gameStatus.hostView) {
+          return true;
+        }
+      }
 
-    // Si tenemos hostView, somos host
-    if ('hostView' in gameStatus && gameStatus.hostView) {
-      return true;
-    }
-
-    return false;
-  });
+      return false;
+    });
+  // ...existing code...
   myCardGenerated = computed(() => this._lobbyStatus()?.myCardGenerated || false);
   myReady = computed(() => this._lobbyStatus()?.myReady || false);
   canStart = computed(() => this._lobbyStatus()?.canStart || false);
 
   // Estados de progreso
-  hasEnoughPlayers = computed(() => 
+  hasEnoughPlayers = computed(() =>
     this.currentPlayers() >= this.minPlayers()
   );
 
-  allPlayersReady = computed(() => 
-    this.players().length > 0 && 
+  allPlayersReady = computed(() =>
+    this.players().length > 0 &&
     this.players().every(p => p.ready && p.cardGenerated)
   );
 
   // Información del juego
-  gameStatusEnum = computed<LoteriaGameStatus>(() => 
+  gameStatusEnum = computed<LoteriaGameStatus>(() =>
     this._gameStatus()?.status || this._lobbyStatus()?.status || 'waiting'
   );
 
@@ -126,7 +136,7 @@ export class LoteriaViewModel {
     if (status && 'playersInfo' in status) {
       return status.playersInfo;
     }
-    
+
     // Si es anfitrión, devolver info básica de los jugadores
     const hostView = this.hostView();
     if (hostView) {
@@ -141,21 +151,21 @@ export class LoteriaViewModel {
         markedCells: p.markedCells
       }));
     }
-    
+
     return [];
   });
 
 
   // Estados del juego
-  isInLobby = computed(() => 
+  isInLobby = computed(() =>
     ['waiting', 'card_selection', 'ready_check'].includes(this.gameStatusEnum())
   );
 
-  isInGame = computed(() => 
+  isInGame = computed(() =>
     ['in_progress', 'verification'].includes(this.gameStatusEnum())
   );
 
-  isGameFinished = computed(() => 
+  isGameFinished = computed(() =>
     this.gameStatusEnum() === 'finished'
   );
 
@@ -223,7 +233,7 @@ export class LoteriaViewModel {
 
   getCardAtPosition(row: number, col: number): string | undefined {
     if (this.isHost()) return undefined;
-    
+
     const cellIndex = row * 4 + col;
     return this.myCard()[cellIndex];
   }
@@ -265,15 +275,15 @@ export class LoteriaViewModel {
     if (this.isHost()) {
       return `${this.currentPlayers()}/${this.maxPlayers()} jugadores`;
     }
-    
+
     if (!this.myCardGenerated()) {
       return 'Genera tu carta';
     }
-    
+
     if (!this.myReady()) {
       return 'Márcate como listo';
     }
-    
+
     return 'Esperando inicio...';
   }
 

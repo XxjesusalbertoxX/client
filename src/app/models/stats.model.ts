@@ -4,13 +4,19 @@ export interface StatsResponse {
     female: number
   }
   age: {
-    adult: number      // sin 's'
-    minor: number      // sin 's'
+    adult: number
+    minor: number
   }
   combined: {
-    maleAdult: number       // camelCase
+    maleAdult: number
     maleMinor: number
     femaleAdult: number
     femaleMinor: number
   }
+}
+
+export interface ChartData {
+  label: string
+  value: number
+  color?: string
 }

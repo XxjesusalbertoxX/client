@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://server-battleship-igmar-adonis-app-1:3333'
+  // apiUrl: 'http://server-battleship-igmar-adonis-app-1:3333'
+  apiUrl: 'http://192.168.1.30:3333'
+  // apiUrl: 'http://www.atenasoficial.com:3333'
 };

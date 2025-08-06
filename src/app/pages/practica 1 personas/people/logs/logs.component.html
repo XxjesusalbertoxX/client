@@ -1,0 +1,147 @@
+<div class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Partículas de fondo -->
+  <div class="absolute inset-0">
+    <div class="absolute w-2 h-2 bg-white rounded-full animate-pulse" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="absolute w-1 h-1 bg-blue-300 rounded-full animate-pulse" style="top: 40%; left: 80%; animation-delay: 1s;"></div>
+    <div class="absolute w-3 h-3 bg-purple-300 rounded-full animate-pulse" style="top: 60%; left: 20%; animation-delay: 2s;"></div>
+    <div class="absolute w-1 h-1 bg-pink-300 rounded-full animate-pulse" style="top: 80%; left: 70%; animation-delay: 0.5s;"></div>
+  </div>
+
+  <div class="relative z-10 p-4 pt-20">
+
+    <!-- Header -->
+    <div class="text-center mb-12 animate-fade-in">
+      <h1 class="text-6xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        📋 Registro de Actividades
+      </h1>
+      <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+        Historial completo de todas las acciones realizadas en el sistema
+      </p>
+    </div>
+
+    <!-- Loading -->
+    @if (loading) {
+      <div class="flex items-center justify-center min-h-96">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p class="text-white text-xl">Cargando registros...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Tabla de logs -->
+    <div class="max-w-7xl mx-auto">
+      @if (!loading && logs.length > 0) {
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 animate-fade-in">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="border-b border-white/20">
+                <tr class="text-white">
+                  <th class="py-4 px-4 font-bold text-sm">Usuario</th>
+                  <th class="py-4 px-4 font-bold text-sm">Acción</th>
+                  <th class="py-4 px-4 font-bold text-sm">Tabla</th>
+                  <th class="py-4 px-4 font-bold text-sm">Descripción</th>
+                  <th class="py-4 px-4 font-bold text-sm">Detalles</th>
+                  <th class="py-4 px-4 font-bold text-sm">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (log of logs; track log.id) {
+                  <tr class="border-b border-white/10 hover:bg-white/5 transition-all duration-300 text-gray-200">
+                    <td class="py-3 px-4 font-medium text-white">
+                      {{ log.user_name }}
+                    </td>
+                    <td class="py-3 px-4">
+                      <div class="flex items-center space-x-2">
+                        <span class="text-lg">{{ getActionIcon(log.action) }}</span>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium {{ getActionColor(log.action) }}">
+                          {{ log.action | titlecase }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="py-3 px-4">
+                      <span class="px-2 py-1 bg-gray-700 text-gray-200 rounded text-xs">{{ log.table }}</span>
+                    </td>
+                    <td class="py-3 px-4 text-gray-300 text-sm max-w-xs truncate">
+                      {{ log.description || 'Sin descripción' }}
+                    </td>
+                    <td class="py-3 px-4 text-gray-400 text-xs">
+                      {{ getMetadataPreview(log.metadata) }}
+                    </td>
+                    <td class="py-3 px-4 text-gray-400 text-xs">
+                      {{ formatDate(log.timestamp) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="flex justify-center items-center gap-6 mt-8 animate-fade-in">
+          <button
+            (click)="changePage(page - 1)"
+            [disabled]="page === 1"
+            class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl border border-white/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            ← Anterior
+          </button>
+
+          <div class="bg-white/10 backdrop-blur-xl rounded-2xl px-6 py-3 border border-white/20">
+            <span class="text-white font-medium">Página {{ page }} de {{ lastPage }}</span>
+          </div>
+
+          <button
+            (click)="changePage(page + 1)"
+            [disabled]="page === lastPage"
+            class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl border border-white/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            Siguiente →
+          </button>
+        </div>
+      }
+
+      @if (!loading && logs.length === 0) {
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 text-center animate-fade-in">
+          <div class="text-6xl mb-4">📋</div>
+          <h3 class="text-2xl font-bold text-white mb-2">No hay registros disponibles</h3>
+          <p class="text-gray-300 mb-6">Las actividades del sistema aparecerán aquí</p>
+          <button
+            routerLink="/people"
+            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl transition-all duration-300 hover:scale-105"
+          >
+            👥 Ir a Personas
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Botón volver -->
+    @if (!loading && logs.length > 0) {
+      <div class="text-center mt-8 animate-fade-in">
+        <button
+          routerLink="/people"
+          class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-blue-400/30"
+        >
+          ← Volver a Personas
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+</style>

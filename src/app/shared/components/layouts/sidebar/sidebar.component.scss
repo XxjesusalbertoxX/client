@@ -1,6 +1,59 @@
-/* sidebar.component.scss */
+/* Ocultar scrollbar pero mantener funcionalidad */
+.scrollable-content {
+  /* Para Firefox */
+  scrollbar-width: none;
+  /* Para WebKit browsers */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Asegurar que no haya scroll horizontal */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 
-/* Botón hamburguesa */
+/* Alternativa: Scrollbar personalizada más elegante (si prefieres mostrar una sutil) */
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    transition: background 0.3s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Prevenir scroll horizontal en todo el sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 18rem;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Importante: previene cualquier scroll en el contenedor principal */
+}
+
+/* Animación para las categorías */
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+/* Estilos existentes */
 .hamburger {
   position: fixed;
   top: 1rem;
@@ -25,7 +78,6 @@
   }
 }
 
-/* Sidebar overlay */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -33,106 +85,26 @@
   z-index: 90;
 }
 
-/* Sidebar deslizante */
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 16rem;           /* 256px */
-  height: 100vh;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  box-shadow: 4px 0 12px rgba(0,0,0,0.1);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Encabezado */
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-
-  h2 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .close-btn {
-    border: none;
-    background: transparent;
-    font-size: 1.25rem;
-    cursor: pointer;
-    color: #666;
-    transition: color 0.2s;
-
-    &:hover {
-      color: #e53e3e;
-    }
-  }
+  flex-shrink: 0; /* No se encoge */
 }
 
-/* Navegación */
 .nav-links {
-  flex: 1;
-  padding: 1rem 0.75rem;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  li {
-    a, button {
-      display: block;
-      width: 100%;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      text-decoration: none;
-      font-weight: 500;
-      color: #333;
-      background: transparent;
-      transition: background 0.2s, color 0.2s;
-
-      &:hover {
-        background: rgba(59, 130, 246, 0.1);
-        color: #1d4ed8;
-      }
-
-      &.active {
-        background: rgba(59, 130, 246, 0.15);
-        color: #1d4ed8;
-      }
-    }
-
-    button {
-      text-align: left;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-    }
-  }
-}
-
-.sidebar {
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.nav-links a.router-link-active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.5) 0%, rgba(147, 51, 234, 0.5) 100%);
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  scroll-behavior: smooth;
 }
 
 .close-btn:hover {
-  transform: rotate(90deg) scale(1.1);
+  transform: scale(1.1);
 }
 
 .group:hover span:first-child {
-  transform: scale(1.2);
+  animation: pulse 1s infinite;
+}
+
+/* Asegurar que el texto no se salga */
+.sidebar * {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }

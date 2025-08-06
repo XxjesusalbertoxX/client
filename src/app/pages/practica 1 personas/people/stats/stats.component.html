@@ -1,0 +1,115 @@
+<div class="stats-container">
+
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Partículas de fondo -->
+  <div class="background-particles">
+    <div class="particle particle-1"></div>
+    <div class="particle particle-2"></div>
+    <div class="particle particle-3"></div>
+    <div class="particle particle-4"></div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- Header -->
+    <div class="header">
+      <h1 class="title">📊 Estadísticas</h1>
+      <p class="subtitle">
+        Análisis demográfico de las personas registradas en el sistema
+      </p>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p class="loading-text">Cargando estadísticas...</p>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div *ngIf="!loading && stats" class="stats-content">
+
+      <!-- Resumen general -->
+      <div class="summary-card">
+        <h2 class="summary-title">📈 Resumen General</h2>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-value total">{{ getTotalPeople() }}</div>
+            <div class="summary-label">Total Personas</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value adults">{{ stats.age.adult }}</div>
+            <div class="summary-label">Adultos</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value minors">{{ stats.age.minor }}</div>
+            <div class="summary-label">Menores</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-value percentage">{{ ((stats.age.adult / getTotalPeople()) * 100).toFixed(1) }}%</div>
+            <div class="summary-label">% Adultos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficas -->
+      <div class="charts-grid">
+
+        <!-- Gráfica de Género -->
+        <div class="chart-card">
+          <h3 class="chart-title">👥 Por Género</h3>
+          <div class="chart-container">
+            <div *ngFor="let item of genderData" class="chart-item" [style.--item-color]="item.color">
+              <div class="chart-bar" [style.height.%]="getPercentage(item.value, getTotalPeople())"></div>
+              <div class="chart-label">{{ item.label }}</div>
+              <div class="chart-value">{{ item.value }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfica de Edad -->
+        <div class="chart-card">
+          <h3 class="chart-title">🎂 Por Edad</h3>
+          <div class="chart-container">
+            <div *ngFor="let item of ageData" class="chart-item" [style.--item-color]="item.color">
+              <div class="chart-bar" [style.height.%]="getPercentage(item.value, getTotalPeople())"></div>
+              <div class="chart-label">{{ item.label }}</div>
+              <div class="chart-value">{{ item.value }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfica Combinada -->
+        <div class="chart-card combined-chart">
+          <h3 class="chart-title">🔍 Análisis Detallado</h3>
+          <div class="chart-container combined">
+            <div *ngFor="let item of combinedData" class="chart-item small" [style.--item-color]="item.color">
+              <div class="chart-bar" [style.height.%]="getPercentage(item.value, getTotalPeople())"></div>
+              <div class="chart-label">{{ item.label }}</div>
+              <div class="chart-value">{{ item.value }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón volver -->
+      <div class="back-button-container">
+        <button routerLink="/people" class="back-button">
+          ← Volver a Personas
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && !stats" class="no-data-card">
+      <div class="no-data-icon">📊</div>
+      <h3 class="no-data-title">No hay datos disponibles</h3>
+      <p class="no-data-text">Registra algunas personas para ver las estadísticas</p>
+      <button routerLink="/people" class="no-data-button">
+        👥 Ver Personas
+      </button>
+    </div>
+  </div>
+</div>
