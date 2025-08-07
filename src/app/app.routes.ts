@@ -15,6 +15,8 @@ import { GameComponent } from './pages/practica-3-batalla-naval/pages/game/game.
 import { StatComponent } from './stats/graphics/graphics.component';
 import { AuthGuard } from './services/guards/auth.guards';
 
+import { RelojesComponent } from './pages/practica-2-relojes/relojes/relojes.component'
+
 import { StatsComponent } from './pages/practica-3-batalla-naval/pages/stats/stats.component';
 import { SimonsayHomeComponent } from './pages/practica-4-simon-say/pages/simonsay-home/simonsay-home.component';
 import { JoinSimonsayComponent } from './pages/practica-4-simon-say/pages/join-simonsay/join-simonsay.component';
@@ -73,5 +75,7 @@ export const routes: Routes = [
   { path: 'games/loteria', component: LoteriaHomeComponent, canActivate: [AuthGuard] },
   { path: 'games/loteria/lobby', component: LobbyLoteriaComponent, canActivate: [AuthGuard] },
   { path: 'games/loteria/game', component: LoteriaGameComponent, canActivate: [AuthGuard] },
+
+  { path: 'relojes', component: RelojesComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },
 ];

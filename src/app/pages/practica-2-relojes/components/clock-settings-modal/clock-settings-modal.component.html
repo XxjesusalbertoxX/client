@@ -1,0 +1,304 @@
+<!-- Modal externo que cubre toda la pantalla -->
+<div
+  class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300"
+  [class.opacity-0]="!isOpen"
+  [class.invisible]="!isOpen"
+  [class.opacity-100]="isOpen"
+  [class.visible]="isOpen"
+  (click)="onClose()"
+>
+  <div class="flex gap-6 max-w-7xl w-full mx-4">
+
+    <!-- Reloj para previsualización en tiempo real -->
+    <div class="flex-1 flex items-center justify-center">
+      <div class="bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl p-8 shadow-2xl border border-white/20 backdrop-blur-lg max-w-sm">
+        <div class="text-center">
+          <h3 class="text-2xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Vista Previa en Tiempo Real
+          </h3>
+
+          <!-- Reloj Analógico en tiempo real -->
+          <app-analog-clock [viewModel]="viewModel"></app-analog-clock>
+
+          <!-- Reloj Digital en tiempo real -->
+          <app-digital-clock [viewModel]="viewModel"></app-digital-clock>
+
+          <!-- Indicador de estado -->
+          <div class="mt-4 p-2 rounded-lg text-sm font-medium"
+               [class]="viewModel.isRealTime ?
+                 'bg-green-100 text-green-700 border border-green-300' :
+                 'bg-red-100 text-red-700 border border-red-300'">
+            {{ viewModel.isRealTime ? '🔄 Funcionando en Tiempo Real' : '⏸️ Reloj Pausado' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de configuración -->
+    <div
+      class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl w-96 max-h-[90vh] overflow-hidden shadow-2xl border border-white/10"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- Header -->
+      <div class="flex justify-between items-center p-6 bg-slate-900/50 border-b border-white/10">
+        <h3 class="text-xl font-bold text-white">⚙️ Configuración</h3>
+        <button
+          class="w-9 h-9 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 hover:text-white rounded-full transition-all duration-300 hover:scale-110"
+          (click)="onClose()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Contenido scrolleable -->
+      <div class="p-6 max-h-[75vh] overflow-y-auto custom-scrollbar text-white space-y-6">
+
+        <!-- Control de Tiempo -->
+        <div>
+          <h4 class="text-blue-400 font-semibold mb-4 pb-2 border-b border-blue-400/30">🕐 Control de Tiempo</h4>
+
+          <!-- Tiempo actual display -->
+          <div class="bg-slate-700/30 rounded-lg p-4 mb-4 text-center border border-slate-600/30">
+            <div class="text-3xl font-mono font-bold text-green-400 tracking-wider">
+              {{ viewModel.getFormattedTime() }}
+            </div>
+            <div class="text-sm mt-2 flex items-center justify-center gap-2"
+                 [class]="viewModel.isRealTime ? 'text-green-300' : 'text-yellow-300'">
+              <span class="w-2 h-2 rounded-full"
+                    [class]="viewModel.isRealTime ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'"></span>
+              {{ viewModel.isRealTime ? 'Funcionando' : 'Pausado' }}
+            </div>
+          </div>
+
+          <!-- Controles rápidos de tiempo -->
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="text-center">
+              <label class="block text-xs text-slate-300 mb-2 font-medium">Horas</label>
+              <div class="flex items-center gap-1">
+                <button
+                  (click)="addHours(-1)"
+                  class="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-white rounded-md transition-all text-sm flex items-center justify-center font-bold"
+                >−</button>
+                <div class="flex-1 bg-white/10 border border-white/20 rounded-md px-2 py-1 text-white text-sm text-center font-mono">
+                  {{ time.hours.toString().padStart(2, '0') }}
+                </div>
+                <button
+                  (click)="addHours(1)"
+                  class="w-8 h-8 bg-green-500/20 hover:bg-green-500/30 text-green-300 hover:text-white rounded-md transition-all text-sm flex items-center justify-center font-bold"
+                >+</button>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <label class="block text-xs text-slate-300 mb-2 font-medium">Minutos</label>
+              <div class="flex items-center gap-1">
+                <button
+                  (click)="addMinutes(-1)"
+                  class="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-white rounded-md transition-all text-sm flex items-center justify-center font-bold"
+                >−</button>
+                <div class="flex-1 bg-white/10 border border-white/20 rounded-md px-2 py-1 text-white text-sm text-center font-mono">
+                  {{ time.minutes.toString().padStart(2, '0') }}
+                </div>
+                <button
+                  (click)="addMinutes(1)"
+                  class="w-8 h-8 bg-green-500/20 hover:bg-green-500/30 text-green-300 hover:text-white rounded-md transition-all text-sm flex items-center justify-center font-bold"
+                >+</button>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <label class="block text-xs text-slate-300 mb-2 font-medium">Segundos</label>
+              <div class="flex items-center gap-1">
+                <button
+                  (click)="addSeconds(-1)"
+                  class="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-white rounded-md transition-all text-sm flex items-center justify-center font-bold"
+                >−</button>
+                <div class="flex-1 bg-white/10 border border-white/20 rounded-md px-2 py-1 text-white text-sm text-center font-mono">
+                  {{ time.seconds.toString().padStart(2, '0') }}
+                </div>
+                <button
+                  (click)="addSeconds(1)"
+                  class="w-8 h-8 bg-green-500/20 hover:bg-green-500/30 text-green-300 hover:text-white rounded-md transition-all text-sm flex items-center justify-center font-bold"
+                >+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controles de tiempo real -->
+          <div class="grid grid-cols-2 gap-2 mb-4">
+            <button
+              (click)="startRealTime()"
+              [disabled]="viewModel.isRealTime"
+              class="transition-all duration-300 px-3 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2"
+              [class]="viewModel.isRealTime ?
+                'bg-green-600 text-white cursor-not-allowed opacity-75' :
+                'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:scale-105'"
+            >
+              <span class="w-2 h-2 rounded-full bg-current animate-pulse"></span>
+              {{ viewModel.isRealTime ? 'Funcionando' : 'Iniciar' }}
+            </button>
+            <button
+              (click)="stopRealTime()"
+              [disabled]="!viewModel.isRealTime"
+              class="transition-all duration-300 px-3 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2"
+              [class]="!viewModel.isRealTime ?
+                'bg-gray-600 text-gray-400 cursor-not-allowed opacity-75' :
+                'bg-gray-700/50 hover:bg-gray-600/50 border border-gray-500/50 text-slate-300 hover:text-white hover:scale-105'"
+            >
+              <span class="w-2 h-2 rounded-full bg-current"></span>
+              Pausar
+            </button>
+          </div>
+        </div>
+
+        <!-- Reloj Analógico -->
+        <div>
+          <h4 class="text-blue-400 font-semibold mb-3 pb-1 border-b border-blue-400/30">🕒 Reloj Analógico</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Borde:</label>
+              <input
+                type="color"
+                [value]="colors.analogBorder"
+                (input)="onColorChange('analogBorder', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Fondo:</label>
+              <input
+                type="color"
+                [value]="colors.analogBackground"
+                (input)="onColorChange('analogBackground', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Números:</label>
+              <input
+                type="color"
+                [value]="colors.analogNumbers"
+                (input)="onColorChange('analogNumbers', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Puntos:</label>
+              <input
+                type="color"
+                [value]="colors.analogDots"
+                (input)="onColorChange('analogDots', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Centro:</label>
+              <input
+                type="color"
+                [value]="colors.analogCenter"
+                (input)="onColorChange('analogCenter', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Manecillas -->
+        <div>
+          <h4 class="text-blue-400 font-semibold mb-3 pb-1 border-b border-blue-400/30">🕐 Manecillas</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Hora:</label>
+              <input
+                type="color"
+                [value]="colors.hourHand"
+                (input)="onColorChange('hourHand', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Minutos:</label>
+              <input
+                type="color"
+                [value]="colors.minuteHand"
+                (input)="onColorChange('minuteHand', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Segundos:</label>
+              <input
+                type="color"
+                [value]="colors.secondHand"
+                (input)="onColorChange('secondHand', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Reloj Digital -->
+        <div>
+          <h4 class="text-blue-400 font-semibold mb-3 pb-1 border-b border-blue-400/30">🔢 Reloj Digital</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Borde:</label>
+              <input
+                type="color"
+                [value]="colors.digitalBorder"
+                (input)="onColorChange('digitalBorder', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Fondo:</label>
+              <input
+                type="color"
+                [value]="colors.digitalBackground"
+                (input)="onColorChange('digitalBackground', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Números:</label>
+              <input
+                type="color"
+                [value]="colors.digitalNumbers"
+                (input)="onColorChange('digitalNumbers', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-300">Sombra:</label>
+              <input
+                type="color"
+                [value]="colors.digitalShadow"
+                (input)="onColorChange('digitalShadow', $any($event.target).value)"
+                class="w-full h-8 border border-white/20 rounded-md cursor-pointer"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="space-y-3">
+          <button
+            (click)="resetToDefaults()"
+            class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:scale-105"
+          >
+            🔄 Restablecer Colores
+          </button>
+
+          <button
+            (click)="onClose()"
+            class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-3 rounded-md text-lg font-semibold transition-all duration-300 hover:scale-105"
+          >
+            ✅ Cerrar Configuración
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

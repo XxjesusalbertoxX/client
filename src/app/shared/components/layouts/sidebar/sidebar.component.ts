@@ -59,9 +59,7 @@ export class SidebarComponent {
       icon: '⏰',
       isExpanded: false,
       children: [
-        { label: 'Reloj Analógico', icon: '🕐', route: '/relojes/analogico' },
-        { label: 'Reloj Digital', icon: '🕘', route: '/relojes/digital' },
-        { label: 'Cronómetro', icon: '⏱️', route: '/relojes/cronometro' }
+        { label: 'Relojes', icon: '🕐', route: '/relojes' },
       ]
     },
     {

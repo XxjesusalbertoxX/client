@@ -1,0 +1,4 @@
+// Solo estilos que no se pueden hacer con Tailwind (principalmente las manecillas)
+.clock-hand {
+  transform-origin: bottom center;
+}

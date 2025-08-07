@@ -1,0 +1,256 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 relative overflow-hidden">
+
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Partículas de fondo -->
+  <div class="absolute inset-0 pointer-events-none z-10">
+    <div class="absolute w-2 h-2 bg-blue-400 rounded-full animate-pulse" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="absolute w-3 h-3 bg-purple-400 rounded-full animate-pulse" style="top: 40%; left: 80%; animation-delay: 2s;"></div>
+    <div class="absolute w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" style="top: 60%; left: 20%; animation-delay: 4s;"></div>
+    <div class="absolute w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse" style="top: 80%; left: 70%; animation-delay: 1s;"></div>
+    <div class="absolute w-1 h-1 bg-pink-400 rounded-full animate-pulse" style="top: 30%; left: 50%; animation-delay: 3s;"></div>
+  </div>
+
+  <div class="relative z-20 p-4 pt-20">
+
+    <!-- Header -->
+    <div class="text-center mb-12 animate-fade-in">
+      <h1 class="text-5xl md:text-6xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 bg-clip-text text-transparent">
+        ⏰ Práctica 2 - Relojes
+      </h1>
+      <p class="text-xl text-slate-300 max-w-2xl mx-auto">
+        Relojes personalizables con componentes y ViewModels independientes
+      </p>
+    </div>
+
+    <!-- Formulario inicial -->
+    <div
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300"
+      [class.opacity-0]="!showForm"
+      [class.invisible]="!showForm"
+      [class.opacity-100]="showForm"
+      [class.visible]="showForm"
+    >
+      <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl border border-white/10">
+
+        <!-- Header del formulario -->
+        <div class="flex justify-between items-center p-6 bg-slate-900/50 border-b border-white/10">
+          <h3 class="text-xl font-bold text-white">🎨 Crear Nuevo Reloj</h3>
+          <button
+            class="w-9 h-9 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 hover:text-white rounded-full transition-all duration-300 hover:scale-110"
+            (click)="toggleForm()"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Contenido del formulario -->
+        <div class="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+
+          <!-- Configuración de Tiempo -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-blue-400 mb-4 pb-2 border-b-2 border-blue-400/30">
+              🕐 Tiempo Inicial
+            </h4>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Horas:</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="23"
+                  [(ngModel)]="initialTime.hours"
+                  class="bg-white/10 border-2 border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-400 focus:shadow-lg focus:shadow-blue-400/30 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Minutos:</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  [(ngModel)]="initialTime.minutes"
+                  class="bg-white/10 border-2 border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-400 focus:shadow-lg focus:shadow-blue-400/30 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Segundos:</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  [(ngModel)]="initialTime.seconds"
+                  class="bg-white/10 border-2 border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-400 focus:shadow-lg focus:shadow-blue-400/30 transition-all duration-300"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Colores del Reloj Analógico -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-blue-400 mb-4 pb-2 border-b-2 border-blue-400/30">
+              🕒 Reloj Analógico
+            </h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Borde:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.analogBorder"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Fondo:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.analogBackground"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Números:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.analogNumbers"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Puntos:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.analogDots"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Colores de las Manecillas -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-blue-400 mb-4 pb-2 border-b-2 border-blue-400/30">
+              🕐 Manecillas
+            </h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Hora:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.hourHand"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Minutos:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.minuteHand"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Segundos:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.secondHand"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Centro:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.analogCenter"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Colores del Reloj Digital -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-blue-400 mb-4 pb-2 border-b-2 border-blue-400/30">
+              🔢 Reloj Digital
+            </h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Borde:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.digitalBorder"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Fondo:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.digitalBackground"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Números:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.digitalNumbers"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-sm text-slate-300 font-medium">Sombra:</label>
+                <input
+                  type="color"
+                  [(ngModel)]="initialColors.digitalShadow"
+                  class="w-full h-11 border-2 border-white/20 rounded-lg cursor-pointer hover:border-blue-400 transition-all duration-300"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón crear -->
+          <div class="text-center">
+            <button
+              class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/30"
+              (click)="createClock()"
+            >
+              ⏰ Crear Reloj
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Relojes creados -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10" *ngIf="clocks.length > 0">
+      <div
+        *ngFor="let clock of clocks; let i = index"
+        class="relative animate-fade-in"
+        [style.animation-delay]="(i * 0.1) + 's'"
+      >
+        <app-clock-card [viewModel]="clock"></app-clock-card>
+        <button
+          class="absolute -top-2 -right-2 w-9 h-9 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-red-500/30 z-10"
+          (click)="removeClock(i)"
+          title="Eliminar reloj"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+
+    <!-- Botón agregar nuevo reloj -->
+    <div class="text-center mt-10" *ngIf="clocks.length > 0 && !showForm">
+      <button
+        class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30"
+        (click)="addNewClock()"
+      >
+        ➕ Agregar Nuevo Reloj
+      </button>
+    </div>
+
+  </div>
+</div>

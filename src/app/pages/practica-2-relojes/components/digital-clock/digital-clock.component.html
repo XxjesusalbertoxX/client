@@ -1,0 +1,13 @@
+<div
+      class="flex items-center justify-center w-52 h-16 border-2 rounded-lg mt-5 mx-auto shadow-lg"
+      [style.border-color]="viewModel.colors.digitalBorder"
+      [style.background-color]="viewModel.colors.digitalBackground"
+    >
+      <span
+        class="font-mono text-2xl font-bold tracking-wider"
+        [style.color]="viewModel.colors.digitalNumbers"
+        [style.text-shadow]="'0 0 10px ' + viewModel.colors.digitalShadow"
+      >
+        {{ viewModel.getFormattedTime() }}
+      </span>
+    </div>
