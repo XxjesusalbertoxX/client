@@ -40,20 +40,12 @@ export class GameComponent implements OnInit, OnDestroy {
   isWinner = false;
   winnerName = '';
   loserName = '';
-  rematchRequested = false;
-  opponentLeft = false;
-  private lastSequenceVersionShown = 0;
-  private isSequenceAnimating = false;
 
   // Estados específicos del modal
   modalTitle = '';
   modalSubtitle = '';
 
-  sequenceSpeed = 800; // ms entre colores
   isProcessingColor = false; // Para evitar clics múltiples
-    isAnimatingSequence = false; // NUEVO: Flag para evitar múltiples animaciones
-  hasShownCurrentSequence = false; // NUEVO: Flag para saber si ya se mostró la secuencia actual
-
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       const gameId = params['id'];
@@ -123,55 +115,33 @@ handleGameStatus(status: SimonSayGameStatusResponse) {
   console.log('Global sequence:', status.globalSequence);
   console.log('============================');
 
-  this.vm.setGameStatus(status);
+  this.vm.setGameStatus(status)
 
-  if (status.status === 'finished') {
-    this.handleGameEnd(status);
-    return;
+    if (status.status === 'finished') {
+      this.handleGameEnd(status)
+      return
+    }
+
+    if (status.globalSequence) {
+      this.vm.setMyLocalSequence(status.globalSequence)
+    }
+    this.vm.setCurrentProgress(status.currentSequenceIndex || 0)
+
+    // YA NO iniciar aquí. Solo esperar a que llegue choosing_first_color.
+    if (status.status === 'started' && status.phase === 'unknown') {
+      // Estado transitorio breve, no spamear notificaciones
+      this.vm.setCanInteract(false)
+      this.vm.setShowColorPicker(false)
+      return
+    }
+
+    const reallyMyTurn =
+      status.playerChoosingUserId === this.vm.myUserId() ||
+      status.playerRepeatingUserId === this.vm.myUserId()
+
+    if (reallyMyTurn) this.handleMyTurn(status)
+    else this.handleOpponentTurn(status)
   }
-
-  // Actualizar secuencia directamente del backend
-  if (status.globalSequence) {
-    this.vm.setMyLocalSequence(status.globalSequence);
-  }
-
-  // Actualizar progreso
-  this.vm.setCurrentProgress(status.currentSequenceIndex || 0);
-
-  // ARREGLAR: Cuando el estado es 'started', llamar a startGame
-  if (status.status === 'started' && status.phase === 'unknown') {
-    this.vm.setCanInteract(false);
-    this.vm.setShowColorPicker(false);
-    this.toastr.info('🎮 Iniciando partida...');
-
-    // Llamar a startGame para que pase a 'choosing_first_color'
-    this.simonSayService.startGame(this.vm.gameId()).subscribe({
-      next: (startResponse) => {
-        console.log('Game started successfully:', startResponse);
-        // El próximo polling debería traer el estado correcto
-      },
-      error: (error) => {
-        console.error('Error starting game:', error);
-        this.toastr.error('Error al iniciar la partida');
-      }
-    });
-    return;
-  }
-
-  // NUEVO: Verificar si realmente es mi turno comparando IDs
-  const reallyMyTurn = (
-    (status.playerChoosingUserId === this.vm.myUserId()) ||
-    (status.playerRepeatingUserId === this.vm.myUserId())
-  );
-
-  console.log('Really my turn:', reallyMyTurn);
-
-  if (reallyMyTurn) {
-    this.handleMyTurn(status);
-  } else {
-    this.handleOpponentTurn(status);
-  }
-}
 
 requestLastColorAdded(newLength: number) {
   // CAMBIO: Verificar que el color no sea null/undefined
@@ -246,7 +216,7 @@ handleOpponentTurn(status: SimonSayGameStatusResponse) {
 
   onColorClick(color: string) {
     // CAMBIO: Verificar que no estemos animando
-    if (!this.vm.canInteract() || this.vm.showingSequence() || this.isProcessingColor || this.isAnimatingSequence) {
+    if (!this.vm.canInteract() || this.isProcessingColor ) {
       console.log('Click blocked - animation in progress or cannot interact');
       return;
     }
@@ -301,7 +271,6 @@ handleOpponentTurn(status: SimonSayGameStatusResponse) {
   console.log('=== COLOR CHOSEN DEBUG ===');
   console.log('Color chosen:', chosenColor);
   console.log('Type:', typeof chosenColor);
-  console.log('Available colors:', this.vm.myCustomColors());
   console.log('========================');
 
   const endpoint = isFirstColor
@@ -312,9 +281,6 @@ handleOpponentTurn(status: SimonSayGameStatusResponse) {
     next: (response) => {
       this.vm.setShowColorPicker(false);
 
-      // Agregar color a la secuencia del oponente localmente
-      const newOpponentSequence = [...this.vm.opponentLocalSequence(), chosenColor];
-      this.vm.setOpponentLocalSequence(newOpponentSequence);
       if (isFirstColor) {
         this.toastr.success(`✨ Primer color elegido: ${chosenColor.toUpperCase()}`);
       } else {

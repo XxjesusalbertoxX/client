@@ -117,9 +117,10 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
           this.isLoading = false;
 
           // Si el juego está en progreso, ir al juego
-          if (status.status === 'in_progress' || status.status === 'started') {
-            this.router.navigate(['games/simonsay/game'], { queryParams: { id } });
-            return;
+          if (status.status !== 'waiting') {
+            // Cualquier estado distinto de waiting => ir al juego
+            this.router.navigate(['games/simonsay/game'], { queryParams: { id: id } })
+            return
           }
 
           if (status.started) {
