@@ -21,3 +21,147 @@
     <app-game-players [viewModel]="viewModel"></app-game-players>
   }
 }
+
+<!-- Modal de Tramposo -->
+@if (showCheaterModal) {
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-red-600 animate-modal-appear">
+
+      <div class="text-center mb-6">
+        <div class="text-8xl mb-4 animate-bounce">🚫</div>
+        <h2 class="text-3xl font-bold text-red-700 mb-2">¡TRAMPOSO!</h2>
+        <p class="text-lg text-gray-700 mb-2">
+          <strong>{{ cheaterName }}</strong> hizo trampa
+        </p>
+        <p class="text-sm text-gray-600">
+          Ha sido convertido en espectador y no puede ganar
+        </p>
+      </div>
+
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6 rounded-r-xl">
+        <p class="text-sm text-yellow-700">
+          <strong>⚠️ Advertencia:</strong> El juego continúa normalmente para el resto de jugadores
+        </p>
+      </div>
+
+      <button
+        (click)="onCheaterModalClose()"
+        class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors duration-200">
+        ✅ Entendido
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Modal de Verificación de Lotería -->
+@if (showVerificationModal) {
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-yellow-600 animate-modal-appear">
+
+      <div class="text-center mb-6">
+        <div class="text-8xl mb-4">🔍</div>
+        <h2 class="text-3xl font-bold text-orange-700 mb-2">Verificando Lotería</h2>
+        <p class="text-lg text-gray-700 mb-2">
+          <strong>{{ playerUnderReviewName }}</strong> pidió lotería
+        </p>
+        <p class="text-sm text-gray-600">
+          Revisando si su carta es válida...
+        </p>
+      </div>
+
+      <!-- Animación de verificación -->
+      <div class="flex items-center justify-center space-x-2 mb-6">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600"></div>
+        <span class="text-orange-700 font-semibold">Verificando...</span>
+      </div>
+
+      <div class="bg-blue-100 border-l-4 border-blue-500 p-4 rounded-r-xl">
+        <p class="text-sm text-blue-700">
+          <strong>ℹ️ Info:</strong> Por favor espera mientras se verifica la victoria
+        </p>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de Fin de Juego -->
+@if (showGameEndModal) {
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl shadow-2xl p-8 max-w-2xl w-full border-4 border-green-600 animate-modal-appear">
+
+      <!-- Header del modal -->
+      <div class="text-center mb-8">
+        <div class="text-8xl mb-4">🏆</div>
+        <h2 class="text-4xl font-bold text-green-700 mb-2">¡Juego Terminado!</h2>
+
+        @if (gameWinner) {
+          <p class="text-xl text-gray-700 mb-2">
+            🎉 <strong>{{ gameWinner }}</strong> ha ganado
+          </p>
+          <p class="text-sm text-gray-600">
+            ¡Felicidades al ganador!
+          </p>
+        } @else {
+          <p class="text-lg text-gray-700">
+            La partida ha finalizado
+          </p>
+        }
+      </div>
+
+      <!-- Cartas que no salieron -->
+      @if (remainingCards.length > 0) {
+        <div class="mb-8">
+          <h3 class="text-lg font-bold text-gray-700 mb-4 text-center">
+            📋 Cartas que no salieron ({{ remainingCards.length }})
+          </h3>
+
+          <div class="bg-white rounded-2xl p-4 max-h-64 overflow-y-auto">
+            <div class="grid grid-cols-6 gap-2">
+              @for (card of remainingCards; track card) {
+                <div class="bg-gray-100 rounded-lg p-1 hover:scale-105 transition-transform duration-200">
+                  <img
+                    [src]="getCardImagePath(card)"
+                    [alt]="formatCardName(card)"
+                    class="w-full h-16 object-cover rounded"
+                    [title]="formatCardName(card)">
+                  <p class="text-xs text-gray-600 text-center mt-1 truncate">
+                    {{ formatCardName(card) }}
+                  </p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="mb-8 text-center">
+          <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-r-xl">
+            <p class="text-sm text-green-700">
+              <strong>✅ ¡Increíble!</strong> Todas las cartas fueron utilizadas en esta partida
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- Botones de acción -->
+      <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+        <button
+          (click)="onNewGame()"
+          class="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
+          🎲 Nueva Partida
+        </button>
+
+        <button
+          (click)="onGoHome()"
+          class="flex-1 py-3 px-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
+          🏠 Ir al Inicio
+        </button>
+
+        <button
+          (click)="onGameEndModalClose()"
+          class="flex-1 py-3 px-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
+          ✅ Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+}

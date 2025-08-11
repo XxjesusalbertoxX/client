@@ -52,9 +52,7 @@ export class GameAnfitrionComponent implements OnInit {
     const gameId = this.viewModel.gameId();
     if (!gameId) return;
 
-    this.showShuffleConfirm = false;
-
-    // Usar reshuffleCards en lugar de shuffleDeck
+    // Usar reshuffleCards directamente sin confirmación
     this.loteriaService.reshuffleCards(gameId).subscribe({
       next: (response) => {
         this.toastr.success(response.message);

@@ -12,7 +12,7 @@
   <div class="grid grid-cols-4 gap-2 mb-4 aspect-square">
     @for (cardName of playerCard; track $index) {
       <div
-        class="relative aspect-square bg-white rounded-lg border-2 border-gray-300 shadow-md overflow-hidden transition-all duration-200"
+        class="relative aspect-square bg-white rounded-lg border-2 border-gray-300 shadow-md overflow-hidden transition-all duration-200 card-cell"
         [class.border-green-500]="showTokens && markedCells && markedCells[$index]"
         [class.bg-green-100]="showTokens && markedCells && markedCells[$index]"
         [class.cursor-pointer]="clickable"
@@ -21,27 +21,29 @@
         (dragover)="onCellDragOver($event)"
         (drop)="onCellDrop($event, $index)">
 
-        <!-- Imagen de la carta -->
+        <!-- Imagen de la carta MEJORADA -->
         <img
           [src]="getCardImagePath(cardName)"
           [alt]="formatCardName(cardName)"
-          class="w-full h-full object-cover rounded-lg"
+          class="card-image"
           [class.opacity-50]="showTokens && markedCells && markedCells[$index]"
-          (error)="onImageError($event)">
+          (error)="onImageError($event)"
+          loading="lazy">
 
-        <!-- Ficha encima -->
+        <!-- Ficha encima MEJORADA -->
         @if (showTokens && markedCells && markedCells[$index]) {
-          <div class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+          <div class="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
             <img
               [src]="getFichaImagePath()"
               alt="Ficha"
-              class="w-8 h-8 object-contain drop-shadow-lg animate-ficha-drop">
+              class="w-10 h-10 object-contain drop-shadow-lg animate-ficha-drop"
+              style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));">
           </div>
         }
 
         <!-- Nombre de la carta (opcional) -->
         @if (showCardNames) {
-          <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center rounded-b-lg">
+          <div class="absolute bottom-0 left-0 right-0 bg-black/80 text-white text-xs p-1 text-center rounded-b-lg">
             {{ formatCardName(cardName) }}
           </div>
         }

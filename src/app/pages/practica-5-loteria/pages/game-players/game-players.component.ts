@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { LoteriaViewModel } from '../../view-models/loteriaViewmodel';
 import { LoteriaService } from '../../../../services/gameservices/loteria.service';
 import { LoteriaCardComponent } from '../../components/loteria-card/loteria-card.component';
+import { LoteriaPlayerInfo } from '../../models/loteria.model';
 
 @Component({
   standalone: true,
@@ -29,8 +30,6 @@ export class GamePlayersComponent implements OnInit {
 
   ngOnInit() {
     this.updateAvailableTokens();
-
-    // Escuchar cambios en la carta actual para mostrar modal
     this.watchCurrentCard();
   }
 
@@ -54,12 +53,7 @@ export class GamePlayersComponent implements OnInit {
 
   showNewCardModal(cardName: string) {
     this.currentDrawnCard = cardName;
-    this.showCardModal = true;
-
-    // Auto-cerrar después de 3 segundos
-    setTimeout(() => {
-      this.showCardModal = false;
-    }, 3000);
+    // Solo actualizar la carta actual, sin mostrar modal automático
   }
 
   // ========================================
@@ -86,12 +80,19 @@ export class GamePlayersComponent implements OnInit {
 
     if (this.draggedTokenIndex === null) return;
 
+    if (this.viewModel.isSpectator()) {
+      this.toastr.warning('Estás en modo espectador y no puedes colocar fichas');
+      this.draggedTokenIndex = null;
+      return;
+    }
+
     const row = Math.floor(cellIndex / 4);
     const col = cellIndex % 4;
 
     // Verificar si la celda ya tiene ficha
     if (this.viewModel.isCellMarked(row, col)) {
       this.toastr.warning('Esta casilla ya tiene una ficha');
+      this.draggedTokenIndex = null;
       return;
     }
 
@@ -104,6 +105,12 @@ export class GamePlayersComponent implements OnInit {
   // ========================================
 
   onCellClick(cellIndex: number) {
+    // Si está en modo espectador, no puede colocar fichas
+    if (this.viewModel.isSpectator()) {
+      this.toastr.warning('Estás en modo espectador y no puedes colocar fichas');
+      return;
+    }
+
     if (this.availableTokens.length === 0) {
       this.toastr.warning('No tienes más fichas disponibles');
       return;
@@ -129,12 +136,13 @@ export class GamePlayersComponent implements OnInit {
         this.toastr.success(response.message);
         this.updateAvailableTokens();
 
-        // Si se completó automáticamente, mostrar mensaje
+        // Si se completó automáticamente, manejar resultado
         if (response.autoClaimWin) {
           if (response.isValid) {
             this.toastr.success('¡LOTERÍA! Has ganado la partida', '', { timeOut: 5000 });
           } else {
-            this.toastr.error('Tu carta no es válida para ganar');
+            // Tramposo - mostrar modal que no se puede cerrar automáticamente
+            this.showCheaterModal(response.playerName || 'Jugador');
           }
         }
       },
@@ -142,6 +150,16 @@ export class GamePlayersComponent implements OnInit {
         this.toastr.error(error.error?.message || 'Error al colocar ficha');
       }
     });
+  }
+
+  private showCheaterModal(playerName: string) {
+    // Ya no usar toast persistente, el modal centralizado se encargará
+    // Solo mostrar toast temporal para notificar
+    this.toastr.warning(
+      `${playerName} hizo trampa y es ahora espectador`,
+      'Jugador baneado',
+      { timeOut: 3000 }
+    );
   }
 
   // ========================================
@@ -174,6 +192,11 @@ export class GamePlayersComponent implements OnInit {
 
   get canClaimWin(): boolean {
     return this.viewModel.myTokensUsed() === 16 && this.viewModel.isInGame();
+  }
+
+  // Getter con tipo explícito para evitar errores
+  get playersInfoSafe(): LoteriaPlayerInfo[] {
+    return this.viewModel.playersInfo();
   }
 
   getCardImagePath(cardName: string): string {
@@ -239,7 +262,7 @@ export class GamePlayersComponent implements OnInit {
   }
 
   getFichaImagePath(): string {
-    return '/assets/Ficha.png'; // Sin mayúscula y en la raíz de assets
+    return '/assets/Ficha.png';
   }
 
   formatCardName(cardName: string): string {

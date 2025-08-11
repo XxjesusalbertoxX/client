@@ -109,6 +109,10 @@ export interface LoteriaGameStatusBase {
   isHost: boolean;
   playerUnderReview?: number;
   cardsRemaining: number;
+  winners?: string[]; // Nombres de ganadores
+  losers?: string[]; // Nombres de perdedores
+  bannedPlayers?: string[]; // Nombres de baneados por trampa
+  finalRemainingCards?: string[]; // Cartas que no salieron (solo al terminar)
 }
 
 export interface LoteriaGameStatusHost extends LoteriaGameStatusBase {
@@ -117,20 +121,33 @@ export interface LoteriaGameStatusHost extends LoteriaGameStatusBase {
 }
 
 export interface LoteriaGameStatusPlayer extends LoteriaGameStatusBase {
+  userId: number;
+  name: string;
   isHost: false;
-  myCard: string[];
   isSpectator: boolean;
-  myMarkedCells: boolean[];
-  myTokensUsed: number;
-  totalTokens: number;
-  playersInfo: LoteriaPlayerInfo[];
+  tokensUsed: number;
+  myCard?: string[]; // 16 cartas del jugador
+  myMarkedCells?: boolean[]; // 16 posiciones marcadas
+  playersInfo?: LoteriaPlayerInfo[]; // Información de otros jugadores
+  result?: 'win' | 'lose' | 'banned' | 'pending'; // AGREGAR 'pending'
+  isBanned?: boolean;
+  user?: {
+    id: number;
+    name: string;
+    wins: number;
+    losses: number;
+    level: number;
+    exp: number;
+  };
 }
 
 export interface LoteriaGameStatusFinished extends LoteriaGameStatusBase {
   status: 'finished';
   remainingCards: string[];
+  finalRemainingCards: string[]; // Consistencia con el backend
   gameOver: true;
-  winner: number;
+  winner?: number; // HACER OPCIONAL (puede ser null)
+  winnerName?: string; // Nombre del ganador
   finalPlayersCards?: LoteriaHostPlayerCard[]; // Solo para anfitrión
 }
 
@@ -179,12 +196,16 @@ export interface PlaceTokenResponse {
   tokensUsed: number;
   autoClaimWin: boolean;
   isValid?: boolean; // Solo si autoClaimWin es true
+  isCheater?: boolean; // Si es tramposo
+  playerName?: string; // Nombre del jugador (para notificaciones)
   message: string;
 }
 
 export interface ClaimWinResponse {
   claimed: boolean;
   isValid: boolean;
+  isCheater?: boolean; // Si es tramposo
+  playerName?: string; // Nombre del jugador
   message: string;
 }
 

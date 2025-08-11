@@ -3,9 +3,13 @@ import { AuthService } from '../../../services/auth.service';
 import {
   LoteriaLobbyStatusResponse,
   LoteriaGameStatusResponse,
+  LoteriaGameStatusHost,
+  LoteriaGameStatusPlayer,
   LoteriaLobbyPlayer,
   LoteriaHost,
-  LoteriaGameStatus
+  LoteriaGameStatus,
+  LoteriaPlayerInfo,
+  LoteriaHostPlayerCard
 } from '../models/loteria.model';
 
 export class LoteriaViewModel {
@@ -51,31 +55,26 @@ export class LoteriaViewModel {
   maxPlayers = computed(() => this._lobbyStatus()?.maxPlayers || 8);
 
   // Estados del usuario
-// En loteriaViewmodel.ts, agregar método para verificar si es host correctamente
-    // ...existing code...
-    isHost = computed(() => {
-      // En el lobby, verificar desde lobbyStatus
-      const lobbyStatus = this._lobbyStatus();
-      if (lobbyStatus && lobbyStatus.host) {
-        const currentUserId = Number(this.authService.getUserId());
-        return lobbyStatus.host.userId === currentUserId;
-      }
-  
-      // En el juego, verificar desde gameStatus
-      const gameStatus = this._gameStatus();
-      if (gameStatus) {
-        const currentUserId = this.authService.getUserId();
-        if (!currentUserId) return false;
+  isHost = computed(() => {
+    // En el lobby, verificar desde lobbyStatus
+    const lobbyStatus = this._lobbyStatus();
+    if (lobbyStatus && lobbyStatus.host) {
+      const currentUserId = Number(this.authService.getUserId());
+      return lobbyStatus.host.userId === currentUserId;
+    }
 
-        // Si tenemos hostView, somos host
-        if ('hostView' in gameStatus && gameStatus.hostView) {
-          return true;
-        }
+    // En el juego, verificar desde gameStatus
+    const gameStatus = this._gameStatus();
+    if (gameStatus) {
+      // Si tenemos hostView, somos host
+      if ('hostView' in gameStatus && gameStatus.hostView) {
+        return true;
       }
+    }
 
-      return false;
-    });
-  // ...existing code...
+    return false;
+  });
+
   myCardGenerated = computed(() => this._lobbyStatus()?.myCardGenerated || false);
   myReady = computed(() => this._lobbyStatus()?.myReady || false);
   canStart = computed(() => this._lobbyStatus()?.canStart || false);
@@ -98,46 +97,69 @@ export class LoteriaViewModel {
   currentCard = computed(() => this._gameStatus()?.currentCard);
   cardsRemaining = computed(() => this._gameStatus()?.cardsRemaining || 0);
 
-  // Información específica del usuario en el juego
-  myCard = computed(() => {
+  // Información específica del usuario en el juego (para jugadores)
+  myCard = computed((): string[] => {
     const status = this._gameStatus();
-    return status && 'myCard' in status ? status.myCard : [];
+    if (status && 'userId' in status && 'myCard' in status) {
+      const playerStatus = status as LoteriaGameStatusPlayer;
+      return playerStatus.myCard || [];
+    }
+    return [];
   });
 
-  myMarkedCells = computed(() => {
+  myMarkedCells = computed((): boolean[] => {
     const status = this._gameStatus();
-    return status && 'myMarkedCells' in status ? status.myMarkedCells : [];
+    if (status && 'userId' in status && 'myMarkedCells' in status) {
+      const playerStatus = status as LoteriaGameStatusPlayer;
+      return playerStatus.myMarkedCells || [];
+    }
+    return [];
   });
 
-  myTokensUsed = computed(() => {
+  myTokensUsed = computed((): number => {
     const status = this._gameStatus();
-    return status && 'myTokensUsed' in status ? status.myTokensUsed : 0;
+    if (status && 'userId' in status && 'tokensUsed' in status) {
+      const playerStatus = status as LoteriaGameStatusPlayer;
+      return playerStatus.tokensUsed || 0;
+    }
+    return 0;
   });
 
-  isSpectator = computed(() => {
+  isSpectator = computed((): boolean => {
     const status = this._gameStatus();
-    return status && 'isSpectator' in status ? status.isSpectator : false;
+    if (status && 'userId' in status && 'isSpectator' in status) {
+      const playerStatus = status as LoteriaGameStatusPlayer;
+      return playerStatus.isSpectator || false;
+    }
+    return false;
   });
 
   // Vista del anfitrión
   hostView = computed(() => {
     const status = this._gameStatus();
-    return status && 'hostView' in status ? status.hostView : null;
+    if (status && 'hostView' in status) {
+      const hostStatus = status as LoteriaGameStatusHost;
+      return hostStatus.hostView;
+    }
+    return null;
   });
 
-  hostPlayersCards = computed(() => {
+  hostPlayersCards = computed((): LoteriaHostPlayerCard[] => {
     const hostView = this.hostView();
     return hostView ? hostView.playersCards : [];
   });
 
   // Información de jugadores (sin cartas) para jugadores normales
-  playersInfo = computed(() => {
+  playersInfo = computed((): LoteriaPlayerInfo[] => {
     const status = this._gameStatus();
-    if (status && 'playersInfo' in status) {
-      return status.playersInfo;
+
+    // Si es jugador normal, usar playersInfo
+    if (status && 'userId' in status && 'playersInfo' in status) {
+      const playerStatus = status as LoteriaGameStatusPlayer;
+      return playerStatus.playersInfo || [];
     }
 
-    // Si es anfitrión, devolver info básica de los jugadores
+    // Si es anfitrión, construir info básica de los jugadores
     const hostView = this.hostView();
     if (hostView) {
       return hostView.playersCards.map(p => ({
@@ -145,16 +167,12 @@ export class LoteriaViewModel {
         tokensUsed: p.tokensUsed,
         isSpectator: p.isSpectator,
         claimedWin: p.claimedWin,
-        user: p.user,
-        // Para anfitrión también incluir la carta
-        card: p.playerCard,
-        markedCells: p.markedCells
+        user: p.user
       }));
     }
 
     return [];
   });
-
 
   // Estados del juego
   isInLobby = computed(() =>
@@ -228,19 +246,22 @@ export class LoteriaViewModel {
     }
 
     const cellIndex = row * 4 + col;
-    return !this.myMarkedCells()[cellIndex];
+    const markedCells = this.myMarkedCells();
+    return cellIndex < markedCells.length && !markedCells[cellIndex];
   }
 
   getCardAtPosition(row: number, col: number): string | undefined {
     if (this.isHost()) return undefined;
 
     const cellIndex = row * 4 + col;
-    return this.myCard()[cellIndex];
+    const myCard = this.myCard();
+    return cellIndex < myCard.length ? myCard[cellIndex] : undefined;
   }
 
   isCellMarked(row: number, col: number): boolean {
     const cellIndex = row * 4 + col;
-    return this.myMarkedCells()[cellIndex] || false;
+    const markedCells = this.myMarkedCells();
+    return cellIndex < markedCells.length ? markedCells[cellIndex] : false;
   }
 
   // ========================================
@@ -286,6 +307,4 @@ export class LoteriaViewModel {
 
     return 'Esperando inicio...';
   }
-
-
 }

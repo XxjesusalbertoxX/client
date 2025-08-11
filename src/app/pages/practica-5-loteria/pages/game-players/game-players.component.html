@@ -144,19 +144,19 @@
               <span class="text-blue-300">{{ viewModel.cardsRemaining() }}</span>
             </div>
 
-            @if (viewModel.playersInfo().length > 0) {
-              <div class="mt-4">
-                <h4 class="text-sm font-semibold text-gray-300 mb-2">Otros jugadores:</h4>
-                <div class="space-y-1">
-                  @for (player of viewModel.playersInfo(); track player.userId) {
-                    <div class="flex justify-between text-xs">
-                      <span class="text-gray-400">{{ player.user?.name || 'Jugador' }}</span>
-                      <span class="text-yellow-400">{{ player.tokensUsed }}/16</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
+                        @if (playersInfoSafe.length > 0) {
+                          <div class="mt-4">
+                            <h4 class="text-sm font-semibold text-gray-300 mb-2">Otros jugadores:</h4>
+                            <div class="space-y-1">
+                              @for (player of playersInfoSafe; track player.userId) {
+                                <div class="flex justify-between text-xs">
+                                  <span class="text-gray-400">{{ player.user?.name || 'Jugador' }}</span>
+                                  <span class="text-yellow-400">{{ player.tokensUsed }}/16</span>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
           </div>
         </div>
       </div>

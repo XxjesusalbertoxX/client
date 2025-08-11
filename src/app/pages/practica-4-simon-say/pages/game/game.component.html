@@ -45,63 +45,23 @@
         </div>
       </div>
 
-      <!-- Secuencia Global (Centro del juego) -->
-      <div class="bg-gradient-to-r from-white/20 to-white/10 rounded-2xl p-6 mb-8 border border-white/20" *ngIf="vm.myLocalSequence().length > 0">
+      <!-- Información básica (sin mostrar secuencia para memorización) -->
+      <div class="bg-gradient-to-r from-white/20 to-white/10 rounded-2xl p-6 mb-8 border border-white/20" *ngIf="(vm.gameStatus()?.sequenceLength || 0) > 0">
         <h2 class="text-2xl font-bold text-white text-center mb-4">
-          🔄 Secuencia Actual
+          🧠 Memoriza la Secuencia
         </h2>
 
-        <!-- Información de la secuencia -->
+        <!-- Solo información de progreso, sin mostrar colores -->
         <div class="text-center mb-4">
           <div class="inline-flex items-center space-x-4">
             <div class="bg-blue-500/20 rounded-lg px-4 py-2 border border-blue-400/50">
-              <div class="text-blue-300 text-sm">Colores totales</div>
-              <div class="text-white text-xl font-bold">{{ vm.myLocalSequence().length }}</div>
+              <div class="text-blue-300 text-sm">Longitud secuencia</div>
+              <div class="text-white text-xl font-bold">{{ vm.gameStatus()?.sequenceLength || 0 }}</div>
             </div>
-            <div class="bg-purple-500/20 rounded-lg px-4 py-2 border border-purple-400/50">
+            <div class="bg-purple-500/20 rounded-lg px-4 py-2 border border-purple-400/50" *ngIf="vm.currentPhase() === 'repeat_sequence'">
               <div class="text-purple-300 text-sm">Tu progreso</div>
-              <div class="text-white text-xl font-bold">{{ vm.currentProgress() }}/{{ vm.myLocalSequence().length }}</div>
+              <div class="text-white text-xl font-bold">{{ vm.currentProgress() }}/{{ vm.gameStatus()?.sequenceLength || 0 }}</div>
             </div>
-          </div>
-        </div>
-
-        <!-- Visualización de la secuencia actual -->
-        <div class="bg-white/10 rounded-xl p-4 mb-4">
-          <div class="flex flex-wrap justify-center gap-2">
-            <div
-              *ngFor="let color of vm.myLocalSequence(); let i = index"
-              class="w-8 h-8 rounded-full border-2 border-white/50 shadow-lg relative"
-              [ngStyle]="{ 'background-color': color }"
-              [class.ring-2]="i === vm.currentProgress() && vm.canInteract()"
-              [class.ring-yellow-400]="i === vm.currentProgress() && vm.canInteract()">
-
-              <!-- Número de posición -->
-              <div class="absolute -top-2 -right-2 bg-gray-800 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                {{ i + 1 }}
-              </div>
-
-              <!-- Indicador de completado -->
-              <div
-                *ngIf="i < vm.currentProgress()"
-                class="absolute inset-0 rounded-full bg-green-400/50 flex items-center justify-center">
-                <span class="text-green-800 text-xs">✓</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Último color agregado -->
-        <div
-          *ngIf="vm.gameStatus()?.lastAddedColor"
-          class="bg-blue-500/20 border border-blue-400/50 rounded-xl p-3 mb-4">
-          <div class="flex items-center justify-center space-x-2 text-blue-300">
-            <span>🎯</span>
-            <span class="font-medium">Último color agregado:</span>
-            <div
-              class="w-6 h-6 rounded-full border-2 border-white/70"
-              [ngStyle]="{ 'background-color': vm.gameStatus()?.lastAddedColor }">
-            </div>
-            <span class="font-bold">{{ vm.gameStatus()?.lastAddedColor?.toUpperCase() }}</span>
           </div>
         </div>
       </div>

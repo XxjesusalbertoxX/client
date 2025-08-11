@@ -2,10 +2,6 @@
   aspect-ratio: 1 / 1;
 }
 
-.aspect-square {
-  aspect-ratio: 1 / 1;
-}
-
 img {
   transition: all 0.2s ease-in-out;
   object-fit: cover;
@@ -38,3 +34,44 @@ img {
 .animate-ficha-drop {
   animation: ficha-drop 0.4s ease-out;
 }
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Cambiar de 'contain' a 'cover' para llenar mejor */
+  object-position: center;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.aspect-square {
+  aspect-ratio: 1 / 1;
+  min-height: 60px; /* Altura mínima */
+}
+
+/* Mejorar hover en cartas clickeables */
+.card-cell:hover .card-image {
+  transform: scale(1.02);
+}
+
+/* Animación más suave para fichas */
+.animate-ficha-drop {
+  animation: fichaDropImproved 0.4s ease-out;
+}
+
+@keyframes fichaDropImproved {
+  0% {
+    transform: translateY(-20px) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(2px) scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ...existing code... */
