@@ -74,6 +74,33 @@ export class SimonSayGameViewModel {
     }
   });
 
+  getLastAddedColor(): string | null {
+    const status = this.gameStatus();
+    if (!status) return null;
+    
+    // Si hay un lastAddedColor en el status, usarlo
+    if (status.lastAddedColor) {
+      return status.lastAddedColor;
+    }
+    
+    // Si no, obtener el último de la secuencia global
+    const sequence = status.globalSequence;
+    if (!sequence || sequence.length === 0) return null;
+    
+    return sequence[sequence.length - 1];
+  }
+
+  // MODIFICAR: Solo mostrar información del último color, no toda la secuencia
+  shouldShowLastColor(): boolean {
+    const status = this.gameStatus();
+    if (!status) return false;
+    
+    // Mostrar solo cuando el oponente acaba de agregar un color
+    return status.phase === 'wait_opponent_repeat' || 
+           status.phase === 'wait_opponent_choose' ||
+           (status.phase === 'repeat_sequence' && this.getLastAddedColor() !== null);
+  }
+
   getExpectedColor(): string | null {
     const sequence = this.myLocalSequence();
     const progress = this.currentProgress();

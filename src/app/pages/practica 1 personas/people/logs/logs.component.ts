@@ -1,17 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { LogsService } from '../../../../services/logs.service'
-import { LogEntry } from '../../../../models/log.model'
+import { LogEntry, LogsResponse } from '../../../../models/log.model'
 import { SidebarComponent } from '../../../../shared/components/layouts/sidebar/sidebar.component'
 import { SessionGuardService } from '../../../../services/guards/session.guard.service'
-
-interface LogsResponse {
-  data: LogEntry[]
-  total: number
-  page: number
-  perPage: number
-  lastPage: number
-}
 
 @Component({
   standalone: true,
@@ -41,18 +33,12 @@ export class LogsComponent implements OnInit {
     this.page = page
 
     this.logsService.getLogs(page, this.perPage).subscribe({
-      next: (response: any) => {
-        if (response.data) {
-          // Respuesta con paginación
-          this.logs = response.data
-          this.total = response.total
-          this.page = response.page
-          this.perPage = response.perPage
-          this.lastPage = response.lastPage
-        } else {
-          // Respuesta simple (por compatibilidad)
-          this.logs = response
-        }
+      next: (response: LogsResponse) => {
+        this.logs = response.data || []
+        this.total = response.total || 0
+        this.page = response.page || page
+        this.perPage = response.perPage || this.perPage
+        this.lastPage = response['lastPage'] || 1
         this.loading = false
       },
       error: (err) => {

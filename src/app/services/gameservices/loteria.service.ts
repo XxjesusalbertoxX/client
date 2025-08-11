@@ -200,4 +200,6 @@ export class LoteriaService {
   formatCardName(cardName: string): string {
     return cardName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
+
+  
 }

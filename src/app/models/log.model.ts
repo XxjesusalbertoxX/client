@@ -13,7 +13,8 @@ export interface LogsResponse {
   data: LogEntry[]
   total: number
   page: number
-  limit: number
+  perPage: number
+  lastPage?: number
 }
 
 export interface LogMetadata {

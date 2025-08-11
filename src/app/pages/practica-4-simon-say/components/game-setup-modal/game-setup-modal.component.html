@@ -30,6 +30,10 @@
         <!-- Grid de colores seleccionados -->
         <div class="mb-6">
           <h3 class="text-white font-semibold mb-3">Colores seleccionados ({{ getSelectedColorsCount() }}/{{ colorCount }}):</h3>
+          <!-- AGREGAR: Mensaje de advertencia sobre colores únicos -->
+          <div class="text-white/70 text-sm mb-3">
+            ⚠️ Cada color debe ser diferente (no se permiten duplicados)
+          </div>
           <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 justify-items-center max-h-80 overflow-y-auto p-2">
             <div
               *ngFor="let color of selectedColors(); let i = index"
@@ -70,6 +74,10 @@
             <div class="flex items-center justify-center space-x-2">
               <span>🎮</span>
               <span>Crear Partida</span>
+              <!-- AGREGAR: Indicador visual si no es válido -->
+              @if (!allColorsSelected() && getSelectedColorsCount() === colorCount) {
+                <span class="text-yellow-300 text-xs">(colores repetidos)</span>
+              }
             </div>
           </button>
 

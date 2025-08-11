@@ -29,6 +29,7 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
 
   // Estados de modales
   private shownCheaters: Set<string> = new Set();
+  private verificationTimeout?: ReturnType<typeof setTimeout>; // NUEVO
   showCheaterModal = false;
   showVerificationModal = false;
   showGameEndModal = false;
@@ -61,6 +62,9 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
+    }
+    if (this.verificationTimeout) { // NUEVO
+      clearTimeout(this.verificationTimeout);
     }
   }
 
@@ -103,10 +107,21 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
   handleGameStatus(status: LoteriaGameStatusResponse) {
     console.log('=== LOTERIA GAME STATUS ===');
     console.log('Status:', status.status);
+    console.log('Player under review:', status.playerUnderReview);
     console.log('============================');
 
     // Actualizar ViewModel
     this.viewModel.setGameStatus(status);
+
+    // CORREGIR: Cerrar modal de verificación si ya no hay jugador bajo revisión
+    if (this.showVerificationModal && !status.playerUnderReview) {
+      this.showVerificationModal = false;
+      this.playerUnderReviewName = '';
+      if (this.verificationTimeout) {
+        clearTimeout(this.verificationTimeout);
+        this.verificationTimeout = undefined;
+      }
+    }
 
     // Manejar estados especiales
     switch (status.status) {
@@ -131,6 +146,16 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
       const playerInfo = this.viewModel.playersInfo().find(p => p.userId === status.playerUnderReview);
       this.playerUnderReviewName = playerInfo?.user?.name || 'Jugador desconocido';
       this.showVerificationModal = true;
+
+      // AGREGAR TIMEOUT para la verificación (10 segundos máximo)
+      this.verificationTimeout = setTimeout(() => {
+        if (this.showVerificationModal) {
+          console.warn('Verificación timeout - cerrando modal automáticamente');
+          this.showVerificationModal = false;
+          this.playerUnderReviewName = '';
+          this.toastr.warning('Verificación completada');
+        }
+      }, 10000); // 10 segundos timeout
     }
   }
 
@@ -213,6 +238,10 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
   onVerificationModalClose() {
     this.showVerificationModal = false;
     this.playerUnderReviewName = '';
+    if (this.verificationTimeout) {
+      clearTimeout(this.verificationTimeout);
+      this.verificationTimeout = undefined;
+    }
   }
 
   onGameEndModalClose() {

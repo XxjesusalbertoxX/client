@@ -35,7 +35,7 @@
 
     <!-- Tabla de logs -->
     <div class="max-w-7xl mx-auto">
-      @if (!loading && logs.length > 0) {
+  @if (!loading && logs.length > 0) {
         <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 animate-fade-in">
           <div class="overflow-x-auto">
             <table class="w-full text-left">
@@ -106,7 +106,7 @@
         </div>
       }
 
-      @if (!loading && logs.length === 0) {
+  @if (!loading && logs.length === 0) {
         <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 text-center animate-fade-in">
           <div class="text-6xl mb-4">📋</div>
           <h3 class="text-2xl font-bold text-white mb-2">No hay registros disponibles</h3>

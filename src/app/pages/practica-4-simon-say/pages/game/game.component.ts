@@ -161,71 +161,80 @@ handleGameStatus(status: SimonSayGameStatusResponse) {
   }
 
 requestLastColorAdded(newLength: number) {
-  // CAMBIO: Verificar que el color no sea null/undefined
-  const lastColor = this.vm.gameStatus()?.lastAddedColor;
-  if (!lastColor) return; // Si no hay color, salir
-  // Mostrar notificación
-  this.toastr.info(`🎯 ${this.vm.gameStatus()?.opponentName} agregó ${lastColor.toUpperCase()} a tu secuencia`, 'Nuevo color');
-}
-
-handleMyTurn(status: SimonSayGameStatusResponse) {
-  console.log('=== MY TURN ===', status.phase);
-
-  switch (status.phase) {
-    case 'choose_first_color':
-      this.modalTitle = 'Primer color';
-      this.modalSubtitle = 'Escoge el primer color para la secuencia de tu oponente';
-      this.vm.setShowColorPicker(true);
-      this.vm.setCanInteract(false);
-      this.toastr.info('🎨 Tu turno: Escoge el primer color');
-      break;
-
-    case 'repeat_sequence':
-      this.vm.setShowColorPicker(false);
-      this.vm.setCanInteract(true);
-      this.toastr.info(`🔄 Tu turno: Repite la secuencia de ${status.globalSequence?.length || 0} colores`);
-      break;
-
-    case 'choose_next_color':
-      this.modalTitle = 'Agregar color';
-      this.modalSubtitle = 'Escoge el siguiente color para la secuencia de tu oponente';
-      this.vm.setShowColorPicker(true);
-      this.vm.setCanInteract(false);
-      this.toastr.info('🎨 Tu turno: Agrega un color a la secuencia');
-      break;
-
-    default:
-      this.vm.setCanInteract(false);
-      this.vm.setShowColorPicker(false);
-      console.warn('Unknown phase for my turn:', status.phase);
+    const lastColor = this.vm.getLastAddedColor();
+    if (!lastColor) return;
+    
+    // MEJORAR: Solo mostrar cuando realmente hay un nuevo color
+    const previousLength = this.vm.gameStatus()?.sequenceLength || 0;
+    if (newLength > previousLength) {
+      this.toastr.info(
+        `🎯 ${this.vm.gameStatus()?.opponentName || 'Oponente'} agregó: ${lastColor.toUpperCase()}`, 
+        'Nuevo color en la secuencia'
+      );
+    }
   }
-}
 
-handleOpponentTurn(status: SimonSayGameStatusResponse) {
-  console.log('=== OPPONENT TURN ===', status.phase);
+  handleMyTurn(status: SimonSayGameStatusResponse) {
+    console.log('=== MY TURN ===', status.phase);
 
-  this.vm.setCanInteract(false);
-  this.vm.setShowColorPicker(false);
+    switch (status.phase) {
+      case 'choose_first_color':
+        this.modalTitle = 'Primer color';
+        this.modalSubtitle = 'Escoge el primer color para la secuencia de tu oponente';
+        this.vm.setShowColorPicker(true);
+        this.vm.setCanInteract(false);
+        this.toastr.info('🎨 Tu turno: Escoge el primer color');
+        break;
 
-  // Mostrar mensaje específico según la fase del oponente
-  switch (status.phase) {
-    case 'choose_first_color':
-      // evitar spam de toasts repetitivos
-      break;
-    case 'repeat_sequence':
-      this.toastr.info(`⏳ ${status.opponentName} está repitiendo la secuencia`);
-      break;
-    case 'choose_next_color':
-      this.toastr.info(`⏳ ${status.opponentName} está agregando un color`);
-      break;
-    case 'wait_opponent_choose':
-      break;
-    case 'wait_opponent_repeat':
-      break;
-    default:
-      console.log('Waiting for opponent...');
+      case 'repeat_sequence':
+        this.vm.setShowColorPicker(false);
+        this.vm.setCanInteract(true);
+        // MEJORAR: Mensaje más claro sobre memorización
+        this.toastr.info(`🧠 Tu turno: Repite la secuencia completa (${status.globalSequence?.length || 0} colores)`, 'Usa tu memoria');
+        break;
+
+      case 'choose_next_color':
+        this.modalTitle = 'Agregar color';
+        this.modalSubtitle = 'Escoge el siguiente color para la secuencia de tu oponente';
+        this.vm.setShowColorPicker(true);
+        this.vm.setCanInteract(false);
+        this.toastr.info('🎨 Tu turno: Agrega un color a la secuencia');
+        break;
+
+      default:
+        this.vm.setCanInteract(false);
+        this.vm.setShowColorPicker(false);
+        console.warn('Unknown phase for my turn:', status.phase);
+    }
   }
-}
+
+  handleOpponentTurn(status: SimonSayGameStatusResponse) {
+    console.log('=== OPPONENT TURN ===', status.phase);
+
+    this.vm.setCanInteract(false);
+    this.vm.setShowColorPicker(false);
+
+    // MEJORAR: Mensajes más claros sobre la fase del oponente
+    switch (status.phase) {
+      case 'choose_first_color':
+        this.toastr.info(`🎨 ${status.opponentName} está eligiendo el primer color...`);
+        break;
+      case 'repeat_sequence':
+        this.toastr.info(`🧠 ${status.opponentName} está repitiendo la secuencia de memoria`);
+        break;
+      case 'choose_next_color':
+        this.toastr.info(`🎨 ${status.opponentName} está agregando un nuevo color...`);
+        break;
+      case 'wait_opponent_choose':
+        // Silencioso - ya se mostró el último color agregado
+        break;
+      case 'wait_opponent_repeat':
+        // Silencioso - esperar en silencio
+        break;
+      default:
+        console.log('Waiting for opponent...');
+    }
+  }
 
   // === INTERACCIONES DEL JUGADOR (CORREGIDA) ===
 

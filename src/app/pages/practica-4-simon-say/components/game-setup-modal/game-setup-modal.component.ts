@@ -47,40 +47,65 @@ export class GameSetupModalComponent {
     }
   }
 
-  onColorSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const color = input.value;
-
-    console.log('[onColorSelected] Color seleccionado:', color, 'en índice:', this.currentColorIndex)
-    const colors = [...this.selectedColors()];
-    colors[this.currentColorIndex] = color;
-    this.selectedColors.set(colors);
-    console.log('[onColorSelected] Estado actual de colores:', colors)
-  }
-
   getSelectedColorsCount(): number {
     const count = this.selectedColors().filter((c: string | null) => c !== null).length;
     console.log('[getSelectedColorsCount] Total seleccionados:', count)
     return count;
   }
-
-  allColorsSelected(): boolean {
-    const colors = this.selectedColors();
-    const allSelected = colors.every(color => color !== null);
-    console.log('[allColorsSelected] Todos seleccionados?', allSelected, colors)
-    return allSelected;
-  }
-
-  createGame() {
-    if (this.allColorsSelected()) {
-      const colors = this.selectedColors().filter(c => c !== null) as string[];
-      console.log('[createGame] Colores a enviar:', colors, 'Cantidad:', colors.length);
-      this.gameCreated.emit(colors);
-    } else {
-      console.warn('[createGame] No todos los colores están seleccionados')
+  
+    onColorSelected(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const color = input.value;
+  
+      console.log('[onColorSelected] Color seleccionado:', color, 'en índice:', this.currentColorIndex)
+      
+      // NUEVA VALIDACIÓN: Verificar que el color no esté repetido
+      const colors = [...this.selectedColors()];
+      const colorAlreadyExists = colors.some((existingColor, index) => 
+        existingColor === color && index !== this.currentColorIndex
+      );
+  
+      if (colorAlreadyExists) {
+        console.warn('[onColorSelected] Color ya existe en la paleta:', color)
+        alert('Este color ya está seleccionado. Por favor elige un color diferente.');
+        return;
+      }
+  
+      colors[this.currentColorIndex] = color;
+      this.selectedColors.set(colors);
+      console.log('[onColorSelected] Estado actual de colores:', colors)
     }
-  }
-
+  
+    // NUEVO MÉTODO: Validar que todos los colores sean únicos
+    allColorsUnique(): boolean {
+      const colors = this.selectedColors().filter(c => c !== null);
+      const uniqueColors = new Set(colors);
+      const isUnique = uniqueColors.size === colors.length;
+      console.log('[allColorsUnique] Colores únicos?', isUnique, 'Total:', colors.length, 'Únicos:', uniqueColors.size)
+      return isUnique;
+    }
+  
+    allColorsSelected(): boolean {
+      const colors = this.selectedColors();
+      const allSelected = colors.every(color => color !== null);
+      const allUnique = this.allColorsUnique();
+      const isValid = allSelected && allUnique;
+      console.log('[allColorsSelected] Todos seleccionados?', allSelected, 'Únicos?', allUnique, 'Válido?', isValid)
+      return isValid;
+    }
+  
+    createGame() {
+      if (this.allColorsSelected()) {
+        const colors = this.selectedColors().filter(c => c !== null) as string[];
+        console.log('[createGame] Colores a enviar:', colors, 'Cantidad:', colors.length);
+        this.gameCreated.emit(colors);
+      } else {
+        console.warn('[createGame] No todos los colores están seleccionados o hay colores repetidos')
+        alert('Asegúrate de seleccionar todos los colores y que sean diferentes entre sí.');
+      }
+    }
+  
+  // ...existing code...
   cancel() {
     console.log('[cancel] Cancelando configuración de juego')
     this.cancelled.emit();

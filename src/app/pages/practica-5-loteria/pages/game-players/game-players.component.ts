@@ -16,8 +16,8 @@ import { LoteriaPlayerInfo } from '../../models/loteria.model';
 })
 export class GamePlayersComponent implements OnInit {
   @Input() viewModel!: LoteriaViewModel;
-    @Output() showVictoryModal = new EventEmitter<string>(); 
-  @Output() showCheaterSelfModal = new EventEmitter<string>(); 
+    @Output() showVictoryModal = new EventEmitter<string>();
+  @Output() showCheaterSelfModal = new EventEmitter<string>();
 
   private loteriaService = inject(LoteriaService);
   private toastr = inject(ToastrService);
@@ -41,7 +41,7 @@ export class GamePlayersComponent implements OnInit {
     this.availableTokens = Array.from({ length: totalTokens - tokensUsed }, (_, i) => i);
   }
 
-  
+
 
   watchCurrentCard() {
     let previousCard = this.viewModel.currentCard();
@@ -159,23 +159,38 @@ export class GamePlayersComponent implements OnInit {
     });
   }
 
-  leaveGame() {
-    if (confirm('¿Estás seguro de que quieres abandonar la partida?')) {
-      const gameId = this.viewModel.gameId();
-      if (!gameId) return;
+    leaveGame() {
+      if (confirm('¿Estás seguro de que quieres abandonar la partida? Te convertirás en espectador.')) {
+        const gameId = this.viewModel.gameId();
+        if (!gameId) return;
 
-      this.loteriaService.leaveGame(gameId).subscribe({
-        next: () => {
-          this.toastr.info('Has abandonado la partida');
-          // Navegar al inicio o lobby
-          window.location.href = '/games/loteria';
-        },
-        error: (error) => {
-          this.toastr.error(error.error?.message || 'Error al abandonar');
-        }
-      });
+        this.loteriaService.leaveGame(gameId).subscribe({
+          next: (response) => {
+            this.toastr.info(response.message);
+
+            if (response.gameEnded) {
+              if (response.winnerByDefault) {
+                this.toastr.success('La partida terminó porque solo quedaba un jugador');
+              } else {
+                this.toastr.warning('La partida terminó porque el anfitrión abandonó');
+              }
+              // Redirigir al home después de que termine
+              setTimeout(() => {
+                window.location.href = '/games/loteria';
+              }, 2000);
+            } else {
+              // La partida continúa, el jugador ahora es espectador
+              this.toastr.info('Ahora eres espectador. Puedes seguir viendo la partida.');
+              // Recargar para reflejar el estado de espectador
+              window.location.reload();
+            }
+          },
+          error: (error) => {
+            this.toastr.error(error.error?.message || 'Error al abandonar');
+          }
+        });
+      }
     }
-  }
 
   private showCheaterModal(playerName: string) {
     // CORREGIR: Emitir al padre en lugar de mostrar toast

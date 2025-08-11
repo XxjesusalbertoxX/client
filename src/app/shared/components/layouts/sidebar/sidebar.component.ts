@@ -44,6 +44,7 @@ export class SidebarComponent {
   private router = inject(Router)
 
   menuItems: MenuItem[] = [
+    // CORREGIDO: Hacer Personas expandible pero con mejor organización
     {
       label: 'Práctica 1 - Personas',
       icon: '👥',
@@ -54,42 +55,18 @@ export class SidebarComponent {
         { label: 'Logs', icon: '📝', route: '/people/logs' }
       ]
     },
+    // CORREGIDO: Relojes - ruta directa sin expansión
     {
       label: 'Práctica 2 - Relojes',
       icon: '⏰',
-      isExpanded: false,
-      children: [
-        { label: 'Relojes', icon: '🕐', route: '/relojes' },
-      ]
+      route: '/relojes'
     },
+    // CORREGIDO: Games - ruta directa sin expansión (más prominente)
     {
-      label: 'Práctica 3 - Batalla Naval',
-      icon: '⚔️',
-      isExpanded: false,
-      children: [
-        { label: 'Crear Partida', icon: '🚢', route: '/games/battleship' },
-        { label: 'Unirse a Partida', icon: '🌊', route: '/games/battleship/join' },
-        { label: 'Estadísticas', icon: '📈', route: '/games/battleship/stats' }
-      ]
+      label: 'Games',
+      icon: '🎮',
+      route: '/games'
     },
-    {
-      label: 'Práctica 4 - Simon Says',
-      icon: '🎯',
-      isExpanded: false,
-      children: [
-        { label: 'Crear Partida', icon: '🎮', route: '/games/simonsay' },
-        { label: 'Unirse a Partida', icon: '🔗', route: '/games/simonsay/join' }
-      ]
-    },
-    {
-      label: 'Práctica 5 - Lotería',
-      icon: '🎲',
-      isExpanded: false,
-      children: [
-        { label: 'Crear Partida', icon: '🎪', route: '/games/loteria' },
-        { label: 'Unirse a Partida', icon: '🎫', route: '/games/loteria/join' }
-      ]
-    }
   ]
 
   toggleSidebar() {
@@ -97,8 +74,25 @@ export class SidebarComponent {
   }
 
   toggleCategory(item: MenuItem) {
+    // Solo expandir si tiene children
     if (item.children) {
       item.isExpanded = !item.isExpanded
+    } else if (item.route) {
+      // Si no tiene children pero sí route, navegar directamente
+      this.router.navigate([item.route])
+      // Cerrar sidebar en móvil después de navegar
+      if (window.innerWidth < 768) {
+        this.isOpen = false
+      }
+    }
+  }
+
+  // NUEVO: Método para manejar navegación de items de menú
+  navigateToRoute(route: string) {
+    this.router.navigate([route])
+    // Cerrar sidebar en móvil después de navegar
+    if (window.innerWidth < 768) {
+      this.isOpen = false
     }
   }
 
