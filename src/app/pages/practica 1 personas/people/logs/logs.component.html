@@ -112,8 +112,9 @@
           <h3 class="text-2xl font-bold text-white mb-2">No hay registros disponibles</h3>
           <p class="text-gray-300 mb-6">Las actividades del sistema aparecerán aquí</p>
           <button
-            routerLink="/people"
-            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl transition-all duration-300 hover:scale-105"
+            type="button"
+            (click)="navigateTo('/people')"
+            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             👥 Ir a Personas
           </button>

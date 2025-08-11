@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-gradient-to-br {{ config.backgroundGradient }} relative overflow-hidden">
-  
+
   <!-- Ondas de fondo -->
   <div class="absolute bottom-0 left-0 w-full opacity-30">
     <svg class="w-full h-64" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
@@ -13,7 +13,7 @@
   <div class="absolute bottom-40 left-1/4 text-3xl animate-bounce" style="animation-delay: 2s;">{{ config.floatingEmojis[2] }}</div>
 
   <div class="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
-    
+
     <!-- Header -->
     <div class="text-center mb-16 animate-slide-down">
       <div class="text-8xl mb-6">{{ config.emoji }}</div>
@@ -27,18 +27,18 @@
 
     <!-- Botones de acción -->
     <div class="flex flex-col md:flex-row gap-8 w-full max-w-2xl">
-      
+
       <!-- Crear Partida -->
       <div class="group flex-1">
         <button
           (click)="onCreateClick()"
           class="w-full p-8 bg-gradient-to-br from-green-600/30 to-emerald-600/30 backdrop-blur-xl rounded-3xl border-2 border-green-400/50 hover:border-green-400 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/25 group-hover:bg-gradient-to-br group-hover:from-green-600/40 group-hover:to-emerald-600/40">
-          
+
           <div class="text-5xl mb-4 group-hover:animate-pulse">{{ config.createIcon }}</div>
-          
+
           <h2 class="text-2xl font-bold text-white mb-3">{{ config.createButtonText }}</h2>
           <p class="text-gray-300 mb-4">{{ config.createButtonDesc }}</p>
-          
+
           <div class="flex items-center justify-center space-x-2 text-green-300 font-medium">
             <span>�</span>
             <span>Ser el Host</span>
@@ -51,18 +51,32 @@
         <button
           (click)="onJoinClick()"
           class="w-full p-8 bg-gradient-to-br from-yellow-600/30 to-orange-600/30 backdrop-blur-xl rounded-3xl border-2 border-yellow-400/50 hover:border-yellow-400 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/25 group-hover:bg-gradient-to-br group-hover:from-yellow-600/40 group-hover:to-orange-600/40">
-          
+
           <div class="text-5xl mb-4 group-hover:animate-bounce">{{ config.joinIcon }}</div>
-          
+
           <h2 class="text-2xl font-bold text-white mb-3">{{ config.joinButtonText }}</h2>
           <p class="text-gray-300 mb-4">{{ config.joinButtonDesc }}</p>
-          
+
           <div class="flex items-center justify-center space-x-2 text-yellow-300 font-medium">
             <span>🎊</span>
             <span>¡A jugar!</span>
           </div>
         </button>
       </div>
+
+      <div class="group flex-1" *ngIf="gameType === 'battleship'">
+  <button
+    (click)="onViewStatsClick()"
+    class="w-full p-8 bg-gradient-to-br from-blue-600/30 to-indigo-600/30 backdrop-blur-xl rounded-3xl border-2 border-blue-400/50 hover:border-blue-400 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25">
+    <div class="text-5xl mb-4 group-hover:animate-bounce">📊</div>
+    <h2 class="text-2xl font-bold text-white mb-3">Ver Estadísticas</h2>
+    <p class="text-gray-300 mb-4">Consulta tu historial de Batalla Naval</p>
+    <div class="flex items-center justify-center space-x-2 text-blue-300 font-medium">
+      <span>📈</span>
+      <span>Mis Stats</span>
+    </div>
+  </button>
+</div>
     </div>
 
     <!-- Información adicional -->
@@ -79,7 +93,7 @@
             <span *ngIf="gameType !== 'loteria'">Reglas simples, estrategia profunda</span>
           </p>
         </div>
-        
+
         <div class="text-center">
           <div class="text-3xl mb-2">👥</div>
           <h3 class="text-lg font-semibold text-white mb-2">Multijugador</h3>
@@ -88,7 +102,7 @@
             <span *ngIf="gameType !== 'loteria'">Desafía a tus amigos en tiempo real</span>
           </p>
         </div>
-        
+
         <div class="text-center">
           <div class="text-3xl mb-2">🏆</div>
           <h3 class="text-lg font-semibold text-white mb-2">

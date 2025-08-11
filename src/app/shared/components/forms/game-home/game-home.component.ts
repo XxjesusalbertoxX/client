@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 interface GameConfig {
   title: string;
@@ -24,10 +25,13 @@ interface GameConfig {
   styleUrls: ['./game-home.component.scss']
 })
 export class GameHomeComponent {
+  [x: string]: any;
   @Input() gameType: 'battleship' | 'simon' | 'loteria' = 'battleship';
   @Output() createGame = new EventEmitter<void>();
   @Output() joinGame = new EventEmitter<void>();
   @Output() goBack = new EventEmitter<void>();
+
+  private router = inject(Router);
 
   get config(): GameConfig {
     const configs: Record<string, GameConfig> = {
@@ -81,8 +85,16 @@ export class GameHomeComponent {
     this.createGame.emit();
   }
 
+  onViewStatsClick() {
+    this.router.navigate(['/games/battleship/stats']);
+  }
+
   onJoinClick() {
     this.joinGame.emit();
+  }
+
+  navigateTo(path: string) {
+    this.router.navigate([path]);
   }
 
   onBackClick() {

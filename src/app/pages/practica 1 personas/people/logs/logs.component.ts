@@ -22,6 +22,7 @@ export class LogsComponent implements OnInit {
   total = 0
   perPage = 15
   lastPage = 1
+  router: any
 
   ngOnInit(): void {
     if (!this.sessionGuard.checkSessionOrRedirect()) return
@@ -46,6 +47,10 @@ export class LogsComponent implements OnInit {
         this.loading = false
       }
     })
+  }
+
+  navigateTo(path: string) {
+    this.router.navigate([path])
   }
 
   changePage(newPage: number) {
