@@ -10,7 +10,7 @@ import { GameJoinComponent } from '../../../../shared/components/forms/game-join
   selector: 'app-join-simonsay',
   imports: [CommonModule, GameJoinComponent],
   template: `
-    <app-game-join 
+    <app-game-join
       gameType="simon"
       [isLoading]="isLoading"
       [errorMessage]="errorMessage"
@@ -35,6 +35,7 @@ export class JoinSimonsayComponent {
 
     this.simonSayService.joinGame(code).subscribe({
       next: (response) => {
+        this.toastr.success('Te has unido a la partida');
         this.router.navigate(['/games/simonsay/lobby'], {
           queryParams: { id: response.gameId }
         });
@@ -42,6 +43,7 @@ export class JoinSimonsayComponent {
       error: (error) => {
         this.errorMessage = error.error?.message || 'Error al unirse a la partida';
         this.isLoading = false;
+        this.toastr.error(this.errorMessage);
       }
     });
   }

@@ -26,44 +26,44 @@ export class GameLobbyComponent implements OnInit {
   @Input() allReady = false;
   @Input() twoPlayers = false;
   @Input() canSetReady = false;
-  @Input() isHost = false; // NUEVO: para saber si soy el host
-  @Input() isMeReady = false; // NUEVO: para saber si ya estoy listo
-  
-  // Simon Say específico
-  @Input() showColorPicker = false;
-  @Input() myColors: string[] = [];
-  
+  @Input() isHost = false;
+  @Input() isMeReady = false;
+
+  // Simon Say específico - ACTUALIZAR
+  @Input() availableColors: string[] = []; // CAMBIAR: de myColors a availableColors
+
   @Output() copyCode = new EventEmitter<void>();
   @Output() handleReady = new EventEmitter<void>();
-  @Output() openColorPicker = new EventEmitter<void>();
-  @Output() colorsSelected = new EventEmitter<string[]>();
-  @Output() leaveGame = new EventEmitter<void>(); // NUEVO: para salir del lobby
-
+  @Output() leaveGame = new EventEmitter<void>();
   ngOnInit() {
     // Inicialización si es necesaria
   }
 
   get config(): LobbyConfig {
-    const configs: Record<string, LobbyConfig> = {
+    const configs = {
       battleship: {
         title: 'Batalla Naval',
-        emoji: '⚓',
-        backgroundGradient: 'from-slate-900 via-blue-900 to-indigo-900',
-        description: 'Prepara tu flota para la batalla'
+        emoji: '🚢',
+        backgroundGradient: 'from-blue-900 via-slate-900 to-gray-900',
+        description: 'Preparándose para el combate naval',
+        instructions: 'Coloca tus barcos estratégicamente y hunde la flota enemiga. Usa coordenadas para atacar.'
       },
       simon: {
         title: 'Simon Dice',
         emoji: '🎨',
-        backgroundGradient: 'from-slate-900 via-purple-900 to-indigo-900',
-        description: 'Configura tu paleta de colores'
+        backgroundGradient: 'from-purple-900 via-pink-900 to-indigo-900',
+        description: 'Preparándose para el desafío de memoria',
+        instructions: 'Repite las secuencias de colores que tu oponente agregue. Cada turno se agrega un nuevo color. <strong>¡El que falle primero pierde!</strong>'
       },
       loteria: {
         title: 'Lotería Mexicana',
-        emoji: '🎲',
-        backgroundGradient: 'from-slate-900 via-orange-900 to-red-900',
-        description: 'Esperando más jugadores (5-16)'
+        emoji: '�',
+        backgroundGradient: 'from-yellow-900 via-orange-900 to-red-900',
+        description: 'Preparándose para la lotería tradicional',
+        instructions: 'Marca las cartas que se van cantando en tu tablero. ¡El primero en completar una línea gana!'
       }
     };
+
     return configs[this.gameType];
   }
 
@@ -100,14 +100,6 @@ export class GameLobbyComponent implements OnInit {
 
   onReady() {
     this.handleReady.emit();
-  }
-
-  onOpenColorPicker() {
-    this.openColorPicker.emit();
-  }
-
-  onColorsSelected(colors: string[]) {
-    this.colorsSelected.emit(colors);
   }
 
   onLeaveGame() {

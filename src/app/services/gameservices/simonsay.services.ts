@@ -16,15 +16,18 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class SimonSayService {
-  // private readonly baseURL = 'http://127.0.0.1:3333';
-  // private readonly baseURL = 'http://192.168.1.30:3333';
-  // private readonly baseURL = 'http://www.atenasoficial.com:3333'
-  private readonly baseURL = environment.apiUrl; // Use environment variable for API URL
+  private readonly baseURL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   createGame(): Observable<CreateGameResponse> {
     return this.http.post<CreateGameResponse>(`${this.baseURL}/game/simonsay/create`, {});
+  }
+
+  createGameWithColors(colors: string[]): Observable<CreateGameResponse> {
+    return this.http.post<CreateGameResponse>(`${this.baseURL}/game/simonsay/create`, {
+      customColors: colors // <-- CAMBIA aquí el nombre
+    });
   }
 
   joinGame(code: string): Observable<JoinGameResponse> {
@@ -51,21 +54,17 @@ export class SimonSayService {
     return this.http.patch<MessageResponse>(`${this.baseURL}/game/${gameId}/heartbeat`, {});
   }
 
-  requestRematch(gameId: string): Observable<RematchResponse> {
-    return this.http.post<RematchResponse>(`${this.baseURL}/game/${gameId}/rematch`, {});
-  }
-
   // Estado del juego SimonSay
   getGameStatus(gameId: string): Observable<SimonSayGameStatusResponse> {
     return this.http.get<SimonSayGameStatusResponse>(`${this.baseURL}/game/${gameId}/status`);
   }
 
-  // Escoger el primer color
+  // Escoger el primer color para la secuencia del oponente
   chooseFirstColor(gameId: string, chosenColor: string): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(`${this.baseURL}/simonsay/${gameId}/choose-first-color`, { chosenColor });
   }
 
-  // Validar un color de la secuencia
+  // Repetir/validar un color de MI secuencia
   playColor(gameId: string, color: string): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(`${this.baseURL}/simonsay/${gameId}/play-color`, { color });
   }
@@ -73,5 +72,14 @@ export class SimonSayService {
   // Agregar color a la secuencia del oponente
   chooseColor(gameId: string, chosenColor: string): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(`${this.baseURL}/simonsay/${gameId}/choose-color`, { chosenColor });
+  }
+
+  // Salir del juego (usando el servicio genérico)
+  leaveGame(gameId: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.baseURL}/game/${gameId}/leave`, {});
+  }
+
+  requestRematch(gameId: string): Observable<RematchResponse> {
+    return this.http.post<RematchResponse>(`${this.baseURL}/game/${gameId}/rematch`, {});
   }
 }

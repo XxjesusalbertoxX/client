@@ -14,13 +14,14 @@ export class SimonSayGameViewModel {
   private _showingSequence = signal<boolean>(false);
   private _canInteract = signal<boolean>(false);
   private _showColorPicker = signal<boolean>(false);
+  private _lastShownSequenceVersion = signal<number>(0); // Para controlar cuándo mostrar la secuencia
 
   // Estado público (computed)
   myColors = computed(() => this.gameStatus()?.myColors || []);
-  
+
   // Los colores que YO elegí (para escoger colores para el oponente)
   myCustomColors = computed(() => this.gameStatus()?.myCustomColors || []);
-  
+
   // Los colores del tablero del oponente (los que yo elegí para él)
   opponentColors = computed(() => this.gameStatus()?.opponentColors || []);
 
@@ -34,28 +35,47 @@ export class SimonSayGameViewModel {
   readonly showingSequence: Signal<boolean> = computed(() => this._showingSequence());
   readonly canInteract: Signal<boolean> = computed(() => this._canInteract());
   readonly showColorPicker: Signal<boolean> = computed(() => this._showColorPicker());
+  readonly globalSequence: Signal<string[]> = computed(() => this._myLocalSequence());
 
-  
   // Computed properties específicos del juego
   readonly isMyTurn: Signal<boolean> = computed(() => {
     const status = this._gameStatus();
     return status?.isMyTurn || false;
   });
 
+  readonly currentPhaseText: Signal<string> = computed(() => {
+    const status = this._gameStatus();
+    if (!status) return '';
+
+    if (status.isMyTurn) {
+      switch (status.phase) {
+        case 'choose_first_color':
+          return 'Escoge el primer color de la secuencia';
+        case 'repeat_sequence':
+          return 'Repite toda la secuencia';
+        case 'choose_color':
+          return 'Escoge el siguiente color';
+        default:
+          return 'Tu turno';
+      }
+    } else {
+      switch (status.phase) {
+        case 'choose_first_color':
+          return `${status.opponentName || 'Oponente'} está escogiendo el primer color`;
+        case 'repeat_sequence':
+          return `${status.opponentName || 'Oponente'} está repitiendo la secuencia`;
+        case 'choose_color':
+          return `${status.opponentName || 'Oponente'} está escogiendo el siguiente color`;
+        default:
+          return 'Turno del oponente';
+      }
+    }
+  });
+
   readonly currentPhase: Signal<SimonSayPhase | null> = computed(() => {
     const status = this._gameStatus();
     return status?.phase || null;
   });
-
-  // readonly myColors: Signal<string[]> = computed(() => {
-  //   const status = this._gameStatus();
-  //   return status?.myColors || [];
-  // });
-
-  // readonly opponentColors: Signal<string[]> = computed(() => {
-  //   const status = this._gameStatus();
-  //   return status?.opponentColors || [];
-  // });
 
   readonly mySequenceLength: Signal<number> = computed(() => {
     const status = this._gameStatus();
@@ -67,26 +87,6 @@ export class SimonSayGameViewModel {
     return status?.opponentSequenceLength || 0;
   });
 
-  readonly currentPhaseText: Signal<string> = computed(() => {
-    const status = this._gameStatus();
-    if (!status) return '';
-    
-    if (status.isMyTurn) {
-      switch (status.phase) {
-        case 'choose_first_color':
-          return 'Escoge el primer color para tu oponente';
-        case 'repeat_sequence':
-          return 'Repite tu secuencia';
-        case 'choose_color':
-          return 'Escoge un color para agregar a la secuencia del oponente';
-        default:
-          return 'Tu turno';
-      }
-    } else {
-      return 'Turno del oponente';
-    }
-  });
-
   readonly isGameFinished: Signal<boolean> = computed(() => {
     const status = this._gameStatus();
     return status?.status === 'finished';
@@ -94,6 +94,18 @@ export class SimonSayGameViewModel {
 
   readonly myUserId: Signal<number> = computed(() => {
     return Number(this.authService.getUserId());
+  });
+
+  // Helper para saber si necesitamos mostrar la secuencia
+  readonly shouldShowSequence: Signal<boolean> = computed(() => {
+    const status = this._gameStatus();
+    const currentVersion = status?.mySequenceVersion || 0;
+    const lastShown = this._lastShownSequenceVersion();
+
+    return status?.phase === 'repeat_sequence' &&
+           status?.isMyTurn === true &&
+           currentVersion > lastShown &&
+           this._myLocalSequence().length > 0;
   });
 
   constructor(private authService: AuthService) {}
@@ -138,6 +150,10 @@ export class SimonSayGameViewModel {
 
   setError(message: string | null) {
     this._errorMessage.set(message);
+  }
+
+  setLastShownSequenceVersion(version: number) {
+    this._lastShownSequenceVersion.set(version);
   }
 
   // Helpers

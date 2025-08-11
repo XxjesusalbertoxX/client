@@ -10,25 +10,20 @@
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
           <span>Sincronizando con el servidor</span>
         </div>
-        <div class="flex justify-center space-x-1">
-          <div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
-          <div class="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
-          <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
-        </div>
       </div>
     </div>
   </ng-container>
 
   <!-- Contenido del juego -->
   <ng-template #gameContent>
-    <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-6xl animate-slide-in">
-      
+    <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-4xl animate-slide-in">
+
       <!-- Header con estado del juego -->
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-white mb-4">🎨 Simon Dice</h1>
-        
+
         <!-- Estado del turno -->
-        <div class="flex items-center justify-center mb-4">
+        <div class="flex items-center justify-center mb-6">
           <ng-container *ngIf="vm.isMyTurn(); else opponentTurn">
             <div class="inline-flex items-center px-6 py-3 rounded-full text-lg font-medium bg-green-500/20 text-green-300 border border-green-400/50">
               <div class="w-3 h-3 bg-green-400 rounded-full mr-2 animate-pulse"></div>
@@ -43,134 +38,144 @@
           </ng-template>
         </div>
 
-        <!-- Información de secuencias -->
-        <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
-          <div class="bg-blue-500/20 rounded-xl p-3 border border-blue-400/50">
-            <div class="text-blue-300 text-sm font-medium">Tu secuencia</div>
-            <div class="text-white text-xl font-bold">{{ vm.mySequenceLength() }} colores</div>
-            <div class="text-blue-300 text-xs">Progreso: {{ vm.currentProgress() }}/{{ vm.mySequenceLength() }}</div>
-          </div>
-          <div class="bg-purple-500/20 rounded-xl p-3 border border-purple-400/50">
-            <div class="text-purple-300 text-sm font-medium">Secuencia oponente</div>
-            <div class="text-white text-xl font-bold">{{ vm.opponentSequenceLength() }} colores</div>
-            <div class="text-purple-300 text-xs">Esperando turno</div>
-          </div>
+        <!-- Información del oponente -->
+        <div class="bg-white/10 rounded-xl p-4 max-w-md mx-auto mb-6">
+          <div class="text-white/70 text-sm">Jugando contra</div>
+          <div class="text-white text-lg font-bold">{{ vm.gameStatus()?.opponentName || 'Oponente' }}</div>
         </div>
       </div>
 
-      <!-- Tablero de juego -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        <!-- Mi tablero -->
-        <div class="relative bg-white/10 rounded-2xl p-6">
-          <h3 class="text-xl font-semibold text-white mb-4 text-center">Mi tablero</h3>
-          <div class="grid grid-cols-3 gap-4 justify-items-center">
-            <button
-              *ngFor="let color of vm.myColors(); let i = index"
-              [attr.data-color]="color"
-              class="w-20 h-20 rounded-full border-4 border-white/50 shadow-lg transform transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-white/50"
-              [class.cursor-pointer]="vm.canInteract() && !vm.showingSequence()"
-              [class.opacity-50]="!vm.canInteract() || vm.showingSequence()"
-              [ngStyle]="{ 'background-color': color }"
-              (click)="onColorClick(color)"
-              [disabled]="!vm.canInteract() || vm.showingSequence()">
+      <!-- Secuencia Global (Centro del juego) -->
+      <div class="bg-gradient-to-r from-white/20 to-white/10 rounded-2xl p-6 mb-8 border border-white/20" *ngIf="vm.myLocalSequence().length > 0">
+        <h2 class="text-2xl font-bold text-white text-center mb-4">
+          🔄 Secuencia Actual
+        </h2>
 
-              <!-- Indicador del color esperado -->
-              <div
-                *ngIf="vm.getExpectedColor() === color && vm.canInteract() && !vm.showingSequence()"
-                class="absolute inset-0 rounded-full bg-white/30 animate-pulse flex items-center justify-center">
-                <div class="w-2 h-2 bg-white rounded-full"></div>
-              </div>
-            </button>
-          </div>
-          
-          <!-- Barra de progreso -->
-          <ng-container *ngIf="vm.mySequenceLength() > 0">
-            <div class="mt-4">
-              <div class="bg-white/20 rounded-full h-2 overflow-hidden">
-                <div 
-                  class="bg-green-400 h-full transition-all duration-300"
-                  [style.width.%]="(vm.currentProgress() / vm.mySequenceLength()) * 100">
-                </div>
-              </div>
-              <p class="text-center text-white/70 text-sm mt-2">
-                Progreso: {{ vm.currentProgress() }} / {{ vm.mySequenceLength() }}
-              </p>
+        <!-- Información de la secuencia -->
+        <div class="text-center mb-4">
+          <div class="inline-flex items-center space-x-4">
+            <div class="bg-blue-500/20 rounded-lg px-4 py-2 border border-blue-400/50">
+              <div class="text-blue-300 text-sm">Colores totales</div>
+              <div class="text-white text-xl font-bold">{{ vm.myLocalSequence().length }}</div>
             </div>
-          </ng-container>
+            <div class="bg-purple-500/20 rounded-lg px-4 py-2 border border-purple-400/50">
+              <div class="text-purple-300 text-sm">Tu progreso</div>
+              <div class="text-white text-xl font-bold">{{ vm.currentProgress() }}/{{ vm.myLocalSequence().length }}</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Tablero del oponente (solo visual) -->
-        <div class="bg-white/10 rounded-2xl p-6">
-          <h3 class="text-xl font-semibold text-white mb-4 text-center">Tablero del oponente</h3>
-          <div class="grid grid-cols-3 gap-4 justify-items-center">
+        <!-- Visualización de la secuencia actual -->
+        <div class="bg-white/10 rounded-xl p-4 mb-4">
+          <div class="flex flex-wrap justify-center gap-2">
             <div
-              *ngFor="let color of vm.opponentColors()"
-              class="w-20 h-20 rounded-full border-4 border-white/50 shadow-lg opacity-70"
-              [ngStyle]="{ 'background-color': color }">
+              *ngFor="let color of vm.myLocalSequence(); let i = index"
+              class="w-8 h-8 rounded-full border-2 border-white/50 shadow-lg relative"
+              [ngStyle]="{ 'background-color': color }"
+              [class.ring-2]="i === vm.currentProgress() && vm.canInteract()"
+              [class.ring-yellow-400]="i === vm.currentProgress() && vm.canInteract()">
+
+              <!-- Número de posición -->
+              <div class="absolute -top-2 -right-2 bg-gray-800 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {{ i + 1 }}
+              </div>
+
+              <!-- Indicador de completado -->
+              <div
+                *ngIf="i < vm.currentProgress()"
+                class="absolute inset-0 rounded-full bg-green-400/50 flex items-center justify-center">
+                <span class="text-green-800 text-xs">✓</span>
+              </div>
             </div>
           </div>
-          
-          <div class="mt-4 text-center">
-            <p class="text-white/70 text-sm">
-              El oponente debe repetir {{ vm.opponentSequenceLength() }} colores
-            </p>
+        </div>
+
+        <!-- Último color agregado -->
+        <div
+          *ngIf="vm.gameStatus()?.lastAddedColor"
+          class="bg-blue-500/20 border border-blue-400/50 rounded-xl p-3 mb-4">
+          <div class="flex items-center justify-center space-x-2 text-blue-300">
+            <span>🎯</span>
+            <span class="font-medium">Último color agregado:</span>
+            <div
+              class="w-6 h-6 rounded-full border-2 border-white/70"
+              [ngStyle]="{ 'background-color': vm.gameStatus()?.lastAddedColor }">
+            </div>
+            <span class="font-bold">{{ vm.gameStatus()?.lastAddedColor?.toUpperCase() }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Indicadores de estado -->
-      <div class="mt-6 flex justify-center space-x-4">
-        <ng-container *ngIf="vm.showingSequence(); else otherStates">
-          <div class="bg-blue-500/20 border border-blue-400/50 rounded-xl p-4 max-w-md">
-            <div class="flex items-center justify-center space-x-2 text-blue-300">
-              <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-              <span>Mostrando tu secuencia...</span>
+      <!-- Tablero de colores -->
+      <div class="bg-white/10 rounded-2xl p-6">
+        <h3 class="text-xl font-semibold text-white mb-4 text-center">
+          🎨 Colores disponibles
+        </h3>
+
+        <!-- Grid de colores para interactuar -->
+        <div class="grid grid-cols-3 gap-6 justify-items-center max-w-md mx-auto">
+          <button
+            *ngFor="let color of vm.gameStatus()?.availableColors; let i = index"
+            class="w-24 h-24 rounded-full border-4 border-white/50 shadow-xl transform transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-white/50"
+            [class.cursor-pointer]="vm.canInteract()"
+            [class.opacity-50]="!vm.canInteract()"
+            [class.pointer-events-none]="!vm.canInteract()"
+            [ngStyle]="{ 'background-color': color }"
+            (click)="onColorClick(color)"
+            [disabled]="!vm.canInteract()">
+
+            <!-- Indicador del color esperado -->
+            <div
+              *ngIf="vm.getExpectedColor() === color && vm.canInteract()"
+              class="absolute inset-0 rounded-full bg-white/40 animate-pulse flex items-center justify-center">
+              <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
             </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado actual -->
+      <div class="mt-8 text-center">
+        <div
+          *ngIf="!vm.isMyTurn()"
+          class="bg-yellow-500/20 border border-yellow-400/50 rounded-xl p-4 max-w-lg mx-auto">
+          <div class="flex items-center justify-center space-x-3 text-yellow-300">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-400"></div>
+            <span class="font-medium">⏳ Esperando a {{ vm.gameStatus()?.opponentName || 'oponente' }}...</span>
           </div>
-        </ng-container>
-        <ng-template #otherStates>
-          <ng-container *ngIf="!vm.isMyTurn(); else interactState">
-            <div class="bg-yellow-500/20 border border-yellow-400/50 rounded-xl p-4 max-w-md">
-              <div class="flex items-center justify-center space-x-2 text-yellow-300">
-                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-400"></div>
-                <span>Esperando al oponente...</span>
-              </div>
-            </div>
-          </ng-container>
-          <ng-template #interactState>
-            <div class="bg-green-500/20 border border-green-400/50 rounded-xl p-4 max-w-md">
-              <div class="flex items-center justify-center space-x-2 text-green-300">
-                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span>¡Tu turno! Repite la secuencia</span>
-              </div>
-            </div>
-          </ng-template>
-        </ng-template>
+        </div>
+
+        <div
+          *ngIf="vm.isMyTurn() && vm.canInteract()"
+          class="bg-green-500/20 border border-green-400/50 rounded-xl p-4 max-w-lg mx-auto">
+          <div class="flex items-center justify-center space-x-3 text-green-300">
+            <div class="w-3 h-3 bg-green-400 rounded-full animate-bounce"></div>
+            <span class="font-medium">🎯 ¡Tu turno!</span>
+          </div>
+        </div>
       </div>
     </div>
   </ng-template>
 
   <!-- Modales -->
   <app-single-color-picker-modal
-  *ngIf="vm.showColorPicker()"
-  [availableColors]="vm.myCustomColors()" 
-  [title]="modalTitle"
-  [subtitle]="modalSubtitle"
-  (colorSelected)="onColorChosenForOpponent($event)"
-  (cancelled)="vm.setShowColorPicker(false)">
-</app-single-color-picker-modal>
+    *ngIf="vm.showColorPicker()"
+    [availableColors]="vm.gameStatus()?.availableColors || []"
+    [title]="modalTitle"
+    [subtitle]="modalSubtitle"
+    (colorSelected)="onColorChosenForOpponent($event)"
+    (cancelled)="vm.setShowColorPicker(false)">
+  </app-single-color-picker-modal>
 
-    <!-- En el modal de fin de juego, mejorar el diseño: -->
-     @if(showEndModal)
-     {
-       <app-game-end-modal
-       [winnerName]="winnerName"
-       [loserName]="loserName"
-       [isWinner]="isWinner"
-       gameType="simon"
-       (createNewGame)="onCreateNewGame()"
-       (goHome)="onGoHome()">
-     </app-game-end-modal>
-     }
+  <!-- Modal de fin de juego -->
+  @if(showEndModal) {
+    <app-game-end-modal
+      [winnerName]="winnerName"
+      [loserName]="loserName"
+      [isWinner]="isWinner"
+      gameType="simon"
+      (createNewGame)="onCreateNewGame()"
+      (goHome)="onGoHome()">
+    </app-game-end-modal>
+  }
 </div>

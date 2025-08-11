@@ -8,31 +8,11 @@ import { AuthService } from '../../../../services/auth.service';
 import { GameLobbyComponent } from '../../../../shared/components/forms/game-lobby/game-lobby.component';
 import { ToastrService } from 'ngx-toastr';
 
-
 @Component({
   standalone: true,
   selector: 'app-lobby-simonsay',
   imports: [CommonModule, GameLobbyComponent, RouterModule],
-  template: `
-    <app-game-lobby
-      gameType="simon"
-      [gameCode]="gameCode()"
-      [players]="players()"
-      [isLoading]="isLoading"
-      [allReady]="allReady"
-      [twoPlayers]="twoPlayers"
-      [canSetReady]="canSetReady"
-      [isHost]="isHost"
-      [isMeReady]="isMeReady"
-      [showColorPicker]="showColorPicker"
-      [myColors]="myColors"
-      (copyCode)="copyGameCode()"
-      (handleReady)="handleReady()"
-      (openColorPicker)="openColorPicker()"
-      (colorsSelected)="onColorsSelected($event)"
-      (leaveGame)="onLeaveGame()">
-    </app-game-lobby>
-  `
+  templateUrl: './lobby-simonsay.component.html'
 })
 export class LobbySimonsayComponent implements OnInit, OnDestroy {
   gameId = signal<string | null>(null);
@@ -42,10 +22,7 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
   isLoading = true;
   intervalId?: ReturnType<typeof setInterval>;
   heartbeatInterval?: ReturnType<typeof setInterval>;
-
-  // SimonSay específico
-  showColorPicker = false;
-  myColors: string[] = [];
+  availableColors = signal<string[]>([]);  // NUEVO: colores de la partida
 
   constructor(
     private route: ActivatedRoute,
@@ -56,20 +33,34 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
     private toastr: ToastrService
   ) {}
 
+  get canSetReady(): boolean {
+    const myUserId = Number(this.authService.getUserId());
+    const me = this.players().find(p => p.userId === myUserId);
+    return this.twoPlayers; // Simplificado - solo necesita 2 jugadores
+  }
+
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       const id = params['id'];
       const code = params['code'];
 
-      if (!id) return;
-      this.gameId.set(id);
-      this.gameCode.set(code || null); // Solo asignar código si existe
+      if (!id) {
+        this.router.navigate(['/games/simonsay']);
+        return;
+      }
 
+      this.gameId.set(id);
+      this.gameCode.set(code || null);
       this.isHost = !!code;
 
       this.startPolling();
       this.startHeartbeat();
     });
+  }
+
+  ngOnDestroy() {
+    if (this.intervalId) clearInterval(this.intervalId);
+    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
   }
 
   get allReady(): boolean {
@@ -81,12 +72,6 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
     return this.players().length === 2;
   }
 
-  get canSetReady(): boolean {
-    const myUserId = Number(this.authService.getUserId());
-    const me = this.players().find(p => p.userId === myUserId);
-    return this.twoPlayers && me?.customColors?.length === 6;
-  }
-
   get isMeReady(): boolean {
     const myUserId = Number(this.authService.getUserId());
     const me = this.players().find(p => p.userId === myUserId);
@@ -96,10 +81,11 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
   copyGameCode() {
     const code = this.gameCode();
     if (!code) return;
-    navigator.clipboard.writeText(code);
-  }
 
-    // En ambos lobby components, cambiar:
+    navigator.clipboard.writeText(code).then(() => {
+      this.toastr.success('Código copiado al portapapeles');
+    });
+  }
 
   onLeaveGame() {
     const id = this.gameId();
@@ -107,37 +93,16 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    // CAMBIO: Usar gameApiService.leaveGame() sin playerGameId
     this.gameApiService.leaveGame(id).subscribe({
       next: (result) => {
         this.toastr.info(result.message || 'Has salido del lobby');
-        this.router.navigate(['/games/battleship']); // o simonsay
+        this.router.navigate(['/games/simonsay']);
       },
       error: (err) => {
         console.error('Error leaving game:', err);
-        this.router.navigate(['/games/battleship']); // o simonsay
+        this.toastr.error('Error al salir del lobby');
+        this.router.navigate(['/games/simonsay']);
       },
-    });
-  }
-
-  // ELIMINAR: getMyPlayerGameId() ya no se necesita
-
-  openColorPicker() {
-    this.showColorPicker = true;
-  }
-
-  onColorsSelected(colors: string[]) {
-    const gameId = this.gameId();
-    if (!gameId) return;
-
-    this.simonSayService.setColors(gameId, colors).subscribe({
-      next: () => {
-        this.myColors = colors;
-        this.showColorPicker = false;
-      },
-      error: (err) => {
-        console.error('Error setting colors:', err);
-      }
     });
   }
 
@@ -148,9 +113,11 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
 
     this.intervalId = setInterval(() => {
       this.simonSayService.getLobbyStatus(id).subscribe({
-        next: (status: LobbyStatusResponse) => {
+        next: (status: any) => { // Cambiado el tipo para incluir availableColors
           this.isLoading = false;
-          if ((status as any).status === 'in_progress' || (status as any).status === 'waiting_first_color') {
+
+          // Si el juego está en progreso, ir al juego
+          if (status.status === 'in_progress' || status.status === 'started') {
             this.router.navigate(['games/simonsay/game'], { queryParams: { id } });
             return;
           }
@@ -170,7 +137,13 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
             }
             return;
           }
+
           this.players.set(status.players);
+
+          // NUEVO: Actualizar los colores disponibles de la partida
+          if (status.availableColors) {
+            this.availableColors.set(status.availableColors);
+          }
         },
         error: () => {
           this.isLoading = false;
@@ -178,6 +151,8 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
       });
     }, 2000);
   }
+
+
 
   isHostPlayer(players: LobbyPlayer[]): boolean {
     const myUserId = Number(this.authService.getUserId());
@@ -193,7 +168,7 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
     this.heartbeatInterval = setInterval(() => {
       this.simonSayService.heartbeat(id).subscribe({
         next: (res) => console.log('Heartbeat:', res.message),
-        error: (err) => console.error('Error en heartbeat:', err),
+        error: (err) => console.warn('Error en heartbeat:', err),
       });
     }, 5000);
   }
@@ -203,13 +178,14 @@ export class LobbySimonsayComponent implements OnInit, OnDestroy {
     if (!id || !this.canSetReady) return;
 
     this.simonSayService.setReady(id).subscribe({
-      next: () => console.log('Jugador listo'),
-      error: (err: any) => console.error('Error al marcar ready', err),
+      next: () => {
+        console.log('Jugador listo');
+        this.toastr.success('¡Estás listo para jugar!');
+      },
+      error: (err: any) => {
+        console.error('Error al marcar ready', err);
+        this.toastr.error('Error al marcar como listo');
+      },
     });
-  }
-
-  ngOnDestroy() {
-    if (this.intervalId) clearInterval(this.intervalId);
-    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
   }
 }
