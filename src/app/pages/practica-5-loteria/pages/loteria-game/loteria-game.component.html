@@ -18,8 +18,11 @@
     <app-game-anfitrion [viewModel]="viewModel"></app-game-anfitrion>
   } @else {
     <!-- Vista del Jugador -->
-    <app-game-players [viewModel]="viewModel"></app-game-players>
-  }
+    <app-game-players 
+      [viewModel]="viewModel"
+      (showVictoryModal)="onPlayerVictory($event)"
+      (showCheaterSelfModal)="onPlayerCheater($event)">
+    </app-game-players>  }
 }
 
 <!-- Modal de Tramposo -->
@@ -48,6 +51,67 @@
         (click)="onCheaterModalClose()"
         class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors duration-200">
         ✅ Entendido
+      </button>
+    </div>
+  </div>
+}
+
+@if (showPersonalVictoryModal) {
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-green-600 animate-modal-appear">
+
+      <div class="text-center mb-6">
+        <div class="text-8xl mb-4 animate-bounce">🏆</div>
+        <h2 class="text-3xl font-bold text-green-700 mb-2">¡GANASTE!</h2>
+        <p class="text-lg text-gray-700 mb-2">
+          <strong>{{ personalVictoryName }}</strong> completó su carta
+        </p>
+        <p class="text-sm text-gray-600">
+          ¡Felicidades, lograste la lotería correctamente!
+        </p>
+      </div>
+
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6 rounded-r-xl">
+        <p class="text-sm text-yellow-700">
+          <strong>🎉 ¡Excelente!</strong> Completaste tu carta con todas las cartas correctas
+        </p>
+      </div>
+
+      <button
+        (click)="onPersonalVictoryModalClose()"
+        class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors duration-200">
+        ✅ ¡Genial!
+      </button>
+    </div>
+  </div>
+}
+
+<!-- AGREGAR: Modal de trampa personal -->
+@if (showPersonalCheaterModal) {
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-red-600 animate-modal-appear">
+
+      <div class="text-center mb-6">
+        <div class="text-8xl mb-4 animate-bounce">🚫</div>
+        <h2 class="text-3xl font-bold text-red-700 mb-2">¡TRAMPA DETECTADA!</h2>
+        <p class="text-lg text-gray-700 mb-2">
+          Tu carta no era válida para ganar
+        </p>
+        <p class="text-sm text-gray-600">
+          Has sido convertido en espectador
+        </p>
+      </div>
+
+      <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-6 rounded-r-xl">
+        <p class="text-sm text-red-700">
+          <strong>⚠️ Motivo:</strong> Marcaste cartas que no habían salido del mazo
+        </p>
+      </div>
+
+      <button
+        (click)="onPersonalCheaterModalClose()"
+        class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors duration-200">
+        😔 Entiendo
       </button>
     </div>
   </div>

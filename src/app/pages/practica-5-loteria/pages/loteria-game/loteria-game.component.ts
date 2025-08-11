@@ -28,9 +28,12 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
   private intervalId?: ReturnType<typeof setInterval>;
 
   // Estados de modales
+  private shownCheaters: Set<string> = new Set();
   showCheaterModal = false;
   showVerificationModal = false;
   showGameEndModal = false;
+  showPersonalVictoryModal = false; // AGREGAR
+  showPersonalCheaterModal = false; // AGREGAR
 
   // Datos para modales
   cheaterName = '';
@@ -38,7 +41,9 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
   gameWinner = '';
   gameLoser = '';
   remainingCards: string[] = [];
-
+  personalVictoryName = ''; // AGREGAR
+  personalCheaterName = ''; // AGREGAR
+  
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       const id = params['id'];
@@ -133,11 +138,42 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
     // Si hay jugadores baneados que no hemos mostrado
     if (status.bannedPlayers && status.bannedPlayers.length > 0) {
       const lastBanned = status.bannedPlayers[status.bannedPlayers.length - 1];
-      if (lastBanned && !this.showCheaterModal) {
+
+      // CORREGIR: Solo mostrar si no lo hemos mostrado antes
+      if (lastBanned && !this.showCheaterModal && !this.shownCheaters.has(lastBanned)) {
         this.cheaterName = lastBanned;
         this.showCheaterModal = true;
+        this.shownCheaters.add(lastBanned); // Marcar como mostrado
       }
     }
+  }
+
+  onPlayerVictory(playerName: string) {
+    this.personalVictoryName = playerName;
+    this.showPersonalVictoryModal = true;
+  }
+
+  onPlayerCheater(playerName: string) {
+    this.personalCheaterName = playerName;
+    this.showPersonalCheaterModal = true;
+  }
+
+  onCheaterModalClose() {
+      this.showCheaterModal = false;
+      this.cheaterName = '';
+      // No limpiar shownCheaters para evitar que se repita
+  }
+
+  onPersonalVictoryModalClose() {
+    this.showPersonalVictoryModal = false;
+    this.personalVictoryName = '';
+  }
+
+  onPersonalCheaterModalClose() {
+    this.showPersonalCheaterModal = false;
+    this.personalCheaterName = '';
+    // Recargar para reflejar el estado de espectador
+    window.location.reload();
   }
 
   handleGameFinished(status: LoteriaGameStatusResponse) {
@@ -174,12 +210,6 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
   // ========================================
   // ACCIONES DE MODALES
   // ========================================
-
-  onCheaterModalClose() {
-    this.showCheaterModal = false;
-    this.cheaterName = '';
-  }
-
   onVerificationModalClose() {
     this.showVerificationModal = false;
     this.playerUnderReviewName = '';

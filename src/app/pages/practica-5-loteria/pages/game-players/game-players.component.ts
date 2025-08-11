@@ -16,6 +16,8 @@ import { LoteriaPlayerInfo } from '../../models/loteria.model';
 })
 export class GamePlayersComponent implements OnInit {
   @Input() viewModel!: LoteriaViewModel;
+    @Output() showVictoryModal = new EventEmitter<string>(); 
+  @Output() showCheaterSelfModal = new EventEmitter<string>(); 
 
   private loteriaService = inject(LoteriaService);
   private toastr = inject(ToastrService);
@@ -38,6 +40,8 @@ export class GamePlayersComponent implements OnInit {
     const totalTokens = 16;
     this.availableTokens = Array.from({ length: totalTokens - tokensUsed }, (_, i) => i);
   }
+
+  
 
   watchCurrentCard() {
     let previousCard = this.viewModel.currentCard();
@@ -136,13 +140,16 @@ export class GamePlayersComponent implements OnInit {
         this.toastr.success(response.message);
         this.updateAvailableTokens();
 
-        // Si se completó automáticamente, manejar resultado
+        // MANEJAR AUTO CLAIM CORRECTAMENTE
         if (response.autoClaimWin) {
           if (response.isValid) {
-            this.toastr.success('¡LOTERÍA! Has ganado la partida', '', { timeOut: 5000 });
+            // EMITIR AL COMPONENTE PADRE PARA MOSTRAR MODAL DE VICTORIA
+            this.showVictoryModal.emit(response.playerName || 'Tú');
+            this.toastr.success('¡LOTERÍA VÁLIDA! Has ganado la partida', '', { timeOut: 5000 });
           } else {
-            // Tramposo - mostrar modal que no se puede cerrar automáticamente
-            this.showCheaterModal(response.playerName || 'Jugador');
+            // EMITIR AL COMPONENTE PADRE PARA MOSTRAR MODAL DE TRAMPA PROPIA
+            this.showCheaterSelfModal.emit(response.playerName || 'Tú');
+            this.toastr.error('¡TRAMPA! Fuiste baneado por hacer trampa', '', { timeOut: 5000 });
           }
         }
       },
@@ -152,47 +159,30 @@ export class GamePlayersComponent implements OnInit {
     });
   }
 
-  private showCheaterModal(playerName: string) {
-    // Ya no usar toast persistente, el modal centralizado se encargará
-    // Solo mostrar toast temporal para notificar
-    this.toastr.warning(
-      `${playerName} hizo trampa y es ahora espectador`,
-      'Jugador baneado',
-      { timeOut: 3000 }
-    );
-  }
+  leaveGame() {
+    if (confirm('¿Estás seguro de que quieres abandonar la partida?')) {
+      const gameId = this.viewModel.gameId();
+      if (!gameId) return;
 
-  // ========================================
-  // RECLAMAR VICTORIA
-  // ========================================
-
-  claimWin() {
-    const gameId = this.viewModel.gameId();
-    if (!gameId) return;
-
-    if (confirm('¿Estás seguro de que tienes LOTERÍA?')) {
-      this.loteriaService.claimWin(gameId).subscribe({
-        next: (response) => {
-          if (response.isValid) {
-            this.toastr.success('¡LOTERÍA! Has ganado la partida', '', { timeOut: 5000 });
-          } else {
-            this.toastr.error('Tu carta no es válida para ganar');
-          }
+      this.loteriaService.leaveGame(gameId).subscribe({
+        next: () => {
+          this.toastr.info('Has abandonado la partida');
+          // Navegar al inicio o lobby
+          window.location.href = '/games/loteria';
         },
         error: (error) => {
-          this.toastr.error(error.error?.message || 'Error al reclamar victoria');
+          this.toastr.error(error.error?.message || 'Error al abandonar');
         }
       });
     }
   }
 
-  // ========================================
-  // GETTERS
-  // ========================================
-
-  get canClaimWin(): boolean {
-    return this.viewModel.myTokensUsed() === 16 && this.viewModel.isInGame();
+  private showCheaterModal(playerName: string) {
+    // CORREGIR: Emitir al padre en lugar de mostrar toast
+    this.showCheaterSelfModal.emit(playerName);
   }
+
+
 
   // Getter con tipo explícito para evitar errores
   get playersInfoSafe(): LoteriaPlayerInfo[] {

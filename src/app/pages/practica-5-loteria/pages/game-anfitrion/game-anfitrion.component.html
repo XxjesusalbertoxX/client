@@ -42,50 +42,79 @@
           </h2>
 
           <div class="text-center mb-6">
-            <!-- Representación visual del mazo -->
-            <div class="relative inline-block">
-              <div class="w-32 h-48 bg-gradient-to-br from-red-800 to-red-900 rounded-xl border-4 border-yellow-600 shadow-2xl transform rotate-2"></div>
-              <div class="absolute -top-1 -left-1 w-32 h-48 bg-gradient-to-br from-red-700 to-red-800 rounded-xl border-4 border-yellow-500 shadow-xl transform -rotate-1"></div>
-              <div class="absolute -top-2 -left-2 w-32 h-48 bg-gradient-to-br from-red-600 to-red-700 rounded-xl border-4 border-yellow-400 shadow-lg flex items-center justify-center">
-                <div class="text-white text-center">
-                  <div class="text-4xl mb-2">🎲</div>
-                  <div class="text-sm font-bold">{{ viewModel.cardsRemaining() }}</div>
-                  <div class="text-xs">Cartas</div>
+            <!-- MAZO VISUAL CLICKEABLE -->
+            <div 
+              class="relative inline-block cursor-pointer transform hover:scale-105 transition-all duration-300 group"
+              (click)="drawCard()"
+              [class.pointer-events-none]="!canDrawCard"
+              [class.opacity-50]="!canDrawCard">
+              
+              <!-- Stack de cartas clickeable -->
+              <div class="relative">
+                <div class="w-24 h-36 bg-gradient-to-br from-red-800 to-red-900 rounded-xl border-2 border-yellow-600 shadow-xl transform rotate-6"></div>
+                <div class="absolute -top-1 -left-1 w-24 h-36 bg-gradient-to-br from-red-700 to-red-800 rounded-xl border-2 border-yellow-500 shadow-lg transform rotate-3"></div>
+                <div class="absolute -top-2 -left-2 w-24 h-36 bg-gradient-to-br from-red-600 to-red-700 rounded-xl border-2 border-yellow-400 flex items-center justify-center group-hover:from-red-500 group-hover:to-red-600 transition-colors duration-200">
+                  <div class="text-white text-center">
+                    <div class="text-2xl mb-1">🎲</div>
+                    <div class="text-sm font-bold">{{ viewModel.cardsRemaining() }}</div>
+                    <div class="text-xs">cartas</div>
+                  </div>
                 </div>
               </div>
+
+              <!-- Indicador hover -->
+              @if (canDrawCard) {
+                <div class="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  👆
+                </div>
+              }
             </div>
+
+            <p class="text-gray-300 text-sm mt-2">
+              @if (canDrawCard) {
+                Presiona el mazo para sacar carta
+              } @else {
+                Sin cartas disponibles
+              }
+            </p>
           </div>
 
-          <!-- Botón para sacar carta -->
+          <!-- Botón sacar carta (mantener como backup) -->
           <button
             (click)="drawCard()"
             [disabled]="!canDrawCard"
-            class="w-full py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg mb-4">
+            class="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl mb-4"
+            [class.animate-pulse]="isDrawingCard">
             @if (isDrawingCard) {
               <span class="inline-flex items-center">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Sacando...
+                Sacando carta...
               </span>
             } @else {
               🎯 Sacar Carta
             }
           </button>
 
-          <!-- Botón rebarajear -->
+          <!-- Botón rebarajear (SIN MODAL) -->
           <button
-            (click)="showShuffleConfirm = true"
-            class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl mb-4">
-            🔀 Rebarajear Mazo
-          </button>
-
-          <!-- Botón terminar partida -->
-          <button
-            (click)="endGame()"
-            class="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
-            🏁 Terminar Partida
+            (click)="shuffleDeck()"
+            [disabled]="isShuffling"
+            class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+            [class.animate-shake]="isShuffling">
+            @if (isShuffling) {
+              <span class="inline-flex items-center">
+                🔀 Rebarajeando...
+                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            } @else {
+              🔀 Rebarajear Mazo
+            }
           </button>
         </div>
 
@@ -176,28 +205,28 @@
         </h2>
 
         @if (playersWithCards.length > 0) {
-          <div [class]="'grid gap-4 ' + getPlayerGridClass()">
+          <div [class]="'grid gap-3 ' + getPlayerGridClass()"> <!-- CAMBIAR: De gap-4 a gap-3 -->
             @for (player of playersWithCards; track player.userId) {
-              <div class="bg-white/5 rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <div class="bg-white/5 rounded-2xl p-3 border border-white/10 hover:bg-white/10 transition-all duration-300"> <!-- CAMBIAR: De p-4 a p-3 -->
 
-                <!-- Header del jugador -->
-                <div class="flex items-center justify-between mb-3">
+                <!-- Header del jugador COMPACTO -->
+                <div class="flex items-center justify-between mb-2"> <!-- CAMBIAR: De mb-3 a mb-2 -->
                   <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                    <div class="w-6 h-6 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs"> <!-- CAMBIAR: De w-8 h-8 a w-6 h-6 -->
                       {{ (player.user?.name || 'J').charAt(0).toUpperCase() }}
                     </div>
                     <div>
-                      <h4 class="text-white font-semibold text-sm">{{ player.user?.name || 'Jugador' }}</h4>
-                      <div class="text-xs text-gray-400">{{ player.tokensUsed }}/16 fichas</div>
+                      <h4 class="text-white font-semibold text-xs">{{ player.user?.name || 'Jugador' }}</h4> <!-- CAMBIAR: De text-sm a text-xs -->
+                      <div class="text-xs text-gray-400">{{ player.tokensUsed }}/16</div>
                     </div>
                   </div>
 
-                  <!-- Indicador de progreso -->
+                  <!-- Indicador de progreso COMPACTO -->
                   <div class="text-right">
                     <div class="text-yellow-300 text-xs font-bold">
                       {{ roundPercentage(player.tokensUsed, 16) }}%
                     </div>
-                    <div class="w-16 bg-black/30 rounded-full h-1 mt-1">
+                    <div class="w-12 bg-black/30 rounded-full h-1 mt-1"> <!-- CAMBIAR: De w-16 a w-12 -->
                       <div
                         class="bg-gradient-to-r from-green-500 to-emerald-500 h-1 rounded-full transition-all duration-300"
                         [style.width.%]="(player.tokensUsed / 16) * 100">
@@ -206,66 +235,32 @@
                   </div>
                 </div>
 
-                <!-- Carta del jugador (miniatura) -->
+                <!-- Carta del jugador (miniatura MÁS PEQUEÑA) -->
                 @if (player.playerCard && player.playerCard.length > 0) {
-                  <div class="transform hover:scale-105 transition-transform duration-200">
-                    <app-loteria-card
-                      [playerCard]="player.playerCard"
-                      [markedCells]="player.markedCells || []"
-                      [tokensUsed]="player.tokensUsed"
-                      [showTokens]="true"
-                      [showCardNames]="false"
-                      [clickable]="false">
-                    </app-loteria-card>
+                  <div class="transform hover:scale-102 transition-transform duration-200"> <!-- CAMBIAR: De scale-105 a scale-102 -->
+                    <div class="scale-75 origin-top"> <!-- NUEVO: Escalar la carta al 75% -->
+                      <app-loteria-card
+                        [playerCard]="player.playerCard"
+                        [markedCells]="player.markedCells || []"
+                        [tokensUsed]="player.tokensUsed"
+                        [showTokens]="true"
+                        [showCardNames]="false"
+                        [clickable]="false">
+                      </app-loteria-card>
+                    </div>
                   </div>
                 } @else {
-                  <div class="text-center py-8 opacity-50">
-                    <div class="text-2xl mb-2">📋</div>
+                  <div class="text-center py-4 opacity-50"> <!-- CAMBIAR: De py-8 a py-4 -->
+                    <div class="text-xl mb-1">📋</div> <!-- CAMBIAR: De text-2xl mb-2 a text-xl mb-1 -->
                     <p class="text-gray-500 text-xs">Sin carta</p>
                   </div>
                 }
               </div>
             }
           </div>
-        } @else {
-          <div class="text-center py-12">
-            <div class="text-6xl mb-4 opacity-50">👥</div>
-            <p class="text-gray-400 text-lg">No hay jugadores con cartas aún</p>
-            <p class="text-gray-500 text-sm">Los jugadores deben generar sus cartas para aparecer aquí</p>
-          </div>
         }
-      </div>
+        </div>
     </div>
   </div>
 </div>
 
-<!-- Modal de confirmación para rebarajear -->
-@if (showShuffleConfirm) {
-  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl shadow-2xl p-8 max-w-md w-full border-4 border-yellow-600 animate-modal-appear">
-
-      <div class="text-center mb-6">
-        <div class="text-6xl mb-4">🔀</div>
-        <h2 class="text-2xl font-bold text-red-700 mb-2">Rebarajear Mazo</h2>
-        <p class="text-gray-700">
-          ¿Estás seguro de que quieres rebarajear las cartas?
-          Esto mezclará todas las cartas restantes.
-        </p>
-      </div>
-
-      <div class="flex space-x-4">
-        <button
-          (click)="showShuffleConfirm = false"
-          class="flex-1 py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-xl transition-colors duration-200">
-          ❌ Cancelar
-        </button>
-
-        <button
-          (click)="shuffleDeck()"
-          class="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors duration-200">
-          ✅ Rebarajear
-        </button>
-      </div>
-    </div>
-  </div>
-}

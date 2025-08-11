@@ -20,7 +20,8 @@ export class GameAnfitrionComponent implements OnInit {
   private toastr = inject(ToastrService);
 
   isDrawingCard = false;
-  showShuffleConfirm = false;
+
+  isShuffling = false;
 
   ngOnInit() {
     // El anfitrión no necesita polling adicional, usa el del componente padre
@@ -50,15 +51,19 @@ export class GameAnfitrionComponent implements OnInit {
 
   shuffleDeck() {
     const gameId = this.viewModel.gameId();
-    if (!gameId) return;
+    if (!gameId || this.isShuffling) return;
 
-    // Usar reshuffleCards directamente sin confirmación
+    this.isShuffling = true;
+
+    // DIRECTO sin setTimeout para confirmación
     this.loteriaService.reshuffleCards(gameId).subscribe({
       next: (response) => {
-        this.toastr.success(response.message);
+        this.toastr.success('🔀 ' + response.message);
+        this.isShuffling = false;
       },
       error: (error) => {
         this.toastr.error(error.error?.message || 'Error al rebarajear');
+        this.isShuffling = false;
       }
     });
   }

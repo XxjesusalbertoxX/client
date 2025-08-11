@@ -22,7 +22,7 @@
             🔴 Fichas usadas: {{ viewModel.myTokensUsed() }}/16
           </span>
           @if (viewModel.isSpectator()) {
-            <span class="text-gray-300">👁️ Espectador</span>
+            <span class="text-gray-300">👁️ Baneado</span>
           }
         </div>
       </div>
@@ -59,20 +59,34 @@
             </div>
           }
 
-          <!-- Botón de Lotería -->
-          @if (canClaimWin) {
-            <button
-              (click)="claimWin()"
-              class="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg animate-pulse">
-              🏆 ¡LOTERÍA!
-            </button>
+          <button
+            (click)="leaveGame()"
+            class="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl mb-4">
+            🚪 Abandonar Partida
+          </button>
+
+          <!-- Estado de baneado -->
+          @if (viewModel.isSpectator()) {
+            <div class="mt-4 p-3 bg-red-100 border border-red-400 rounded-xl">
+              <div class="text-center">
+                <div class="text-2xl mb-2">🚫</div>
+                <p class="text-red-700 font-bold text-sm">BANEADO</p>
+                <p class="text-red-600 text-xs">Hiciste trampa y solo puedes observar</p>
+              </div>
+            </div>
           }
 
-          <!-- Instrucciones -->
+          <!-- Instrucciones ACTUALIZADAS -->
           <div class="mt-6 text-xs text-gray-300 space-y-2">
-            <p><strong>🖱️ Clic:</strong> Coloca ficha directamente</p>
-            <p><strong>🫳 Arrastrar:</strong> Mueve ficha a la casilla</p>
-            <p><strong>🎯 Objetivo:</strong> Completa toda tu carta</p>
+            @if (!viewModel.isSpectator()) {
+              <p><strong>🖱️ Clic:</strong> Coloca ficha directamente</p>
+              <p><strong>🫳 Arrastrar:</strong> Mueve ficha a la casilla</p>
+              <p><strong>🎯 Objetivo:</strong> Completa toda tu carta (automático)</p>
+              <p><strong>⚡ Auto-Lotería:</strong> Se verifica automáticamente al completar</p>
+            } @else {
+              <p><strong>👁️ Modo espectador:</strong> Solo puedes observar</p>
+              <p><strong>🚫 Motivo:</strong> Hiciste trampa al completar tu carta</p>
+            }
           </div>
         </div>
       </div>
@@ -108,24 +122,20 @@
           <h2 class="text-xl font-bold text-white mb-4 text-center">
             📊 Estado del Juego
           </h2>
-
-          <!-- Carta actual -->
-          @if (viewModel.currentCard()) {
-            <div class="mb-6">
-              <h3 class="text-sm font-semibold text-gray-300 mb-2">Última carta:</h3>
-              <div class="bg-white rounded-lg p-2 shadow-md">
-                <img
-                  [src]="getCardImagePath(viewModel.currentCard()!)"
-                  [alt]="formatCardName(viewModel.currentCard()!)"
-                  class="w-full h-20 object-cover rounded">
-                <p class="text-center text-xs font-bold text-gray-700 mt-1">
-                  {{ formatCardName(viewModel.currentCard()!) }}
-                </p>
-              </div>
-            </div>
-          }
-
-          <!-- Estadísticas -->
+                    @if (viewModel.currentCard()) {
+                      <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-gray-300 mb-2">Última carta:</h3>
+                        <div class="bg-white rounded-lg p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
+                          <img
+                            [src]="getCardImagePath(viewModel.currentCard()!)"
+                            [alt]="formatCardName(viewModel.currentCard()!)"
+                            class="w-full h-32 object-cover rounded"> <!-- CAMBIAR: De h-20 a h-32 -->
+                          <p class="text-center text-sm font-bold text-gray-700 mt-2"> <!-- CAMBIAR: De text-xs a text-sm -->
+                            {{ formatCardName(viewModel.currentCard()!) }}
+                          </p>
+                        </div>
+                      </div>
+                    }
           <div class="space-y-3 text-sm">
             <div class="flex justify-between">
               <span class="text-gray-300">Progreso:</span>
