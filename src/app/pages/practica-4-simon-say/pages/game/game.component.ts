@@ -4,7 +4,7 @@ import { Subject, interval, Subscription, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
-import { switchMap, catchError, finalize } from 'rxjs/operators';
+import { switchMap, catchError } from 'rxjs/operators';
 import { SimonSayService } from '../../../../services/gameservices/simonsay.services';
 import { SimonSayGameStatusResponse } from '../../models/simonsay.model';
 import { SingleColorPickerModalComponent } from '../../components/single-color-picker-modal/single-color-picker-modal.component';
@@ -67,7 +67,7 @@ export class GameComponent implements OnInit, OnDestroy {
   // === POLLING Y ESTADO ===
 
   startGamePolling() {
-    this.statusSubscription = interval(1500)
+  this.statusSubscription = interval(1500)
       .pipe(
         switchMap(() => this.simonSayService.getGameStatus(this.vm.gameId())),
         takeUntil(this.destroy$),
@@ -75,10 +75,10 @@ export class GameComponent implements OnInit, OnDestroy {
           console.error('Error obteniendo estado:', error);
           this.toastr.error('Error de conexión');
           return [];
-        }),
-        finalize(() => this.vm.setLoading(false))
+    })
       )
       .subscribe((status: SimonSayGameStatusResponse) => {
+    if (this.vm.isLoading()) this.vm.setLoading(false); // liberar loading al primer estado recibido
         this.handleGameStatus(status);
       });
   }
@@ -129,10 +129,27 @@ handleGameStatus(status: SimonSayGameStatusResponse) {
 
     // YA NO iniciar aquí. Solo esperar a que llegue choosing_first_color.
     if (status.status === 'started' && status.phase === 'unknown') {
-      // Estado transitorio breve, no spamear notificaciones
+      // Estado transitorio: esperar siguiente polling con choosing_first_color
       this.vm.setCanInteract(false)
       this.vm.setShowColorPicker(false)
       return
+    }
+
+    // DEFENSIVO: si el backend aún no envía playerChoosingUserId pero provee derivedChoosingUserId (hotfix)
+    if (
+      status.status === 'choosing_first_color' &&
+      status.playerChoosingUserId == null &&
+      (status as any).derivedChoosingUserId
+    ) {
+      const derived = (status as any).derivedChoosingUserId as number
+      const amChooser = derived === this.vm.myUserId()
+      // crear copia para no mutar referencia previa guardada en señales sin control
+      const patched: any = { ...status, playerChoosingUserId: derived }
+      patched.isMyTurn = amChooser
+      patched.phase = amChooser ? 'choose_first_color' : 'wait_opponent_choose'
+      this.vm.setGameStatus(patched)
+      status = patched
+      console.log('[DEFENSIVE FIX] Aplicado derivedChoosingUserId=', derived)
     }
 
     const reallyMyTurn =
@@ -193,7 +210,7 @@ handleOpponentTurn(status: SimonSayGameStatusResponse) {
   // Mostrar mensaje específico según la fase del oponente
   switch (status.phase) {
     case 'choose_first_color':
-      this.toastr.info(`⏳ ${status.opponentName} está escogiendo el primer color`);
+      // evitar spam de toasts repetitivos
       break;
     case 'repeat_sequence':
       this.toastr.info(`⏳ ${status.opponentName} está repitiendo la secuencia`);
@@ -202,10 +219,8 @@ handleOpponentTurn(status: SimonSayGameStatusResponse) {
       this.toastr.info(`⏳ ${status.opponentName} está agregando un color`);
       break;
     case 'wait_opponent_choose':
-      this.toastr.info(`⏳ ${status.opponentName} está escogiendo color`);
       break;
     case 'wait_opponent_repeat':
-      this.toastr.info(`⏳ ${status.opponentName} está repitiendo secuencia`);
       break;
     default:
       console.log('Waiting for opponent...');
@@ -267,30 +282,25 @@ handleOpponentTurn(status: SimonSayGameStatusResponse) {
 
   onColorChosenForOpponent(chosenColor: string) {
   const isFirstColor = this.vm.currentPhase() === 'choose_first_color';
-
-  console.log('=== COLOR CHOSEN DEBUG ===');
-  console.log('Color chosen:', chosenColor);
-  console.log('Type:', typeof chosenColor);
+  console.log('=== COLOR CHOSEN DEBUG (UNIFIED) ===');
+  console.log('Color chosen:', chosenColor, 'phase:', this.vm.currentPhase());
   console.log('========================');
 
-  const endpoint = isFirstColor
-    ? this.simonSayService.chooseFirstColor(this.vm.gameId(), chosenColor)
-    : this.simonSayService.chooseColor(this.vm.gameId(), chosenColor);
-
-  endpoint.subscribe({
-    next: (response) => {
+  this.simonSayService.chooseColor(this.vm.gameId(), chosenColor).subscribe({
+    next: () => {
       this.vm.setShowColorPicker(false);
-
-      if (isFirstColor) {
-        this.toastr.success(`✨ Primer color elegido: ${chosenColor.toUpperCase()}`);
-      } else {
-        this.toastr.success(`🎨 Color agregado a la secuencia del oponente`);
-      }
+      this.toastr.success(
+        isFirstColor
+          ? `✨ Primer color elegido: ${chosenColor.toUpperCase()}`
+          : `🎨 Color agregado a la secuencia del oponente`
+      );
     },
     error: (error) => {
-      this.toastr.error('❌ Error al escoger color');
-      console.error('Error:', error);
-    }
+      // Mensaje backend más claro pasa directo
+      const msg = error?.error?.message || 'Error al escoger color';
+      this.toastr.error(`❌ ${msg}`);
+      console.error('Error chooseColor:', error);
+    },
   });
 }
 

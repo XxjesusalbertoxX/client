@@ -52,7 +52,6 @@ export interface SimonSayGameStatusResponse {
 export interface SimonSayLobbyPlayer {
   userId: number;
   ready: boolean;
-  customColors?: string[]; // Los 6 colores que el jugador eligió
   user: {
     id: number;
     name: string;

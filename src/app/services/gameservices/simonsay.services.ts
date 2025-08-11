@@ -60,8 +60,9 @@ export class SimonSayService {
   }
 
   // Escoger el primer color para la secuencia del oponente
+  // (Compat) mantenemos método pero redirigimos al endpoint unificado
   chooseFirstColor(gameId: string, chosenColor: string): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.baseURL}/simonsay/${gameId}/choose-first-color`, { chosenColor });
+    return this.chooseColor(gameId, chosenColor);
   }
 
   // Repetir/validar un color de MI secuencia

@@ -2,19 +2,19 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardPlayerComponent } from '../../card-player/card-player.component';
 import { LobbyPlayer } from '../../../../models/game.model';
-import { ColorPickerModalComponent } from '../../../../pages/practica-4-simon-say/components/color-picker-modal/color-picker-modal.component';
 
 interface LobbyConfig {
   title: string;
   emoji: string;
   backgroundGradient: string;
   description: string;
+  instructions: string;
 }
 
 @Component({
   standalone: true,
   selector: 'app-game-lobby',
-  imports: [CommonModule, CardPlayerComponent, ColorPickerModalComponent],
+  imports: [CommonModule, CardPlayerComponent],
   templateUrl: './game-lobby.component.html',
   styleUrls: ['./game-lobby.component.scss']
 })
