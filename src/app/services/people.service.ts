@@ -25,7 +25,12 @@ export class PeopleService {
 
   deletePerson(id: string): Observable<any> {
     console.log(`Deleting person with ID: ${id}`)
-    return this.http.patch(`${this.baseUrl}/people/${id}/deactivate`,{})
+    return this.http.patch(`${this.baseUrl}/people/${id}/deactivate`,{}).pipe(
+      catchError((error) => {
+        console.error('[Error en deletePerson]', error)
+        return throwError(() => error)
+      })
+    )
   }
 
   getPersonById(id: string): Observable<any> {

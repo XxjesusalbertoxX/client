@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { jwtDecode } from 'jwt-decode';
-import { Observable, map } from 'rxjs'
+import { Observable, catchError, map, throwError } from 'rxjs'
 import { environment } from '../../../environment/environment.prod';
 
 @Injectable({ providedIn: 'root' })
@@ -29,8 +29,34 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('accessToken')
+    const accessToken = this.getAccessToken()
+    const refreshToken = this.getRefreshToken()
+
+    // Si tienes access token válido, estás autenticado
+    if (accessToken) return true
+
+    // Si no tienes access token pero tienes refresh token válido, también estás autenticado
+    // (el interceptor se encargará de renovar automáticamente)
+    if (refreshToken) return true
+
+    return false
   }
+
+    // validateCurrentUser(): Observable<any> {
+    //   return this.http.get<any>(`${this.baseUrl}/auth/me`).pipe(
+    //     catchError((error) => {
+    //       console.error('[AuthService] Error validando usuario actual:', error)
+
+    //       // Si es 401, limpiar tokens
+    //       if (error.status === 401) {
+    //         this.logout()
+    //       }
+
+    //       return throwError(() => error)
+    //     })
+    //   )
+    // }
+
 
   getAccessToken(): string | null {
     const token = localStorage.getItem('accessToken')
@@ -39,14 +65,14 @@ export class AuthService {
     try {
       const decoded: any = jwtDecode(token)
       const now = Math.floor(Date.now() / 1000)
-      
+
       // Si el token está expirado, no lo devuelvas
       if (!decoded.exp || decoded.exp <= now) {
         console.warn('[AuthService] Access token expirado, removiendo...')
         localStorage.removeItem('accessToken')
         return null
       }
-      
+
       return token
     } catch {
       console.warn('[AuthService] Access token corrupto, removiendo...')
@@ -56,7 +82,34 @@ export class AuthService {
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken')
+    const token = localStorage.getItem('refreshToken')
+    if (!token) return null
+
+    try {
+      const decoded: any = jwtDecode(token)
+      const now = Math.floor(Date.now() / 1000)
+
+      // Si el refresh token está expirado, no lo devuelvas
+      if (!decoded.exp || decoded.exp <= now) {
+        console.warn('[AuthService] Refresh token expirado, removiendo...')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('accessToken') // También remover access token
+        return null
+      }
+
+      return token
+    } catch {
+      console.warn('[AuthService] Refresh token corrupto, removiendo...')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('accessToken') // También remover access token
+      return null
+    }
+  }
+
+  // NUEVO: Método para validar si el refresh token es válido
+  isRefreshTokenValid(): boolean {
+    const refreshToken = this.getRefreshToken()
+    return !!refreshToken // getRefreshToken ya valida internamente
   }
 
   verifyToken() {
@@ -73,21 +126,41 @@ export class AuthService {
     })
   }
 
-  refreshAccessToken(): Observable<string> {
-    const refreshToken = this.getRefreshToken()
-    if (!refreshToken) throw new Error('No refresh token available')
+    // ...existing code...
 
-    return this.http.post<{ accessToken: string }>(`${this.baseUrl}/auth/refresh`, {
-      refreshToken
-    }).pipe(
-      map(res => {
-        const newAccess = res.accessToken
-        localStorage.setItem('accessToken', newAccess)
-        return newAccess
-      })
-    )
-  }
+    refreshAccessToken(): Observable<string> {
+      const refreshToken = this.getRefreshToken()
+      if (!refreshToken) {
+        console.error('[AuthService] No hay refresh token válido para renovar')
+        return throwError(() => new Error('No refresh token available'))
+      }
 
+      console.log('[AuthService] Enviando refresh token al servidor...')
+
+      return this.http.post<{ accessToken: string }>(`${this.baseUrl}/auth/refresh`, {
+        refreshToken
+      }).pipe(
+        map(res => {
+          const newAccess = res.accessToken
+          localStorage.setItem('accessToken', newAccess)
+          console.log('[AuthService] Nuevo access token guardado')
+          return newAccess
+        }),
+        catchError((error) => {
+          console.error('[AuthService] Error en refreshAccessToken:', error)
+
+          // Si el refresh falla, limpiar tokens
+          if (error.status === 401 || error.status === 403) {
+            console.warn('[AuthService] Refresh token inválido, limpiando tokens')
+            this.logout() // Esto limpia localStorage
+          }
+
+          return throwError(() => error)
+        })
+      )
+    }
+
+  // ...existing code...
 
   saveTokens(access: string, refresh: string): void {
     localStorage.setItem('accessToken', access)

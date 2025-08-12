@@ -7,8 +7,8 @@ import { AuthService } from './auth.service'
 export class AuthWatcherService {
   private router = inject(Router)
   private authService = inject(AuthService)
-
   private timeoutId: any = null
+  private isWatcherRefreshing = false // Flag para evitar múltiples refreshs
 
   constructor() {
     this.scheduleTokenCheck()
@@ -18,7 +18,13 @@ export class AuthWatcherService {
     const accessToken = this.authService.getAccessToken()
 
     if (!accessToken) {
-      this.tryRefreshOrLogout()
+      if (this.authService.getRefreshToken()) {
+        console.log('[Watcher] No hay access token pero hay refresh token')
+        // No intentar refresh aquí, dejar que el interceptor lo maneje
+        this.scheduleNextCheck(30000) // Revisar en 30 segundos
+      } else {
+        this.forceLogout('[Watcher] No hay tokens válidos')
+      }
       return
     }
 
@@ -27,40 +33,35 @@ export class AuthWatcherService {
       const now = Math.floor(Date.now() / 1000)
 
       if (!decoded.exp || typeof decoded.exp !== 'number') {
-        this.forceLogout('[Watcher] Token sin expiración válida')
+        this.forceLogout('[Watcher] Access token sin expiración válida')
         return
       }
 
       const expiresIn = decoded.exp - now
       if (expiresIn <= 0) {
-        this.tryRefreshOrLogout()
+        console.log('[Watcher] Access token expirado')
+        if (this.authService.getRefreshToken()) {
+          // Token expirado pero hay refresh, dejar que el interceptor maneje el refresh
+          this.scheduleNextCheck(5000) // Revisar en 5 segundos
+        } else {
+          this.forceLogout('[Watcher] Token expirado y no hay refresh token')
+        }
         return
       }
 
-      // 🔁 Renueva el token 10 segundos antes de que expire
-      const checkIn = (expiresIn - 10) * 1000
+      // Programar próxima verificación 30 segundos antes de expirar
+      const checkIn = Math.max(5000, (expiresIn - 30) * 1000)
+      this.scheduleNextCheck(checkIn)
 
-      this.timeoutId = setTimeout(() => this.tryRefreshOrLogout(), checkIn)
-
-      console.log(`[Watcher] Token válido. Se revisará en ${checkIn / 1000}s`)
+      console.log(`[Watcher] Token válido. Expira en ${expiresIn}s, se revisará en ${checkIn / 1000}s`)
     } catch (e) {
-      this.forceLogout('[Watcher] Token corrupto')
+      this.forceLogout('[Watcher] Access token corrupto')
     }
   }
 
-  private tryRefreshOrLogout() {
-    const refreshToken = this.authService.getRefreshToken()
-    if (refreshToken) {
-      this.authService.refreshAccessToken().subscribe({
-        next: () => {
-          console.log('[Watcher] Access token renovado')
-          this.scheduleTokenCheck()
-        },
-        error: () => this.forceLogout('[Watcher] Falló renovación de token')
-      })
-    } else {
-      this.forceLogout('[Watcher] No hay refresh token')
-    }
+  private scheduleNextCheck(milliseconds: number) {
+    clearTimeout(this.timeoutId)
+    this.timeoutId = setTimeout(() => this.scheduleTokenCheck(), milliseconds)
   }
 
   private forceLogout(msg: string) {

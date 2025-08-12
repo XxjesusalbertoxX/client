@@ -12,60 +12,87 @@ export class LogsService {
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
-  // QUITAR: No necesitas headers manuales si tienes interceptor
-  // private getHeaders(): HttpHeaders { ... }
-
   getLogs(page = 1, limit = 15): Observable<LogsResponse> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('limit', limit.toString())
+    // VALIDAR: Parámetros de entrada
+    const safePage = Math.max(1, page)
+    const safeLimit = Math.max(1, Math.min(limit, 100)) // Limitar a máximo 100
 
-    // CORREGIR: Sin headers manuales, el interceptor se encarga
+    const params = new HttpParams()
+      .set('page', safePage.toString())
+      .set('limit', safeLimit.toString())
+
     return this.http.get<any>(`${this.baseUrl}/logs`, { params }).pipe(
       map((res: any) => {
         console.log('[LogsService] Respuesta de backend:', res)
-        const currentUserId = this.auth.getUserId()
-        const isPaginated = res && typeof res === 'object' && Array.isArray(res.data)
-        const rawData: LogEntry[] = isPaginated ? res.data : Array.isArray(res) ? res : []
 
-        // Ya no filtrar aquí si el backend ya filtra por usuario
-        const filtered = rawData // Confiar en que el backend filtra
-
-        if (isPaginated) {
-          const perPage = res.perPage ?? limit
-          const total = res.total ?? filtered.length // Usar el total del backend
-          const lastPage = res.lastPage ?? Math.max(1, Math.ceil(total / perPage))
-          const safePage = Math.min(page, lastPage)
+        // MEJORAR: Validación de respuesta más robusta
+        if (!res || typeof res !== 'object') {
+          console.warn('[LogsService] Respuesta inválida del backend')
           return {
-            data: filtered,
-            total,
-            page: safePage,
-            perPage,
-            lastPage,
-          } as unknown as LogsResponse
+            data: [],
+            total: 0,
+            page: 1,
+            perPage: safeLimit,
+            lastPage: 1,
+          } as LogsResponse
         }
 
+        const isPaginated = Array.isArray(res.data)
+        const rawData: LogEntry[] = isPaginated ? res.data : Array.isArray(res) ? res : []
+
+        if (isPaginated) {
+          const total = Math.max(0, res.total ?? rawData.length)
+          const perPage = Math.max(1, res.perPage ?? safeLimit)
+          const lastPage = Math.max(1, res.lastPage ?? Math.ceil(total / perPage))
+          const actualPage = Math.max(1, Math.min(safePage, lastPage))
+
+          return {
+            data: rawData,
+            total,
+            page: actualPage,
+            perPage,
+            lastPage,
+          } as LogsResponse
+        }
+
+        // Respuesta sin paginación
         return {
-          data: filtered,
-          total: filtered.length,
+          data: rawData,
+          total: rawData.length,
           page: 1,
-          perPage: filtered.length,
+          perPage: rawData.length,
           lastPage: 1,
-        } as unknown as LogsResponse
+        } as LogsResponse
       }),
       catchError((error) => {
         console.error('[Error en getLogs]', error)
-        return throwError(() => error)
+
+        // MEJORAR: Devolver respuesta vacía pero válida en caso de error
+        const fallbackResponse: LogsResponse = {
+          data: [],
+          total: 0,
+          page: 1,
+          perPage: safeLimit,
+          lastPage: 1,
+        }
+
+        // En lugar de throwError, devolver respuesta fallback
+        return throwError(() => ({
+          ...error,
+          fallback: fallbackResponse
+        }))
       })
     )
   }
 
   getLogsByUser(userId: number, page = 1, limit = 15): Observable<LogEntry[]> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('limit', limit.toString())
+    const safePage = Math.max(1, page)
+    const safeLimit = Math.max(1, Math.min(limit, 100))
 
-    // CORREGIR: Sin headers manuales
+    const params = new HttpParams()
+      .set('page', safePage.toString())
+      .set('limit', safeLimit.toString())
+
     return this.http.get<LogEntry[]>(`${this.baseUrl}/logs/user/${userId}`, { params }).pipe(
       catchError((error) => {
         console.error('[Error en getLogsByUser]', error)
@@ -75,11 +102,13 @@ export class LogsService {
   }
 
   getLogsByTable(table: string, page = 1, limit = 15): Observable<LogEntry[]> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('limit', limit.toString())
+    const safePage = Math.max(1, page)
+    const safeLimit = Math.max(1, Math.min(limit, 100))
 
-    // CORREGIR: Sin headers manuales
+    const params = new HttpParams()
+      .set('page', safePage.toString())
+      .set('limit', safeLimit.toString())
+
     return this.http.get<LogEntry[]>(`${this.baseUrl}/logs/table/${table}`, { params }).pipe(
       catchError((error) => {
         console.error('[Error en getLogsByTable]', error)

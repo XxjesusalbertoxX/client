@@ -36,16 +36,41 @@ export class LogsComponent implements OnInit {
 
     this.logsService.getLogs(page, this.perPage).subscribe({
       next: (response: LogsResponse) => {
+        console.log('[LogsComponent] Respuesta recibida:', response)
+
         this.logs = response.data || []
         this.total = response.total || 0
-        this.page = response.page || page
         this.perPage = response.perPage || this.perPage
-        this.lastPage = response['lastPage'] || 1
+        this.lastPage = response.lastPage || Math.max(1, Math.ceil(this.total / this.perPage))
+
+        // VALIDAR: Asegurar que la página actual sea válida
+        if (page > this.lastPage && this.lastPage > 0) {
+          // Si la página solicitada es mayor a la última página válida,
+          // cargar la última página válida
+          this.page = this.lastPage
+          this.loadLogs(this.lastPage)
+          return
+        }
+
+        this.page = Math.max(1, Math.min(page, this.lastPage))
         this.loading = false
+
+        console.log('[LogsComponent] Estado actualizado:', {
+          page: this.page,
+          total: this.total,
+          lastPage: this.lastPage,
+          logsCount: this.logs.length
+        })
       },
       error: (err) => {
         console.error('Error loading logs:', err)
         this.loading = false
+
+        // En caso de error, resetear a valores seguros
+        this.page = 1
+        this.logs = []
+        this.total = 0
+        this.lastPage = 1
       }
     })
   }
@@ -55,9 +80,46 @@ export class LogsComponent implements OnInit {
   }
 
   changePage(newPage: number) {
-    if (newPage >= 1 && newPage <= this.lastPage) {
-      this.loadLogs(newPage)
+    // MEJORAR: Validación más robusta
+    if (newPage < 1) {
+      console.warn('[LogsComponent] Página solicitada menor a 1:', newPage)
+      return
     }
+
+    if (newPage > this.lastPage) {
+      console.warn('[LogsComponent] Página solicitada mayor a la última:', newPage, 'lastPage:', this.lastPage)
+      return
+    }
+
+    if (newPage === this.page) {
+      console.log('[LogsComponent] Ya estamos en la página solicitada:', newPage)
+      return
+    }
+
+    console.log('[LogsComponent] Cambiando a página:', newPage)
+    this.loadLogs(newPage)
+  }
+
+  // NUEVO: Método para ir a la primera página disponible
+  goToFirstAvailablePage() {
+    if (this.total === 0) {
+      this.page = 1
+      this.lastPage = 1
+      this.logs = []
+      return
+    }
+
+    const newLastPage = Math.ceil(this.total / this.perPage)
+    this.lastPage = newLastPage
+
+    if (this.page > newLastPage) {
+      this.loadLogs(newLastPage)
+    }
+  }
+
+  // NUEVO: Método para refrescar los datos
+  refresh() {
+    this.loadLogs(this.page)
   }
 
   getActionIcon(action: string): string {
@@ -101,5 +163,24 @@ export class LogsComponent implements OnInit {
     }
 
     return 'Ver detalles'
+  }
+
+  // GETTER: Para mostrar información de paginación en template
+  get paginationInfo(): string {
+    if (this.total === 0) return 'Sin registros'
+
+    const start = ((this.page - 1) * this.perPage) + 1
+    const end = Math.min(this.page * this.perPage, this.total)
+
+    return `${start}-${end} de ${this.total} registros`
+  }
+
+  // GETTER: Para deshabilitar botones de paginación
+  get canGoToPrevious(): boolean {
+    return this.page > 1 && !this.loading
+  }
+
+  get canGoToNext(): boolean {
+    return this.page < this.lastPage && !this.loading
   }
 }
