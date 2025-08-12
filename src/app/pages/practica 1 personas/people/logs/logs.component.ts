@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core'
-import { CommonModule } from '@angular/common'
+import { Component, OnInit, inject} from '@angular/core'
+import { CommonModule} from '@angular/common'
 import { LogsService } from '../../../../services/logs.service'
 import { LogEntry, LogsResponse } from '../../../../models/log.model'
 import { SidebarComponent } from '../../../../shared/components/layouts/sidebar/sidebar.component'
 import { SessionGuardService } from '../../../../services/guards/session.guard.service'
+import { Router } from '@angular/router'
 
 @Component({
   standalone: true,
@@ -15,6 +16,7 @@ import { SessionGuardService } from '../../../../services/guards/session.guard.s
 export class LogsComponent implements OnInit {
   private logsService = inject(LogsService)
   private sessionGuard = inject(SessionGuardService)
+  private router = inject(Router)
 
   logs: LogEntry[] = []
   loading = false
@@ -22,7 +24,6 @@ export class LogsComponent implements OnInit {
   total = 0
   perPage = 15
   lastPage = 1
-  router: any
 
   ngOnInit(): void {
     if (!this.sessionGuard.checkSessionOrRedirect()) return

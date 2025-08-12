@@ -33,7 +33,26 @@ export class AuthService {
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem('accessToken')
+    const token = localStorage.getItem('accessToken')
+    if (!token) return null
+
+    try {
+      const decoded: any = jwtDecode(token)
+      const now = Math.floor(Date.now() / 1000)
+      
+      // Si el token está expirado, no lo devuelvas
+      if (!decoded.exp || decoded.exp <= now) {
+        console.warn('[AuthService] Access token expirado, removiendo...')
+        localStorage.removeItem('accessToken')
+        return null
+      }
+      
+      return token
+    } catch {
+      console.warn('[AuthService] Access token corrupto, removiendo...')
+      localStorage.removeItem('accessToken')
+      return null
+    }
   }
 
   getRefreshToken(): string | null {
