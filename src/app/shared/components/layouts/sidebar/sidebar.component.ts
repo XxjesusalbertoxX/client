@@ -43,6 +43,14 @@ export class SidebarComponent {
   private authService = inject(AuthService)
   private router = inject(Router)
 
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+  }
+
   menuItems: MenuItem[] = [
     // CORREGIDO: Hacer Personas expandible pero con mejor organización
     {

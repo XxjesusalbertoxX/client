@@ -46,7 +46,15 @@ export class GameComponent implements OnInit, OnDestroy {
   modalSubtitle = '';
 
   isProcessingColor = false; // Para evitar clics múltiples
-  ngOnInit() {
+  async ngOnInit() {
+
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+
+
     this.route.queryParams.subscribe((params) => {
       const gameId = params['id'];
       if (gameId) {
@@ -163,12 +171,12 @@ handleGameStatus(status: SimonSayGameStatusResponse) {
 requestLastColorAdded(newLength: number) {
     const lastColor = this.vm.getLastAddedColor();
     if (!lastColor) return;
-    
+
     // MEJORAR: Solo mostrar cuando realmente hay un nuevo color
     const previousLength = this.vm.gameStatus()?.sequenceLength || 0;
     if (newLength > previousLength) {
       this.toastr.info(
-        `🎯 ${this.vm.gameStatus()?.opponentName || 'Oponente'} agregó: ${lastColor.toUpperCase()}`, 
+        `🎯 ${this.vm.gameStatus()?.opponentName || 'Oponente'} agregó: ${lastColor.toUpperCase()}`,
         'Nuevo color en la secuencia'
       );
     }

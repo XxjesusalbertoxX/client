@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastrService } from 'ngx-toastr';
 
 import { LoteriaViewModel } from '../../view-models/loteriaViewmodel';
 import { LoteriaService } from '../../../../services/gameservices/loteria.service';
@@ -20,13 +19,11 @@ export class GamePlayersComponent implements OnInit {
   @Output() showCheaterSelfModal = new EventEmitter<string>();
 
   private loteriaService = inject(LoteriaService);
-  private toastr = inject(ToastrService);
 
   showCardModal = false;
   currentDrawnCard = '';
   lastDrawnCard = '';
 
-  // Drag and drop
   draggedTokenIndex: number | null = null;
   availableTokens: number[] = [];
 
@@ -35,14 +32,18 @@ export class GamePlayersComponent implements OnInit {
     this.watchCurrentCard();
   }
 
+  /**
+   * Actualiza la cantidad de fichas disponibles basándose en las fichas usadas
+   */
   updateAvailableTokens() {
     const tokensUsed = this.viewModel.myTokensUsed();
     const totalTokens = 16;
     this.availableTokens = Array.from({ length: totalTokens - tokensUsed }, (_, i) => i);
   }
 
-
-
+  /**
+   * Observa cambios en la carta actual y muestra modales cuando cambia
+   */
   watchCurrentCard() {
     let previousCard = this.viewModel.currentCard();
 
@@ -55,15 +56,19 @@ export class GamePlayersComponent implements OnInit {
     }, 500);
   }
 
+  /**
+   * Muestra modal con nueva carta sacada
+   * @param cardName - Nombre de la carta
+   */
   showNewCardModal(cardName: string) {
     this.currentDrawnCard = cardName;
-    // Solo actualizar la carta actual, sin mostrar modal automático
   }
 
-  // ========================================
-  // DRAG AND DROP
-  // ========================================
-
+  /**
+   * Inicia el drag de una ficha
+   * @param event - Evento de drag
+   * @param tokenIndex - Índice de la ficha
+   */
   onTokenDragStart(event: DragEvent, tokenIndex: number) {
     this.draggedTokenIndex = tokenIndex;
     if (event.dataTransfer) {
@@ -72,6 +77,10 @@ export class GamePlayersComponent implements OnInit {
     }
   }
 
+  /**
+   * Permite el drop de fichas sobre las celdas
+   * @param event - Evento de drag over
+   */
   onCellDragOver(event: DragEvent) {
     event.preventDefault();
     if (event.dataTransfer) {
@@ -79,13 +88,18 @@ export class GamePlayersComponent implements OnInit {
     }
   }
 
+  /**
+   * Maneja el drop de fichas en las celdas
+   * @param event - Evento de drop
+   * @param cellIndex - Índice de la celda
+   */
   onCellDrop(event: DragEvent, cellIndex: number) {
     event.preventDefault();
 
     if (this.draggedTokenIndex === null) return;
 
     if (this.viewModel.isSpectator()) {
-      this.toastr.warning('Estás en modo espectador y no puedes colocar fichas');
+      console.warn('Estás en modo espectador y no puedes colocar fichas');
       this.draggedTokenIndex = null;
       return;
     }
@@ -93,9 +107,8 @@ export class GamePlayersComponent implements OnInit {
     const row = Math.floor(cellIndex / 4);
     const col = cellIndex % 4;
 
-    // Verificar si la celda ya tiene ficha
     if (this.viewModel.isCellMarked(row, col)) {
-      this.toastr.warning('Esta casilla ya tiene una ficha');
+      console.warn('Esta casilla ya tiene una ficha');
       this.draggedTokenIndex = null;
       return;
     }
@@ -104,19 +117,18 @@ export class GamePlayersComponent implements OnInit {
     this.draggedTokenIndex = null;
   }
 
-  // ========================================
-  // COLOCAR FICHAS
-  // ========================================
-
+  /**
+   * Maneja el click en las celdas para colocar fichas
+   * @param cellIndex - Índice de la celda clickeada
+   */
   onCellClick(cellIndex: number) {
-    // Si está en modo espectador, no puede colocar fichas
     if (this.viewModel.isSpectator()) {
-      this.toastr.warning('Estás en modo espectador y no puedes colocar fichas');
+      console.warn('Estás en modo espectador y no puedes colocar fichas');
       return;
     }
 
     if (this.availableTokens.length === 0) {
-      this.toastr.warning('No tienes más fichas disponibles');
+      console.warn('No tienes más fichas disponibles');
       return;
     }
 
@@ -124,41 +136,46 @@ export class GamePlayersComponent implements OnInit {
     const col = cellIndex % 4;
 
     if (this.viewModel.isCellMarked(row, col)) {
-      this.toastr.warning('Esta casilla ya tiene una ficha');
+      console.warn('Esta casilla ya tiene una ficha');
       return;
     }
 
     this.placeToken(row, col);
   }
 
+  /**
+   * Coloca una ficha en la posición especificada
+   * @param row - Fila donde colocar la ficha
+   * @param col - Columna donde colocar la ficha
+   */
   placeToken(row: number, col: number) {
     const gameId = this.viewModel.gameId();
     if (!gameId) return;
 
     this.loteriaService.placeToken(gameId, { row, col }).subscribe({
       next: (response) => {
-        this.toastr.success(response.message);
+        console.log(response.message);
         this.updateAvailableTokens();
 
-        // MANEJAR AUTO CLAIM CORRECTAMENTE
         if (response.autoClaimWin) {
           if (response.isValid) {
-            // EMITIR AL COMPONENTE PADRE PARA MOSTRAR MODAL DE VICTORIA
             this.showVictoryModal.emit(response.playerName || 'Tú');
-            this.toastr.success('¡LOTERÍA VÁLIDA! Has ganado la partida', '', { timeOut: 5000 });
+            console.log('¡LOTERÍA VÁLIDA! Has ganado la partida');
           } else {
-            // EMITIR AL COMPONENTE PADRE PARA MOSTRAR MODAL DE TRAMPA PROPIA
             this.showCheaterSelfModal.emit(response.playerName || 'Tú');
-            this.toastr.error('¡TRAMPA! Fuiste baneado por hacer trampa', '', { timeOut: 5000 });
+            console.warn('¡TRAMPA! Fuiste baneado por hacer trampa');
           }
         }
       },
       error: (error) => {
-        this.toastr.error(error.error?.message || 'Error al colocar ficha');
+        console.error(error.error?.message || 'Error al colocar ficha');
       }
     });
   }
 
+  /**
+   * Permite al jugador abandonar la partida
+   */
     leaveGame() {
       if (confirm('¿Estás seguro de que quieres abandonar la partida? Te convertirás en espectador.')) {
         const gameId = this.viewModel.gameId();
@@ -166,44 +183,50 @@ export class GamePlayersComponent implements OnInit {
 
         this.loteriaService.leaveGame(gameId).subscribe({
           next: (response) => {
-            this.toastr.info(response.message);
+            console.log(response.message);
 
             if (response.gameEnded) {
               if (response.winnerByDefault) {
-                this.toastr.success('La partida terminó porque solo quedaba un jugador');
+                console.log('La partida terminó porque solo quedaba un jugador');
               } else {
-                this.toastr.warning('La partida terminó porque el anfitrión abandonó');
+                console.warn('La partida terminó porque el anfitrión abandonó');
               }
-              // Redirigir al home después de que termine
               setTimeout(() => {
                 window.location.href = '/games/loteria';
               }, 2000);
             } else {
-              // La partida continúa, el jugador ahora es espectador
-              this.toastr.info('Ahora eres espectador. Puedes seguir viendo la partida.');
-              // Recargar para reflejar el estado de espectador
+              console.log('Ahora eres espectador. Puedes seguir viendo la partida.');
               window.location.reload();
             }
           },
           error: (error) => {
-            this.toastr.error(error.error?.message || 'Error al abandonar');
+            console.error(error.error?.message || 'Error al abandonar');
           }
         });
       }
     }
 
+  /**
+   * Muestra modal de jugador tramposo
+   * @param playerName - Nombre del jugador
+   */
   private showCheaterModal(playerName: string) {
-    // CORREGIR: Emitir al padre en lugar de mostrar toast
     this.showCheaterSelfModal.emit(playerName);
   }
 
-
-
-  // Getter con tipo explícito para evitar errores
+  /**
+   * Getter seguro para información de jugadores
+   * @returns Array con información de jugadores
+   */
   get playersInfoSafe(): LoteriaPlayerInfo[] {
     return this.viewModel.playersInfo();
   }
 
+  /**
+   * Obtiene la ruta de la imagen de una carta específica
+   * @param cardName - Nombre de la carta
+   * @returns Ruta de la imagen
+   */
   getCardImagePath(cardName: string): string {
     const imageMap: { [key: string]: string } = {
       'el_gallo': '01 el gallo.jpg',
@@ -266,10 +289,19 @@ export class GamePlayersComponent implements OnInit {
     return `/assets/Cartas/${fileName}`;
   }
 
+  /**
+   * Obtiene la ruta de la imagen de las fichas
+   * @returns Ruta de la imagen de ficha
+   */
   getFichaImagePath(): string {
     return '/assets/Ficha.png';
   }
 
+  /**
+   * Formatea el nombre de una carta para mostrar
+   * @param cardName - Nombre de la carta con guiones bajos
+   * @returns Nombre formateado con mayúsculas
+   */
   formatCardName(cardName: string): string {
     return cardName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }

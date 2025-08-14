@@ -44,8 +44,14 @@ export class LoteriaGameComponent implements OnInit, OnDestroy {
   remainingCards: string[] = [];
   personalVictoryName = ''; // AGREGAR
   personalCheaterName = ''; // AGREGAR
-  
-  ngOnInit() {
+
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+
     this.route.queryParams.subscribe((params) => {
       const id = params['id'];
 

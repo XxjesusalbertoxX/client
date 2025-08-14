@@ -1,0 +1,44 @@
+.time-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 0 auto 24px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  color: #ddd;
+  margin-bottom: 4px;
+}
+
+.form-input {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background: #2b2b2b;
+  color: #fff;
+}
+
+.btn-add {
+  grid-column: 1 / -1;
+  padding: 10px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-add:hover {
+  background: #45a047;
+}

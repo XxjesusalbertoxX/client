@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../../services/auth.service';
 
 interface GameConfig {
   title: string;
@@ -24,6 +25,7 @@ interface GameConfig {
   templateUrl: './game-home.component.html',
   styleUrls: ['./game-home.component.scss']
 })
+
 export class GameHomeComponent {
   [x: string]: any;
   @Input() gameType: 'battleship' | 'simon' | 'loteria' = 'battleship';
@@ -32,6 +34,7 @@ export class GameHomeComponent {
   @Output() goBack = new EventEmitter<void>();
 
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   get config(): GameConfig {
     const configs: Record<string, GameConfig> = {
@@ -80,6 +83,14 @@ export class GameHomeComponent {
     };
     return configs[this.gameType];
   }
+
+  async ngOnInit(): Promise<void> {
+      const isValid = await this.authService.validateTokensOnComponent()
+      if (!isValid) {
+        this.router.navigate(['/login'])
+        return
+      }
+    }
 
   onCreateClick() {
     this.createGame.emit();

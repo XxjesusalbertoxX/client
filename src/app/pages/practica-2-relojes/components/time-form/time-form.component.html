@@ -1,0 +1,109 @@
+<form class="time-form" (ngSubmit)="onAdd()">
+  <div class="form-row">
+    <label class="form-label">Hora</label>
+    <input
+      class="form-input"
+      type="number"
+      [(ngModel)]="localTime.hours"
+      min="0"
+      max="23"
+      name="hours"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Minutos</label>
+    <input
+      class="form-input"
+      type="number"
+      [(ngModel)]="localTime.minutes"
+      min="0"
+      max="59"
+      name="minutes"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Segundos</label>
+    <input
+      class="form-input"
+      type="number"
+      [(ngModel)]="localTime.seconds"
+      min="0"
+      max="59"
+      name="seconds"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Marco</label>
+    <input
+      class="form-input"
+      type="color"
+      [(ngModel)]="localTheme.marco"
+      name="marco"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Manecillas</label>
+    <input
+      class="form-input"
+      type="color"
+      [(ngModel)]="localTheme.manecillas"
+      name="manecillas"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Números</label>
+    <input
+      class="form-input"
+      type="color"
+      [(ngModel)]="localTheme.numeros"
+      name="numeros"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Puntos</label>
+    <input
+      class="form-input"
+      type="color"
+      [(ngModel)]="localTheme.puntos"
+      name="puntos"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Fondo</label>
+    <input
+      class="form-input"
+      type="color"
+      [(ngModel)]="localTheme.fondo"
+      name="fondo"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Fondo digital</label>
+    <input
+      class="form-input"
+      type="color"
+      [(ngModel)]="localTheme.fondoDigital"
+      name="fondoDigital"
+    />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label">Números digitales</label>
+    <input
+      class="form-input"
+      type="color"
+      [(ngModel)]="localTheme.numerosDigitales"
+      name="numerosDigitales"
+    />
+  </div>
+
+  <button type="submit" class="btn-add">Agregar reloj</button>
+</form>

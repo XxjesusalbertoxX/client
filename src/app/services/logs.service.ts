@@ -12,10 +12,9 @@ export class LogsService {
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
-  getLogs(page = 1, limit = 15): Observable<LogsResponse> {
-    // VALIDAR: Parámetros de entrada
+  getLogs(page = 1, limit = 10): Observable<LogsResponse> { // Cambiado de 15 a 10
     const safePage = Math.max(1, page)
-    const safeLimit = Math.max(1, Math.min(limit, 100)) // Limitar a máximo 100
+    const safeLimit = Math.max(1, Math.min(limit, 100))
 
     const params = new HttpParams()
       .set('page', safePage.toString())
@@ -25,7 +24,6 @@ export class LogsService {
       map((res: any) => {
         console.log('[LogsService] Respuesta de backend:', res)
 
-        // MEJORAR: Validación de respuesta más robusta
         if (!res || typeof res !== 'object') {
           console.warn('[LogsService] Respuesta inválida del backend')
           return {
@@ -55,7 +53,6 @@ export class LogsService {
           } as LogsResponse
         }
 
-        // Respuesta sin paginación
         return {
           data: rawData,
           total: rawData.length,
@@ -66,26 +63,13 @@ export class LogsService {
       }),
       catchError((error) => {
         console.error('[Error en getLogs]', error)
-
-        // MEJORAR: Devolver respuesta vacía pero válida en caso de error
-        const fallbackResponse: LogsResponse = {
-          data: [],
-          total: 0,
-          page: 1,
-          perPage: safeLimit,
-          lastPage: 1,
-        }
-
-        // En lugar de throwError, devolver respuesta fallback
-        return throwError(() => ({
-          ...error,
-          fallback: fallbackResponse
-        }))
+        return throwError(() => error)
       })
     )
   }
 
-  getLogsByUser(userId: number, page = 1, limit = 15): Observable<LogEntry[]> {
+  // Resto de métodos con limit por defecto 10
+  getLogsByUser(userId: number, page = 1, limit = 10): Observable<LogEntry[]> {
     const safePage = Math.max(1, page)
     const safeLimit = Math.max(1, Math.min(limit, 100))
 
@@ -101,7 +85,7 @@ export class LogsService {
     )
   }
 
-  getLogsByTable(table: string, page = 1, limit = 15): Observable<LogEntry[]> {
+  getLogsByTable(table: string, page = 1, limit = 10): Observable<LogEntry[]> {
     const safePage = Math.max(1, page)
     const safeLimit = Math.max(1, Math.min(limit, 100))
 

@@ -4,6 +4,7 @@ import { PeopleService } from '../../../../services/people.service'
 import { SidebarComponent } from '../../../../shared/components/layouts/sidebar/sidebar.component'
 import { SessionGuardService } from '../../../../services/guards/session.guard.service'
 import { Router } from '@angular/router'
+import { AuthService } from '../../../../services/auth.service'
 
 @Component({
   standalone: true,
@@ -16,6 +17,7 @@ export class IndexComponent implements OnInit {
   private peopleService = inject(PeopleService)
   private sessionGuard = inject(SessionGuardService)
   private router = inject(Router)
+  private authService = inject(AuthService)
 
   people: any[] = []
   total = 0
@@ -24,8 +26,13 @@ export class IndexComponent implements OnInit {
   loading = false
   pageSize = 10 // Agregar constante para el tamaño de página
 
-  ngOnInit(): void {
-    if (!this.sessionGuard.checkSessionOrRedirect()) return
+  async ngOnInit(): Promise<void> {
+
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
     this.loadPeople()
   }
 

@@ -9,10 +9,18 @@
   </div>
 
   <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
-    
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+        <p class="text-white text-xl">Cargando datos...</p>
+      </div>
+    } @else {
+
     <!-- Formulario -->
     <div class="w-full max-w-lg animate-fade-in">
-      
+
       <!-- Header -->
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
@@ -26,39 +34,48 @@
         (ngSubmit)="submit()"
         class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl space-y-6"
       >
-        
+
         <!-- Nombre -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-white">Nombre</label>
-          <app-input 
-            placeholder="Ingresa el nombre" 
+          <app-input
+            placeholder="Ingresa el nombre (2-50 caracteres, solo letras)"
             [model]="firstName"
             class="w-full"
           />
+          @if (getFirstNameError()) {
+            <div class="text-red-400 text-xs">{{ getFirstNameError() }}</div>
+          }
         </div>
 
         <!-- Apellido -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-white">Apellido</label>
-          <app-input 
-            placeholder="Ingresa el apellido" 
+          <app-input
+            placeholder="Ingresa el apellido (2-50 caracteres, solo letras)"
             [model]="lastName"
             class="w-full"
           />
+          @if (getLastNameError()) {
+            <div class="text-red-400 text-xs">{{ getLastNameError() }}</div>
+          }
         </div>
 
         <!-- Edad -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-white">Edad</label>
-          <app-input 
-            type="number" 
-            placeholder="Ingresa la edad" 
+          <app-input
+            type="number"
+            placeholder="Edad (4-105 años)"
             [model]="age"
             class="w-full"
           />
+          @if (getAgeError()) {
+            <div class="text-red-400 text-xs">{{ getAgeError() }}</div>
+          }
         </div>
 
-        <!-- Género -->
+        <!-- Género (sin 'other' igual que create) -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-white">Género</label>
           <select
@@ -69,7 +86,6 @@
             <option value="" class="bg-gray-800 text-white">Selecciona una opción</option>
             <option value="male" class="bg-gray-800 text-white">👨 Masculino</option>
             <option value="female" class="bg-gray-800 text-white">👩 Femenino</option>
-            <option value="other" class="bg-gray-800 text-white">🧑 Otro</option>
           </select>
         </div>
 
@@ -89,10 +105,10 @@
           >
             ← Cancelar
           </button>
-          
-          <app-button 
-            type="submit" 
-            [disabled]="!isValid() || submitting()" 
+
+          <app-button
+            type="submit"
+            [disabled]="!isValid() || submitting()"
             class="flex-1"
           >
             <span class="flex items-center justify-center space-x-2">
@@ -107,6 +123,7 @@
         </div>
       </form>
     </div>
+    }
   </div>
 </div>
 

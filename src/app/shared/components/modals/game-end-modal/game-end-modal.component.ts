@@ -1,4 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { AuthService } from '../../../../services/auth.service';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -16,4 +18,14 @@ export class GameEndModalComponent {
 
   @Output() createNewGame = new EventEmitter<void>();
   @Output() goHome = new EventEmitter<void>();
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+  }
 }

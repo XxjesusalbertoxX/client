@@ -4,6 +4,8 @@ import { PeopleService } from '../../../../services/people.service'
 import { StatsResponse, ChartData } from '../../../../models/stats.model'
 import { SidebarComponent } from '../../../../shared/components/layouts/sidebar/sidebar.component'
 import { SessionGuardService } from '../../../../services/guards/session.guard.service'
+import { AuthService } from '../../../../services/auth.service'
+import { Router } from '@angular/router'
 
 @Component({
   standalone: true,
@@ -16,6 +18,9 @@ export class StatsComponent implements OnInit, AfterViewInit {
   private peopleService = inject(PeopleService)
   private sessionGuard = inject(SessionGuardService)
   private elementRef = inject(ElementRef)
+  private authService = inject(AuthService)
+  private router = inject(Router)
+
 
   loading = false
   stats: StatsResponse | null = null
@@ -25,13 +30,16 @@ export class StatsComponent implements OnInit, AfterViewInit {
   ageData: ChartData[] = []
   combinedData: ChartData[] = []
 
-  ngOnInit(): void {
-    if (!this.sessionGuard.checkSessionOrRedirect()) return
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
     this.loadStats()
   }
 
   ngAfterViewInit(): void {
-    // Se ejecuta después de que las barras estén en el DOM
     this.updateChartHeights()
   }
 

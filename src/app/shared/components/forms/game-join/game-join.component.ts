@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { AuthService } from '../../../../services/auth.service';
+import { Router } from '@angular/router';
 
 interface JoinConfig {
   title: string;
@@ -18,6 +20,8 @@ interface JoinConfig {
 })
 export class GameJoinComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   @Input() gameType: 'battleship' | 'simon' | 'loteria' = 'battleship';
   @Input() isLoading = false;
@@ -30,7 +34,14 @@ export class GameJoinComponent implements OnInit {
     code: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8)]]
   });
 
-  ngOnInit() {
+  async ngOnInit() {
+
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+
     this.form.reset();
   }
 

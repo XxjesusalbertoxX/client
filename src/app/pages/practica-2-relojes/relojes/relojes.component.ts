@@ -1,81 +1,50 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
 import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
 import { SidebarComponent } from '../../../shared/components/layouts/sidebar/sidebar.component'
-import { ClockCardComponent } from '../components/clock-card/clock-card.component'
-import { ClockViewModel, ClockColors, ClockTime } from '../view-models/view-model'
+import { AuthService } from '../../../services/auth.service'
+import { Router } from '@angular/router'
+
+// Importar los componentes equivalentes
+import { TimeFormComponent } from '../components/time-form/time-form.component'
+import { ModalClockComponent } from '../components/modal-clock/modal-clock.component'
+import { ClockConfig } from '../view-models/view-model'
 
 @Component({
   standalone: true,
   selector: 'app-relojes',
-  imports: [CommonModule, FormsModule, SidebarComponent, ClockCardComponent],
+  imports: [
+    CommonModule,
+    SidebarComponent,
+    TimeFormComponent,
+    ModalClockComponent
+  ],
   templateUrl: './relojes.component.html',
   styleUrls: ['./relojes.component.scss']
 })
 export class RelojesComponent implements OnInit {
+  clocks: ClockConfig[] = []
 
-  showForm = true // Mostrar formulario inicialmente para crear el primer reloj
-  clocks: ClockViewModel[] = []
+  private authService = inject(AuthService)
+  private router = inject(Router)
 
-  // Formulario inicial
-  initialTime: ClockTime = {
-    hours: new Date().getHours(),
-    minutes: new Date().getMinutes(),
-    seconds: new Date().getSeconds()
-  }
-
-  initialColors: ClockColors = {
-    analogBorder: '#2563eb',
-    analogBackground: '#f8fafc',
-    analogNumbers: '#1e293b',
-    analogDots: '#64748b',
-    analogCenter: '#dc2626',
-    hourHand: '#1e293b',
-    minuteHand: '#374151',
-    secondHand: '#dc2626',
-    digitalBorder: '#2563eb',
-    digitalBackground: '#0f172a',
-    digitalNumbers: '#00ff41',
-    digitalShadow: '#00ff41'
-  }
-
-  ngOnInit(): void {
-    // NO crear reloj por defecto - el usuario debe crear el primero
-  }
-
-    // ...existing code...
-    createClock(): void {
-      const viewModel = new ClockViewModel(
-        { ...this.initialTime },
-        { ...this.initialColors }
-      )
-
-      // NO iniciar en tiempo real automáticamente
-      // El usuario decidirá si quiere tiempo real desde el modal
-
-      this.clocks.push(viewModel)
-      this.showForm = false
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
     }
-  // ...existing code...
+  }
 
-  addNewClock(): void {
-    // Resetear valores a tiempo actual
-    this.initialTime = {
-      hours: new Date().getHours(),
-      minutes: new Date().getMinutes(),
-      seconds: new Date().getSeconds()
-    }
-    this.showForm = true
+  addClock(cfg: ClockConfig): void {
+    this.clocks.push({
+      time: { ...cfg.time },
+      theme: { ...cfg.theme }
+    })
   }
 
   removeClock(index: number): void {
-    if (this.clocks[index]) {
-      this.clocks[index].destroy()
+    if (index >= 0 && index < this.clocks.length) {
       this.clocks.splice(index, 1)
     }
-  }
-
-  toggleForm(): void {
-    this.showForm = !this.showForm
   }
 }

@@ -28,7 +28,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private destroy$ = new Subject<void>();
   private authService = inject(AuthService);
-  
+
   initialLoadComplete = false;
   showConfirmLeaveModal = false;
   isProcessing = false;
@@ -47,13 +47,17 @@ export class GameComponent implements OnInit, OnDestroy {
   private pollingSubscription?: Subscription;
   private readonly POLLING_INTERVAL = 2000; // 2 segundos
 
-  ngOnInit() {
-    // Obtener el nombre del usuario
+  async ngOnInit() {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+
     this.authService.getUser().subscribe(user => {
       console.log("usuario obtenido", user)
       if (user && user.user) {
         this.currentUserName = user.user.name;
-        console.log("que royo", this.currentUserName)
       }
       this.setupGame();
     });
@@ -89,7 +93,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.loserName = gameData.loserName;
       console.log(`Juego terminado. Ganador: ${this.winnerName}, Perdedor: ${this.loserName}, currentUserName: ${this.currentUserName}`);
       this.isWinner = this.currentUserName === gameData.winnerName;
-      
+
       // Si el backend envía estos datos, úsalos
       this.rematchRequested = gameData.rematchRequested || false;
       this.opponentLeft = gameData.opponentLeft || false;
@@ -113,9 +117,9 @@ export class GameComponent implements OnInit, OnDestroy {
           if (!this.initialLoadComplete) {
             this.initialLoadComplete = true;
           }
-          
+
           this.viewModel.setGameData(gameData);
-          
+
           // Verificar si el juego ha terminado
           if (gameData.status === 'finished') {
             this.handleGameEnd(gameData);
@@ -133,7 +137,7 @@ export class GameComponent implements OnInit, OnDestroy {
     if (!gameId) return;
 
     this.isProcessing = true; // Deshabilitar botones
-    
+
     this.battleShipService.attack(gameId, coords.x, coords.y)
       .pipe(
         catchError(error => {
@@ -154,15 +158,15 @@ export class GameComponent implements OnInit, OnDestroy {
         }
       });
   }
-    
+
     // ...existing code...
-    
+
     onLeaveGame() {
       if (this.isProcessing) return;
-      
+
       this.isProcessing = true;
       const gameId = this.viewModel.getGameId();
-      
+
       if (gameId) {
         // CAMBIO: Usar solo gameApiService.leaveGame()
         this.gameApiService.leaveGame(gameId).subscribe({
@@ -185,7 +189,7 @@ export class GameComponent implements OnInit, OnDestroy {
         this.isProcessing = false;
       }
     }
-    
+
     // ELIMINAR: getMyPlayerGameId() ya no se necesita
 
   confirmLeaveGame() {
@@ -194,7 +198,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.onLeaveGame();
       return;
     }
-    
+
     // Si el juego está en progreso, pedimos confirmación
     this.showConfirmLeaveModal = true;
   }

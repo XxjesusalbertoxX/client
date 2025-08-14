@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms'       // <-- importa esto
 import { PeopleService } from '../../../../services/people.service'
 import { ButtonComponent } from '../../../../shared/components/commons/button/button.component'
 import { InputComponent } from '../../../../shared/components/inputs/input/input.component'
+import { AuthService } from '../../../../services/auth.service'
 
 @Component({
   selector: 'app-create-person',
@@ -13,10 +14,10 @@ import { InputComponent } from '../../../../shared/components/inputs/input/input
   templateUrl: './create.component.html',
   styleUrls: ['./create.component.scss']
 })
-// ...existing code...
 
 export class CreateComponent {
   private peopleService = inject(PeopleService)
+  private authService = inject(AuthService)
   private router = inject(Router)
 
   // Signals
@@ -27,6 +28,15 @@ export class CreateComponent {
 
   submitting = signal(false)
   errorMsg = signal('')
+
+
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+  }
 
   cancel(){
     this.router.navigate(['/people'])
@@ -91,7 +101,7 @@ export class CreateComponent {
     this.submitting.set(true)
     this.errorMsg.set('')
 
-    
+
     const payload = {
       firstName: this.firstName().trim(),
       lastName: this.lastName().trim(),

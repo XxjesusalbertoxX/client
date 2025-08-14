@@ -5,11 +5,13 @@ import { LogEntry, LogsResponse } from '../../../../models/log.model'
 import { SidebarComponent } from '../../../../shared/components/layouts/sidebar/sidebar.component'
 import { SessionGuardService } from '../../../../services/guards/session.guard.service'
 import { Router } from '@angular/router'
+import { RouterModule } from '@angular/router'
+import { AuthService } from '../../../../services/auth.service'
 
 @Component({
   standalone: true,
   selector: 'app-logs',
-  imports: [CommonModule, SidebarComponent],
+  imports: [CommonModule, SidebarComponent, RouterModule],
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss']
 })
@@ -17,19 +19,32 @@ export class LogsComponent implements OnInit {
   private logsService = inject(LogsService)
   private sessionGuard = inject(SessionGuardService)
   private router = inject(Router)
+  private authService = inject(AuthService)
 
   logs: LogEntry[] = []
   loading = false
   page = 1
   total = 0
-  perPage = 15
+  perPage = 10  // Cambiado de 15 a 10 como en personas
   lastPage = 1
 
-  ngOnInit(): void {
-    if (!this.sessionGuard.checkSessionOrRedirect()) return
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
     this.loadLogs()
   }
 
+  backToPerson(){
+    this.router.navigate(['/people'])
+  }
+
+  /**
+   * Carga los logs con paginación
+   * @param page - Número de página a cargar
+   */
   loadLogs(page: number = 1) {
     this.loading = true
     this.page = page
@@ -43,10 +58,7 @@ export class LogsComponent implements OnInit {
         this.perPage = response.perPage || this.perPage
         this.lastPage = response.lastPage || Math.max(1, Math.ceil(this.total / this.perPage))
 
-        // VALIDAR: Asegurar que la página actual sea válida
         if (page > this.lastPage && this.lastPage > 0) {
-          // Si la página solicitada es mayor a la última página válida,
-          // cargar la última página válida
           this.page = this.lastPage
           this.loadLogs(this.lastPage)
           return
@@ -66,7 +78,6 @@ export class LogsComponent implements OnInit {
         console.error('Error loading logs:', err)
         this.loading = false
 
-        // En caso de error, resetear a valores seguros
         this.page = 1
         this.logs = []
         this.total = 0
@@ -75,12 +86,19 @@ export class LogsComponent implements OnInit {
     })
   }
 
+  /**
+   * Navega a una ruta específica
+   * @param path - Ruta a la que navegar
+   */
   navigateTo(path: string) {
     this.router.navigate([path])
   }
 
+  /**
+   * Cambia a una página específica
+   * @param newPage - Número de la nueva página
+   */
   changePage(newPage: number) {
-    // MEJORAR: Validación más robusta
     if (newPage < 1) {
       console.warn('[LogsComponent] Página solicitada menor a 1:', newPage)
       return
@@ -100,7 +118,9 @@ export class LogsComponent implements OnInit {
     this.loadLogs(newPage)
   }
 
-  // NUEVO: Método para ir a la primera página disponible
+  /**
+   * Va a la primera página disponible después de cambios en la paginación
+   */
   goToFirstAvailablePage() {
     if (this.total === 0) {
       this.page = 1
@@ -117,11 +137,18 @@ export class LogsComponent implements OnInit {
     }
   }
 
-  // NUEVO: Método para refrescar los datos
+  /**
+   * Refresca los datos de la página actual
+   */
   refresh() {
     this.loadLogs(this.page)
   }
 
+  /**
+   * Obtiene el icono apropiado para cada tipo de acción
+   * @param action - Tipo de acción del log
+   * @returns Emoji del icono correspondiente
+   */
   getActionIcon(action: string): string {
     switch (action) {
       case 'create': return '➕'
@@ -131,6 +158,11 @@ export class LogsComponent implements OnInit {
     }
   }
 
+  /**
+   * Obtiene las clases CSS para colorear cada tipo de acción
+   * @param action - Tipo de acción del log
+   * @returns Clases CSS para el color
+   */
   getActionColor(action: string): string {
     switch (action) {
       case 'create': return 'text-green-400 bg-green-500/20'
@@ -140,6 +172,11 @@ export class LogsComponent implements OnInit {
     }
   }
 
+  /**
+   * Formatea una fecha para mostrar
+   * @param date - Fecha a formatear
+   * @returns Fecha formateada como string
+   */
   formatDate(date: Date): string {
     return new Date(date).toLocaleString('es-ES', {
       year: 'numeric',
@@ -150,6 +187,11 @@ export class LogsComponent implements OnInit {
     })
   }
 
+  /**
+   * Obtiene una vista previa de los metadatos del log
+   * @param metadata - Metadatos del log
+   * @returns String con preview de los metadatos
+   */
   getMetadataPreview(metadata: any): string {
     if (!metadata) return ''
 
@@ -165,7 +207,10 @@ export class LogsComponent implements OnInit {
     return 'Ver detalles'
   }
 
-  // GETTER: Para mostrar información de paginación en template
+  /**
+   * Información de paginación para mostrar en el template
+   * @returns String con información de paginación
+   */
   get paginationInfo(): string {
     if (this.total === 0) return 'Sin registros'
 
@@ -175,11 +220,18 @@ export class LogsComponent implements OnInit {
     return `${start}-${end} de ${this.total} registros`
   }
 
-  // GETTER: Para deshabilitar botones de paginación
+  /**
+   * Indica si se puede navegar a la página anterior
+   * @returns true si se puede ir a página anterior
+   */
   get canGoToPrevious(): boolean {
     return this.page > 1 && !this.loading
   }
 
+  /**
+   * Indica si se puede navegar a la página siguiente
+   * @returns true si se puede ir a página siguiente
+   */
   get canGoToNext(): boolean {
     return this.page < this.lastPage && !this.loading
   }

@@ -1,7 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardPlayerComponent } from '../../card-player/card-player.component';
 import { LobbyPlayer } from '../../../../models/game.model';
+import { AuthService } from '../../../../services/auth.service';
+import { Router } from '@angular/router';
 
 interface LobbyConfig {
   title: string;
@@ -35,8 +37,16 @@ export class GameLobbyComponent implements OnInit {
   @Output() copyCode = new EventEmitter<void>();
   @Output() handleReady = new EventEmitter<void>();
   @Output() leaveGame = new EventEmitter<void>();
-  ngOnInit() {
-    // Inicialización si es necesaria
+
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  async ngOnInit(): Promise<void> {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
   }
 
   get config(): LobbyConfig {

@@ -1,0 +1,151 @@
+<div
+  class="modal-clock"
+  [style]="{
+    'background-color': theme.fondo,
+    'border-color': theme.marco,
+    'color': theme.numeros
+  }"
+>
+  <!-- Botón eliminar (X) -->
+  <button
+    class="remove-btn"
+    (click)="onRemove()"
+    title="Eliminar reloj"
+  >
+    ❌
+  </button>
+
+  <!-- Editor de tiempo -->
+  <div *ngIf="editMode" class="time-editor">
+    <label>
+      Horas:
+      <input
+        type="number"
+        [(ngModel)]="time.hours"
+        min="0"
+        max="23"
+        (keydown)="handleKey('hours', 0, 23, $event)"
+      />
+    </label>
+    <label>
+      Minutos:
+      <input
+        type="number"
+        [(ngModel)]="time.minutes"
+        min="0"
+        max="59"
+        (keydown)="handleKey('minutes', 0, 59, $event)"
+      />
+    </label>
+    <label>
+      Segundos:
+      <input
+        type="number"
+        [(ngModel)]="time.seconds"
+        min="0"
+        max="59"
+        (keydown)="handleKey('seconds', 0, 59, $event)"
+      />
+    </label>
+  </div>
+
+  <!-- Editor de colores -->
+  <div *ngIf="editThemeMode" class="theme-editor">
+    <div class="color-section">
+      <h4>Reloj Analógico</h4>
+      <div class="color-grid">
+        <label>
+          Borde:
+          <input
+            type="color"
+            [(ngModel)]="theme.marco"
+          />
+        </label>
+        <label>
+          Fondo:
+          <input
+            type="color"
+            [(ngModel)]="theme.fondo"
+          />
+        </label>
+        <label>
+          Manecillas:
+          <input
+            type="color"
+            [(ngModel)]="theme.manecillas"
+          />
+        </label>
+        <label>
+          Números:
+          <input
+            type="color"
+            [(ngModel)]="theme.numeros"
+          />
+        </label>
+        <label>
+          Puntos:
+          <input
+            type="color"
+            [(ngModel)]="theme.puntos"
+          />
+        </label>
+      </div>
+    </div>
+
+    <div class="color-section">
+      <h4>Reloj Digital</h4>
+      <div class="color-grid">
+        <label>
+          Fondo Digital:
+          <input
+            type="color"
+            [(ngModel)]="theme.fondoDigital"
+          />
+        </label>
+        <label>
+          Números Digitales:
+          <input
+            type="color"
+            [(ngModel)]="theme.numerosDigitales"
+          />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de control -->
+  <div class="control-buttons">
+    <button
+      class="toggle-edit-btn"
+      (click)="toggleEdit()"
+      [style]="{ 'background-color': editMode ? '#ff6b6b' : theme.marco }"
+    >
+      {{ editMode ? 'Cerrar' : 'Editar Tiempo' }}
+    </button>
+
+    <button
+      class="toggle-theme-btn"
+      (click)="toggleThemeEdit()"
+      [style]="{ 'background-color': editThemeMode ? '#ff6b6b' : '#4ecdc4' }"
+    >
+      {{ editThemeMode ? 'Cerrar' : 'Editar Colores' }}
+    </button>
+  </div>
+
+  <!-- Reloj -->
+  <app-clock
+    [time]="time"
+    [initialTheme]="theme">
+  </app-clock>
+
+  <!-- Hora digital -->
+  <div
+    class="digital-time"
+    [style]="{
+      'background-color': theme.fondoDigital,
+      'color': theme.numerosDigitales
+    }"
+  >
+    {{ digitalTime }}
+  </div>
+</div>

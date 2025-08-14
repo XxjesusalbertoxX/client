@@ -1,0 +1,51 @@
+<div
+  class="clock"
+  [style]="{
+    'border-color': theme.marco,
+    'background-color': theme.fondo
+  }"
+>
+  <!-- Números -->
+  <div
+    *ngFor="let n of numbers"
+    class="numero"
+    [style]="getNumeroStyle(n)"
+  >
+    {{ n }}
+  </div>
+
+  <!-- Puntos -->
+  <div
+    *ngFor="let dot of dots; let i = index"
+    class="punto"
+    [style]="getPuntoStyle(i)"
+  ></div>
+
+  <!-- Manecillas -->
+  <app-hand
+    *ngIf="time"
+    type="hour"
+    [value]="time.hours"
+    [color]="theme.manecillas">
+  </app-hand>
+
+  <app-hand
+    *ngIf="time"
+    type="minute"
+    [value]="time.minutes"
+    [color]="theme.manecillas">
+  </app-hand>
+
+  <app-hand
+    *ngIf="time"
+    type="second"
+    [value]="time.seconds"
+    [color]="theme.manecillas">
+  </app-hand>
+
+  <!-- Centro del reloj -->
+  <div
+    class="center-dot"
+    [style]="{ 'background-color': theme.manecillas }"
+  ></div>
+</div>

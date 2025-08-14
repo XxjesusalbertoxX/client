@@ -2,11 +2,13 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BattleshipStatsService } from '../../../../services/gameservices/battleship-stats.service';
 import { SidebarComponent } from '../../../../shared/components/layouts/sidebar/sidebar.component';
-import { BoardComponent } from '../../components/board/board.component'; // Importar el BoardComponent
-import { 
-  BattleshipStatsResponse, 
-  BattleshipGameSummary, 
-  BattleshipGameDetails 
+import { BoardComponent } from '../../components/board/board.component';
+import { AuthService } from '../../../../services/auth.service';
+import { Router } from '@angular/router';
+import {
+  BattleshipStatsResponse,
+  BattleshipGameSummary,
+  BattleshipGameDetails
 } from '../../models/battle-ship.model';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 
@@ -21,30 +23,38 @@ Chart.register(...registerables);
 })
 export class StatsComponent implements OnInit {
   private statsService = inject(BattleshipStatsService);
-  
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   stats = signal<BattleshipStatsResponse | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
-  
+
   // Modales
   showGamesModal = signal(false);
   selectedGames = signal<BattleshipGameSummary[]>([]);
   modalTitle = signal('');
-  
+
   showGameDetails = signal(false);
   gameDetails = signal<BattleshipGameDetails | null>(null);
   loadingDetails = signal(false);
-  
+
   chart: Chart | null = null;
 
-  ngOnInit() {
+  async ngOnInit() {
+    const isValid = await this.authService.validateTokensOnComponent()
+    if (!isValid) {
+      this.router.navigate(['/login'])
+      return
+    }
+
     this.loadStats();
   }
 
   loadStats() {
     this.loading.set(true);
     this.error.set(null);
-    
+
     this.statsService.getStats().subscribe({
       next: (stats) => {
         this.stats.set(stats);
@@ -72,7 +82,7 @@ export class StatsComponent implements OnInit {
     }
 
     const stats = this.stats()!;
-    
+
     const config: ChartConfiguration = {
       type: 'bar' as ChartType,
       data: {
@@ -160,14 +170,14 @@ export class StatsComponent implements OnInit {
       this.selectedGames.set(stats.lostGames);
       this.modalTitle.set('💔 Partidas Perdidas');
     }
-    
+
     this.showGamesModal.set(true);
   }
 
   viewGameDetails(game: BattleshipGameSummary) {
     this.loadingDetails.set(true);
     this.showGameDetails.set(true);
-    
+
     this.statsService.getGameDetails(game.gameId).subscribe({
       next: (details) => {
         this.gameDetails.set(details);
